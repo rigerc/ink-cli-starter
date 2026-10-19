@@ -1,4 +1,4 @@
-// Adapted from shadcn-labs/termcn (MIT): https://github.com/shadcn-labs/termcn
+// Termcn (MIT) · https://github.com/shadcn-labs/termcn
 import type { Theme } from "../../components/ui/types.js";
 
 export const defaultTheme: Theme = {
