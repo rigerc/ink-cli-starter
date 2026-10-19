@@ -1,0 +1,37 @@
+{
+  "name": "ink-cli-starter",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Ink 8 + Pastel + termcn terminal CLI starter",
+  "engines": {
+    "node": ">=22"
+  },
+  "bin": {
+    "ink-starter": "./build/cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "start": "node build/cli.js",
+    "demo": "npm run build && node build/cli.js demo",
+    "doctor": "npm run build && node build/cli.js doctor",
+    "test": "node --import tsx --test test/*.test.tsx",
+    "check": "npm run typecheck && npm test && npm run build",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "cli-spinners": "^3.3.0",
+    "ink": "^8.0.0",
+    "pastel": "^4.0.1",
+    "react": "^19.3.0",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.24",
+    "@types/react": "^19.3.0",
+    "prettier": "^3.6.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
