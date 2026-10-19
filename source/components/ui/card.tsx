@@ -1,4 +1,4 @@
-// Adapted from shadcn-labs/termcn (MIT): https://github.com/shadcn-labs/termcn
+// Adapted from shadcn-labs/termcn (MIT)
 import { useIsScreenReaderEnabled, Box, Text } from "ink";
 import type { BoxProps } from "ink";
 import type { ReactNode } from "react";
