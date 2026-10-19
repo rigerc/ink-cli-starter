@@ -1,4 +1,4 @@
-// Adapted from shadcn-labs/termcn (MIT): https://github.com/shadcn-labs/termcn
+// Adapted from shadcn-labs/termcn (MIT)
 import { Box, Text } from "ink";
 
 import { useTheme } from "../../hooks/use-theme.js";
