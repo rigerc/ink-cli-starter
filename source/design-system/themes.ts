@@ -1,8 +1,10 @@
 import { createTheme } from "../providers/theme-provider.js";
+import { defaultTheme } from "../lib/terminal-themes/default.js";
 
 export const oceanTheme = createTheme({
   name: "ocean",
   colors: {
+    ...defaultTheme.colors,
     primary: "#67E8F9",
     primaryForeground: "#082F49",
     secondary: "#94A3B8",
@@ -26,6 +28,7 @@ export const oceanTheme = createTheme({
 export const monoTheme = createTheme({
   name: "mono",
   colors: {
+    ...defaultTheme.colors,
     primary: "#FFFFFF",
     primaryForeground: "#000000",
     secondary: "#BBBBBB",
