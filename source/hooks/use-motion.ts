@@ -1,4 +1,4 @@
-// Adapted from shadcn-labs/termcn (MIT): https://github.com/shadcn-labs/termcn
+// Termcn (MIT) · https://github.com/shadcn-labs/termcn
 import * as React from "react";
 
 import type { MotionContextValue } from "../components/ui/types.js";
