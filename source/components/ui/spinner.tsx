@@ -1,4 +1,4 @@
-// Adapted from shadcn-labs/termcn (MIT): https://github.com/shadcn-labs/termcn
+// Termcn (MIT) · https://github.com/shadcn-labs/termcn
 import cliSpinners from "cli-spinners";
 import type { SpinnerName } from "cli-spinners";
 import { Box, Text } from "ink";
