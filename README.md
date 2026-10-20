@@ -3,6 +3,25 @@
 A skeleton for polished terminal apps on **Ink 8** (React 19, Node 22+): theme system,
 hooks, helpers and a component library, with a gallery and tests.
 
+## Scaffold a new app
+
+From a checkout of this repository (Node 22+; no dependencies needed to run the generator):
+
+```bash
+npm run scaffold -- my-cli
+cd my-cli
+npm ci
+npm run dev
+```
+
+This creates a new `my-cli/` directory containing the current Ink screens, component
+library, tests, Vite+ configuration, screenshot script, and GitHub Actions workflow.
+It renames the package and executable, updates the CLI title and help, changes the
+config directory, and changes `INK_KIT_THEME` to `MY_CLI_THEME` throughout the copied
+source and docs. Names must use lowercase kebab-case (`my-cli`). The generator
+refuses to overwrite an existing directory; it does not install dependencies or
+initialize a Git repository.
+
 ```bash
 npm install
 npm run dev                 # interactive app
@@ -215,4 +234,4 @@ entry that must suspend host shortcuts.
 - Ink has no border titles, so `Panel` draws its title as the first row.
 - Status is never color-only: every tone pairs with a symbol.
 - Config lives at `$XDG_CONFIG_HOME/ink-kit/config.json` (default `~/.config/ink-kit/`).
-- Rename the package: search/replace `ink-kit` (package.json, `APP_NAME` in `lib/config.ts`, header).
+- Scaffold a renamed app with `npm run scaffold -- my-cli`.
