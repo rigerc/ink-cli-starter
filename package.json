@@ -18,7 +18,8 @@
     "test": "vp test run",
     "screenshot": "node --import tsx scripts/screenshot.tsx",
     "start": "node dist/cli.js",
-    "prepare": "vp config"
+    "prepare": "vp config",
+    "scaffold": "node scripts/scaffold.mjs"
   },
   "dependencies": {
     "ink": "^8.0.0",
