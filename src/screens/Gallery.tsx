@@ -66,15 +66,33 @@ export function GalleryScreen() {
           rows={[
             {name: 'ink', version: '8.0.0', status: {text: 'up to date', tone: 'success'}},
             {name: 'react', version: '19.3.0', status: {text: 'up to date', tone: 'success'}},
-            {name: 'a-very-long-package-name-that-needs-truncating', version: '1.2.3', status: {text: 'outdated', tone: 'warn'}},
+            {
+              name: 'a-very-long-package-name-that-needs-truncating',
+              version: '1.2.3',
+              status: {text: 'outdated', tone: 'warn'},
+            },
           ]}
         />
       </Panel>
 
       <Panel title="Stepper progress">
-        <StepperProgress steps={[{id: 'install', name: 'Install'}, {id: 'configure', name: 'Configure'}, {id: 'done', name: 'Done'}]} currentStep={1} />
+        <StepperProgress
+          steps={[
+            {id: 'install', name: 'Install'},
+            {id: 'configure', name: 'Configure'},
+            {id: 'done', name: 'Done'},
+          ]}
+          currentStep={1}
+        />
         <Divider label="vertical" />
-        <StepperProgress steps={[{id: 'first', name: 'First'}, {id: 'second', name: 'Second'}]} currentStep={1} orientation="vertical" />
+        <StepperProgress
+          steps={[
+            {id: 'first', name: 'First'},
+            {id: 'second', name: 'Second'},
+          ]}
+          currentStep={1}
+          orientation="vertical"
+        />
       </Panel>
 
       <Panel title="Confirm" footer="Static example; press w to open the interactive wizard">

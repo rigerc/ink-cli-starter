@@ -27,7 +27,12 @@ export function Select<T extends string>({
 }) {
   const t = useTheme();
   const primary = useTone('primary');
-  const [index, setIndex] = useState(Math.max(0, items.findIndex((i) => i.value === initialValue)));
+  const [index, setIndex] = useState(
+    Math.max(
+      0,
+      items.findIndex((i) => i.value === initialValue),
+    ),
+  );
   const move = (delta: number) => setIndex((i) => (i + delta + items.length) % items.length);
 
   useKeymap(

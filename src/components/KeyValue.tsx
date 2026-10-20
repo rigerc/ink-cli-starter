@@ -13,7 +13,11 @@ export function KeyValue({items}: {items: {label: string; value: ReactNode}[]}) 
             <Muted>{item.label}</Muted>
           </Box>
           <Box flexShrink={1}>
-            {typeof item.value === 'string' ? <Text wrap="truncate-middle">{item.value}</Text> : item.value}
+            {typeof item.value === 'string' ? (
+              <Text wrap="truncate-middle">{item.value}</Text>
+            ) : (
+              item.value
+            )}
           </Box>
         </Box>
       ))}

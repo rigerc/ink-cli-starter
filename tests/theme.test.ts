@@ -1,4 +1,4 @@
-import {describe, expect, it} from 'vitest';
+import {describe, expect, it} from 'vite-plus/test';
 import {resolveThemeName} from '../src/theme/resolve';
 import {themes} from '../src/theme/themes';
 import {themeNames, tones} from '../src/theme/tokens';
@@ -23,7 +23,9 @@ describe('resolveThemeName', () => {
     expect(resolveThemeName({flag: 'dark', noColor: true})).toBe('mono');
   });
   it('flag > env > config', () => {
-    expect(resolveThemeName({flag: 'light', env: 'dark', config: 'contrast', noColor: false})).toBe('light');
+    expect(resolveThemeName({flag: 'light', env: 'dark', config: 'contrast', noColor: false})).toBe(
+      'light',
+    );
     expect(resolveThemeName({env: 'contrast', config: 'light', noColor: false})).toBe('contrast');
     expect(resolveThemeName({config: 'light', noColor: false})).toBe('light');
   });

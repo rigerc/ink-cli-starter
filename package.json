@@ -2,25 +2,23 @@
   "name": "ink-kit",
   "version": "0.1.0",
   "description": "Ink 8 CLI skeleton with a theme system, hooks, helpers and a component library",
-  "type": "module",
   "bin": {
     "ink-kit": "./dist/cli.js"
   },
   "files": [
     "dist"
   ],
-  "engines": {
-    "node": ">=22"
-  },
+  "type": "module",
   "scripts": {
     "dev": "tsx src/cli.tsx",
     "gallery": "tsx src/cli.tsx --screen gallery",
     "demo:inline": "node --import tsx src/cli.tsx --demo",
-    "build": "tsup",
+    "build": "vp pack",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
+    "test": "vp test run",
     "screenshot": "node --import tsx scripts/screenshot.tsx",
-    "start": "node dist/cli.js"
+    "start": "node dist/cli.js",
+    "prepare": "vp config"
   },
   "dependencies": {
     "ink": "^8.0.0",
@@ -34,9 +32,16 @@
     "@types/react": "^19.3.0",
     "ansi-to-html": "^0.7.2",
     "playwright": "^1.64.1",
-    "tsup": "^8.5.1",
     "tsx": "^4.23.15",
     "typescript": "^5.9.3",
-    "vitest": "^4.1.12"
+    "vite-plus": "1.3.0",
+    "vitest": "5.0.5"
+  },
+  "overrides": {
+    "vite": "npm:@voidzero-dev/vite-plus-core@1.3.0",
+    "vitest": "5.0.5"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

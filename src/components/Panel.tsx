@@ -15,7 +15,14 @@ export interface PanelProps {
 }
 
 /** Bordered container. Ink has no border titles, so the title is the first row. */
-export function Panel({title, footer, tone = 'primary', focused = false, width, children}: PanelProps) {
+export function Panel({
+  title,
+  footer,
+  tone = 'primary',
+  focused = false,
+  width,
+  children,
+}: PanelProps) {
   const t = useTheme();
   const titleStyle = useTone(tone);
   return (
@@ -32,7 +39,9 @@ export function Panel({title, footer, tone = 'primary', focused = false, width, 
         </Text>
       )}
       {children}
-      {footer && <Box marginTop={1}>{typeof footer === 'string' ? <Muted>{footer}</Muted> : footer}</Box>}
+      {footer && (
+        <Box marginTop={1}>{typeof footer === 'string' ? <Muted>{footer}</Muted> : footer}</Box>
+      )}
     </Box>
   );
 }

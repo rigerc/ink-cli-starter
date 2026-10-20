@@ -3,14 +3,16 @@ import path from 'node:path';
 import {parseArgs} from 'node:util';
 
 async function main() {
-  const {values} = parseArgs({options: {
-    screen: {type: 'string', multiple: true},
-    theme: {type: 'string', multiple: true},
-    columns: {type: 'string', multiple: true},
-    'output-dir': {type: 'string', default: 'screenshots'},
-    ascii: {type: 'boolean', default: false},
-    help: {type: 'boolean', short: 'h'},
-  }});
+  const {values} = parseArgs({
+    options: {
+      screen: {type: 'string', multiple: true},
+      theme: {type: 'string', multiple: true},
+      columns: {type: 'string', multiple: true},
+      'output-dir': {type: 'string', default: 'screenshots'},
+      ascii: {type: 'boolean', default: false},
+      help: {type: 'boolean', short: 'h'},
+    },
+  });
 
   if (values.help) {
     console.log(`Usage: npm run screenshot -- [options]
@@ -33,19 +35,34 @@ First run: npx playwright install chromium`);
   process.env.CI = '1';
   process.env.XDG_CONFIG_HOME = '/tmp/ink-kit-screenshots';
 
-  const [{renderToString}, {App}, {InlineDemo}, {screenIds}, {themeNames}, {default: Convert}, {chromium}] = await Promise.all([
-    import('ink'), import('../src/app'), import('../src/demos/InlineDemo'),
-    import('../src/screens'), import('../src/theme/tokens'), import('ansi-to-html'), import('playwright'),
+  const [
+    {renderToString},
+    {App},
+    {InlineDemo},
+    {screenIds},
+    {themeNames},
+    {default: Convert},
+    {chromium},
+  ] = await Promise.all([
+    import('ink'),
+    import('../src/app'),
+    import('../src/demos/InlineDemo'),
+    import('../src/screens'),
+    import('../src/theme/tokens'),
+    import('ansi-to-html'),
+    import('playwright'),
   ]);
 
   const selectedScreens = [...new Set(values.screen ?? [...screenIds, 'inline'])];
   const selectedThemes = [...new Set(values.theme ?? themeNames)];
   const widths = [...new Set(values.columns ?? ['80', '120'])];
   for (const screen of selectedScreens) {
-    if (![...screenIds, 'inline'].includes(screen)) throw new Error(`Unknown screen "${screen}". Choose: ${[...screenIds, 'inline'].join(', ')}`);
+    if (![...screenIds, 'inline'].includes(screen))
+      throw new Error(`Unknown screen "${screen}". Choose: ${[...screenIds, 'inline'].join(', ')}`);
   }
   for (const theme of selectedThemes) {
-    if (!themeNames.some((name) => name === theme)) throw new Error(`Unknown theme "${theme}". Choose: ${themeNames.join(', ')}`);
+    if (!themeNames.some((name) => name === theme))
+      throw new Error(`Unknown theme "${theme}". Choose: ${themeNames.join(', ')}`);
   }
   for (const width of widths) {
     if (!/^\d+$/.test(width) || Number(width) < 40 || Number(width) > 240) {
@@ -57,7 +74,10 @@ First run: npx playwright install chromium`);
   await mkdir(outputDir, {recursive: true});
   const browser = await chromium.launch();
   try {
-    const page = await browser.newPage({viewport: {width: 2560, height: 900}, deviceScaleFactor: 1});
+    const page = await browser.newPage({
+      viewport: {width: 2560, height: 900},
+      deviceScaleFactor: 1,
+    });
     for (const screen of selectedScreens) {
       for (const theme of selectedThemes) {
         for (const width of widths) {
@@ -65,11 +85,20 @@ First run: npx playwright install chromium`);
           // renderToString sets Yoga's width; hooks also read stdout's dimensions.
           Object.defineProperty(process.stdout, 'columns', {value: columns, configurable: true});
           Object.defineProperty(process.stdout, 'rows', {value: 40, configurable: true});
-          const options = {theme: theme as (typeof themeNames)[number], ascii: values.ascii, debug: false, screen};
-          const ansi = renderToString(screen === 'inline' ? <InlineDemo options={options} /> : <App options={options} />, {columns});
+          const options = {
+            theme: theme as (typeof themeNames)[number],
+            ascii: values.ascii,
+            debug: false,
+            screen,
+          };
+          const ansi = renderToString(
+            screen === 'inline' ? <InlineDemo options={options} /> : <App options={options} />,
+            {columns},
+          );
           if (!ansi.trim()) throw new Error(`Empty render: ${screen}/${theme}/${columns}`);
 
-          const background = theme === 'light' ? '#ffffff' : theme === 'dark' ? '#1a1b26' : '#000000';
+          const background =
+            theme === 'light' ? '#ffffff' : theme === 'dark' ? '#1a1b26' : '#000000';
           const foreground = theme === 'light' ? '#1f2937' : '#c0caf5';
           const html = new Convert({fg: foreground, bg: background, escapeXML: true}).toHtml(ansi);
           await page.setContent(`<!doctype html><html><head><meta charset="utf-8"><style>
@@ -80,7 +109,9 @@ First run: npx playwright install chromium`);
           </style></head><body><main><pre>${html}</pre></main></body></html>`);
           await page.evaluate(() => document.fonts.ready);
           const filename = `${screen}-${theme}-${columns}${values.ascii ? '-ascii' : ''}.png`;
-          await page.locator('main').screenshot({path: path.join(outputDir, filename), animations: 'disabled'});
+          await page
+            .locator('main')
+            .screenshot({path: path.join(outputDir, filename), animations: 'disabled'});
           console.log(path.join(outputDir, filename));
         }
       }

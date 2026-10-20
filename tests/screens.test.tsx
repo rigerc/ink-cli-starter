@@ -1,11 +1,16 @@
 import {renderToString} from 'ink';
 import stringWidth from 'string-width';
-import {describe, expect, it} from 'vitest';
+import {describe, expect, it} from 'vite-plus/test';
 import {AppProviders} from '../src/app';
 import {screens} from '../src/screens';
 import {themeNames} from '../src/theme/tokens';
 
-const render = (id: string, theme: (typeof themeNames)[number], columns: number, ascii: boolean) => {
+const render = (
+  id: string,
+  theme: (typeof themeNames)[number],
+  columns: number,
+  ascii: boolean,
+) => {
   const {Component} = screens.find((s) => s.id === id)!;
   return renderToString(
     <AppProviders options={{theme, ascii, debug: false, screen: id}}>
@@ -22,7 +27,8 @@ describe('every screen × theme × width', () => {
         it(`${id} / ${theme} / ${columns} cols fits the terminal`, () => {
           const out = render(id, theme, columns, false);
           expect(out.length).toBeGreaterThan(0);
-          for (const line of out.split('\n')) expect(stringWidth(line)).toBeLessThanOrEqual(columns);
+          for (const line of out.split('\n'))
+            expect(stringWidth(line)).toBeLessThanOrEqual(columns);
         });
       }
     }

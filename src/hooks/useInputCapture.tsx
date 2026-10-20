@@ -1,4 +1,12 @@
-import {createContext, useCallback, useContext, useLayoutEffect, useMemo, useState, type ReactNode} from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useLayoutEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
 
 const CaptureContext = createContext({captured: false, capture: (): (() => void) => () => {}});
 
@@ -15,7 +23,9 @@ export function InputCaptureProvider({children}: {children: ReactNode}) {
 
 export function useInputCapture(active: boolean) {
   const {capture} = useContext(CaptureContext);
-  useLayoutEffect(() => { if (active) return capture(); }, [active, capture]);
+  useLayoutEffect(() => {
+    if (active) return capture();
+  }, [active, capture]);
 }
 
 export const useHasInputCapture = () => useContext(CaptureContext).captured;

@@ -12,12 +12,19 @@ export function ErrorPanel({error, debug = false}: {error: unknown; debug?: bool
     <Alert tone="danger" title={err.message}>
       {err.hint && <Text>{err.hint}</Text>}
       {debug && err.stack && <Muted>{err.stack.split('\n').slice(1, 6).join('\n')}</Muted>}
-      {!debug && <Box><Muted>Run with --debug for details.</Muted></Box>}
+      {!debug && (
+        <Box>
+          <Muted>Run with --debug for details.</Muted>
+        </Box>
+      )}
     </Alert>
   );
 }
 
-export class ErrorBoundary extends Component<{debug?: boolean; children: ReactNode}, {error?: Error}> {
+export class ErrorBoundary extends Component<
+  {debug?: boolean; children: ReactNode},
+  {error?: Error}
+> {
   override state: {error?: Error} = {};
 
   static getDerivedStateFromError(error: Error) {
@@ -29,7 +36,8 @@ export class ErrorBoundary extends Component<{debug?: boolean; children: ReactNo
   }
 
   override render() {
-    if (this.state.error) return <ErrorPanel error={this.state.error} debug={this.props.debug ?? false} />;
+    if (this.state.error)
+      return <ErrorPanel error={this.state.error} debug={this.props.debug ?? false} />;
     return this.props.children;
   }
 }

@@ -6,7 +6,15 @@ import {useTheme} from '../theme/context';
 import {StatusMessage} from './Status';
 import {Divider, Kbd, Muted} from './typography';
 
-export function Header({title, version, right}: {title: string; version: string; right?: ReactNode}) {
+export function Header({
+  title,
+  version,
+  right,
+}: {
+  title: string;
+  version: string;
+  right?: ReactNode;
+}) {
   const t = useTheme();
   const {primary, accent} = t.color;
   const chars = [...title];
@@ -14,7 +22,9 @@ export function Header({title, version, right}: {title: string; version: string;
   return (
     <Box justifyContent="space-between" paddingX={1}>
       <Box gap={1}>
-        <Text bold color={primary}>{t.mono ? '*' : '◆'}</Text>
+        <Text bold color={primary}>
+          {t.mono ? '*' : '◆'}
+        </Text>
         <Text bold color={colors ? undefined : primary}>
           {chars.map((ch, i) => (
             <Text key={i} color={colors?.[i]}>
@@ -29,7 +39,13 @@ export function Header({title, version, right}: {title: string; version: string;
   );
 }
 
-export function StatusBar({hints, right}: {hints: {key: string; label: string}[]; right?: ReactNode}) {
+export function StatusBar({
+  hints,
+  right,
+}: {
+  hints: {key: string; label: string}[];
+  right?: ReactNode;
+}) {
   return (
     <Box flexDirection="column">
       <Divider />
@@ -63,7 +79,17 @@ export function ToastHost() {
 }
 
 /** Header, nav, body, toasts, status bar: in that order, inline (no alt screen). */
-export function AppShell({header, nav, footer, children}: {header: ReactNode; nav?: ReactNode; footer?: ReactNode; children: ReactNode}) {
+export function AppShell({
+  header,
+  nav,
+  footer,
+  children,
+}: {
+  header: ReactNode;
+  nav?: ReactNode;
+  footer?: ReactNode;
+  children: ReactNode;
+}) {
   return (
     <Box flexDirection="column" gap={1}>
       <Box flexDirection="column">
@@ -76,4 +102,3 @@ export function AppShell({header, nav, footer, children}: {header: ReactNode; na
     </Box>
   );
 }
-

@@ -17,7 +17,15 @@ export function StatusMessage({tone = 'info', children}: {tone?: ToastTone; chil
 }
 
 /** Bordered callout with a title and optional body. */
-export function Alert({tone = 'info', title, children}: {tone?: ToastTone; title: string; children?: ReactNode}) {
+export function Alert({
+  tone = 'info',
+  title,
+  children,
+}: {
+  tone?: ToastTone;
+  title: string;
+  children?: ReactNode;
+}) {
   const t = useTheme();
   const color = t.color[tone];
   return (

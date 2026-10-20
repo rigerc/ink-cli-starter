@@ -1,7 +1,15 @@
 import type {ReactNode} from 'react';
 import pkg from '../package.json';
 import {AppShell, Badge, ErrorBoundary, Header, StatusBar, Tabs} from './components';
-import {useExit, useKeymap, useRouter, RouterProvider, ToastProvider, InputCaptureProvider, useHasInputCapture} from './hooks';
+import {
+  useExit,
+  useKeymap,
+  useRouter,
+  RouterProvider,
+  ToastProvider,
+  InputCaptureProvider,
+  useHasInputCapture,
+} from './hooks';
 import {globalKeys} from './keys';
 import {screens} from './screens';
 import {ThemeProvider, useThemeControls} from './theme/context';
@@ -34,24 +42,47 @@ function Shell() {
   const {theme, cycleTheme} = useThemeControls();
   const inputCaptured = useHasInputCapture();
 
-  const index = Math.max(0, screens.findIndex((s) => s.id === router.current));
+  const index = Math.max(
+    0,
+    screens.findIndex((s) => s.id === router.current),
+  );
   const go = (i: number) => router.replace(screens[(i + screens.length) % screens.length]!.id);
 
-  useKeymap([
-    {key: 'q', run: () => exit()},
-    {key: 'tab', run: () => go(index + 1)},
-    {key: 'shift+tab', run: () => go(index - 1)},
-    {key: 't', run: cycleTheme},
-    {key: '?', run: () => router.replace('help')},
-    ...screens.map((s, i) => ({key: String(i + 1), run: () => go(i)})),
-  ], {isActive: !inputCaptured});
+  useKeymap(
+    [
+      {key: 'q', run: () => exit()},
+      {key: 'tab', run: () => go(index + 1)},
+      {key: 'shift+tab', run: () => go(index - 1)},
+      {key: 't', run: cycleTheme},
+      {key: '?', run: () => router.replace('help')},
+      ...screens.map((s, i) => ({key: String(i + 1), run: () => go(i)})),
+    ],
+    {isActive: !inputCaptured},
+  );
 
   const Screen = screens[index]!.Component;
   return (
     <AppShell
-      header={<Header title="ink-kit" version={pkg.version} right={<Badge tone="accent">{theme.name}</Badge>} />}
+      header={
+        <Header
+          title="ink-kit"
+          version={pkg.version}
+          right={<Badge tone="accent">{theme.name}</Badge>}
+        />
+      }
       nav={<Tabs items={screens} activeId={router.current} />}
-      footer={<StatusBar hints={inputCaptured ? [{key: 'esc', label: 'leave search'}, {key: 'enter', label: 'select'}] : [...globalKeys]} />}
+      footer={
+        <StatusBar
+          hints={
+            inputCaptured
+              ? [
+                  {key: 'esc', label: 'leave search'},
+                  {key: 'enter', label: 'select'},
+                ]
+              : [...globalKeys]
+          }
+        />
+      }
     >
       <Screen />
     </AppShell>
