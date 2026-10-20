@@ -15,6 +15,7 @@
   "scripts": {
     "dev": "tsx src/cli.tsx",
     "gallery": "tsx src/cli.tsx --screen gallery",
+    "demo:inline": "node --import tsx src/cli.tsx --demo",
     "build": "tsup",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

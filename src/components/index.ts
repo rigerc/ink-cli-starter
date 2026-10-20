@@ -13,3 +13,6 @@ export * from './Table';
 export * from './Tabs';
 export * from './TaskList';
 export * from './typography';
+export * from './Confirm';
+export * from './InlineLayout';
+export * from './Stepper';
