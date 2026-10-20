@@ -2,6 +2,8 @@
 import {render, renderToString} from 'ink';
 import meow from 'meow';
 import {App, PlainView, type AppOptions} from './app';
+import {appConfig, resolveConfig, type Config} from './config';
+import {ConfigSetup} from './demos/ConfigSetup';
 import {InlineDemo} from './demos/InlineDemo';
 import {loadConfig} from './lib/config';
 import {AppError, toAppError} from './lib/errors';
@@ -14,13 +16,16 @@ const cli = meow(
   `
   Usage
     $ ink-kit [options]
+    $ ink-kit --setup [--config path]
 
   Options
-    --theme <name>   dark | light | contrast | mono
+    --theme <name>   dark | light | contrast | mono | auto
     --screen <id>    ${screenIds.join(' | ')}
     --ascii          Use ASCII symbols and borders
+    --config <path>  Read/write a specific JSON configuration file
+    --setup          Open the interactive configuration wizard
     --plain          Print once and exit (also the default when piped or in CI)
-    --demo           Run the compact inline setup wizard
+    --demo           Run the compact inline setup demo
     --debug          Write logs to a file and show stack traces
 
   Environment
@@ -34,6 +39,8 @@ const cli = meow(
       theme: {type: 'string'},
       screen: {type: 'string', default: 'home'},
       ascii: {type: 'boolean'},
+      config: {type: 'string'},
+      setup: {type: 'boolean'},
       plain: {type: 'boolean'},
       demo: {type: 'boolean'},
       debug: {type: 'boolean'},
@@ -45,16 +52,26 @@ async function main() {
   const {flags} = cli;
   logger.setDebug(Boolean(flags.debug));
 
-  if (!isScreenId(flags.screen)) {
+  if (flags.setup && flags.demo)
+    throw new AppError('--setup and --demo cannot be used together', {exitCode: 2});
+  if (!isScreenId(flags.screen))
     throw new AppError(`Unknown screen "${flags.screen}"`, {
       exitCode: 2,
       hint: `Try one of: ${screenIds.join(', ')}`,
     });
-  }
 
-  const {config, error} = loadConfig();
+  const {config, error} = loadConfig(flags.config);
   if (error) logger.error('config:', error);
+  if (flags.setup && error)
+    throw new AppError('Cannot edit invalid configuration', {hint: error, exitCode: 2});
 
+  const configFlags: Partial<Config> = {
+    theme: flags.theme && appConfig.fields[0]?.options?.some((item) => item.value === flags.theme)
+      ? flags.theme as Config['theme']
+      : undefined,
+    ascii: flags.ascii ? true : undefined,
+  };
+  const resolved = resolveConfig(appConfig.fields, config, {flags: configFlags});
   const options: AppOptions = {
     theme: resolveThemeName({
       flag: flags.theme,
@@ -62,11 +79,19 @@ async function main() {
       config: config.theme,
       noColor: noColor(),
     }),
-    ascii: flags.ascii ?? config.ascii ?? !supportsUnicode(),
+    ascii: resolved.values.ascii ?? !supportsUnicode(),
     debug: Boolean(flags.debug),
     screen: flags.screen,
+    configFile: flags.config,
+    configFlags,
   };
   logger.debug('options', options);
+
+  if (flags.setup && (flags.plain || !isInteractive()))
+    throw new AppError('Configuration wizard requires an interactive terminal', {
+      exitCode: 2,
+      hint: 'Run ink-kit --setup in a TTY, or edit the JSON config directly.',
+    });
 
   if (flags.plain || !isInteractive()) {
     console.log(
@@ -79,7 +104,11 @@ async function main() {
   }
 
   await render(
-    flags.demo ? <InlineDemo options={options} interactive /> : <App options={options} />,
+    flags.setup
+      ? <ConfigSetup options={options} />
+      : flags.demo
+        ? <InlineDemo options={options} interactive />
+        : <App options={options} />,
   ).waitUntilExit();
 }
 
