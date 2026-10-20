@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 import {execFileSync} from 'node:child_process';
+import {createInterface} from 'node:readline/promises';
 import {copyFile, lstat, mkdir, readFile, rm, writeFile} from 'node:fs/promises';
 import {dirname, join, resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {parseArgs} from 'node:util';
 
 const sourceRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const excluded = new Set([
@@ -12,12 +14,21 @@ const excluded = new Set([
 ]);
 
 function usage() {
-  console.log(`Usage: npm run scaffold -- <app-name>
+  console.log(`Usage: npm run scaffold -- [app-name] [options]
 
-Create an Ink CLI app in ./<app-name> from the tracked starter files.
-Use a lowercase kebab-case name (e.g. my-cli); the directory must not exist.`);
+Create a new Ink CLI app. With no name in a terminal, prompts for app name and destination.
+
+Options:
+  -p, --path <directory>  Full destination directory (default: ./<app-name>)
+  -i, --interactive       Prompt for missing options and confirm creation
+  -h, --help              Show this help
+
+Examples:
+  npm run scaffold
+  npm run scaffold -- my-cli
+  npm run scaffold -- my-cli --path ../projects/my-cli
+  npm run scaffold -- my-cli --interactive`);
 }
-
 function trackedFiles() {
   let output;
   try {
@@ -80,22 +91,75 @@ async function renameApp(destination, name) {
   );
 }
 
+const validName = (name) => /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/.test(name);
+
+async function askName(rl) {
+  while (true) {
+    const name = (await rl.question('App name (lowercase kebab-case): ')).trim();
+    if (validName(name)) return name;
+    console.log('Use lowercase letters, numbers, and hyphens (e.g. my-cli).');
+  }
+}
+
 async function main() {
-  const args = process.argv.slice(2);
-  if (args.length === 1 && ['--help', '-h'].includes(args[0])) {
+  const {values, positionals} = parseArgs({
+    options: {
+      path: {type: 'string', short: 'p'},
+      interactive: {type: 'boolean', short: 'i'},
+      help: {type: 'boolean', short: 'h'},
+    },
+    allowPositionals: true,
+  });
+
+  if (values.help) {
     usage();
     return;
   }
-  if (args.length !== 1 || !/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/.test(args[0])) {
-    usage();
-    process.exitCode = 1;
-    return;
+  if (positionals.length > 1) throw new Error('Expected at most one app name.');
+  const interactive = Boolean(
+    values.interactive || (positionals.length === 0 && process.stdin.isTTY && process.stdout.isTTY),
+  );
+  if (!positionals.length && !interactive) {
+    throw new Error('Missing app name. Pass a name or run in an interactive terminal.');
   }
 
-  const name = args[0];
+  let name = positionals[0];
+  if (name && !validName(name)) {
+    throw new Error('App name must be lowercase kebab-case (e.g. my-cli).');
+  }
+  if (values.path !== undefined && !values.path.trim()) {
+    throw new Error('--path must specify a non-empty destination.');
+  }
+
+  const rl = interactive
+    ? createInterface({input: process.stdin, output: process.stdout})
+    : undefined;
+  let destination;
+  try {
+    if (!name) name = await askName(rl);
+    const defaultPath = join('.', name);
+    let targetPath = values.path;
+    if (interactive && targetPath === undefined) {
+      targetPath = (await rl.question(`Destination path [${defaultPath}]: `)).trim() || defaultPath;
+    }
+    destination = resolve(process.cwd(), targetPath ?? defaultPath);
+
+    if (interactive) {
+      const answer = (await rl.question(`Create "${name}" at "${destination}"? [Y/n]: `))
+        .trim()
+        .toLowerCase();
+      if (!['', 'y', 'yes'].includes(answer)) {
+        console.log('Cancelled.');
+        return;
+      }
+    }
+  } finally {
+    rl?.close();
+  }
+
   const files = trackedFiles();
-  const destination = resolve(process.cwd(), name);
-  // Non-recursive mkdir refuses to overwrite even an empty existing directory.
+  // Parent directories can be new; the final directory must not exist.
+  await mkdir(dirname(destination), {recursive: true});
   await mkdir(destination);
   try {
     for (const file of files) {
@@ -113,7 +177,7 @@ async function main() {
     throw error;
   }
 
-  console.log(`Created ${destination}\n\nNext steps:\n  cd ${name}\n  npm install\n  npm run dev`);
+  console.log(`Created ${destination}\n\nNext steps:\n  cd "${destination}"\n  npm install\n  npm run dev`);
 }
 
 main().catch((error) => {
