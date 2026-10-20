@@ -15,6 +15,39 @@ npm run build && npm start
 
 Keys: `tab` / `1-5` switch screens, `t` cycles themes, `?` help, `q` quit.
 
+## Automated screenshots
+
+Install Chromium once, then generate PNGs without an interactive terminal:
+
+```bash
+npx playwright install chromium
+npm run screenshot
+# Capture just one view (filters can be repeated):
+npm run screenshot -- --screen gallery --theme dark --columns 100
+npm run screenshot -- --screen inline --theme mono --ascii
+npm run screenshot -- --help
+```
+
+On Linux, use `npx playwright install --with-deps chromium` if browser system
+dependencies are missing. By default, the script captures all registered screens
+and the inline demo, in all four themes at 80 and 120 columns (48 PNGs today).
+Files go to the ignored `screenshots/` directory, named like
+`gallery-dark-80.png`. Use `--output-dir <dir>` to choose another destination.
+
+These are deterministic initial-state previews rendered by Ink's `renderToString`,
+including the app header, tabs, and footer. ANSI colors become escaped HTML, which
+Playwright captures with headless Chromium. Screenshots preserve Unicode by default;
+`--ascii` uses ASCII glyphs. Animations and subsequent keyboard interactions are
+not captured. The screenshot process fixes terminal diagnostics and the displayed
+config path, and forces color independently of `NO_COLOR` or host configuration.
+For consistent pixels across machines, use the same OS and installed fonts as CI.
+
+The **Screenshots** GitHub Actions workflow runs on pushes to `main`, pull requests,
+and manual dispatch. It installs dependencies and Chromium, runs type checks and
+tests, then uploads the images as a `screenshots` artifact retained for 14 days.
+Download it from the workflow run's **Artifacts** section. Generated images are
+review artifacts; the workflow does not compare them against a visual baseline.
+
 ## Layout
 
 ```
