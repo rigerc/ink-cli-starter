@@ -2,6 +2,7 @@ import {useApp} from 'ink';
 import {useEffect, useState} from 'react';
 import type {AppOptions} from '../app';
 import {Heading, InlineLayout, Muted} from '../components';
+import {APP_NAME} from '../lib/config';
 import {ThemeProvider} from '../theme/context';
 import {SetupWizard} from './SetupWizard';
 
@@ -14,7 +15,7 @@ function DemoContent({interactive}: {interactive: boolean}) {
   }, [finished, interactive, exit]);
   return (
     <InlineLayout
-      title={<Heading>ink-kit / inline setup demo</Heading>}
+      title={<Heading>{APP_NAME} / inline setup demo</Heading>}
       footer={
         <Muted>
           {finished

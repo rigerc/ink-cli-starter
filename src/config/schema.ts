@@ -1,4 +1,5 @@
 import {z} from 'zod';
+import pkg from '../../package.json';
 import {themeNames} from '../theme/tokens';
 import {defineConfig} from './definition';
 
@@ -22,7 +23,7 @@ export const appConfig = defineConfig({
       kind: 'select',
       description: 'Auto detects light/dark; NO_COLOR always forces mono.',
       defaultValue: 'auto',
-      env: 'INK_KIT_THEME',
+      env: `${pkg.name.replaceAll('-', '_').toUpperCase()}_THEME`,
       options: [
         {value: 'auto', label: 'Auto (terminal default)'},
         ...themeNames.map((value) => ({value, label: value})),

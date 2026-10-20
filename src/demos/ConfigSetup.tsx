@@ -1,4 +1,5 @@
 import {useApp} from 'ink';
+import pkg from '../../package.json';
 import {useEffect, useState} from 'react';
 import type {AppOptions} from '../app';
 import {ConfigWizard} from '../components/config';
@@ -11,7 +12,7 @@ function Content({path}: {path?: string}) {
   useEffect(() => {if (finished) exit();}, [finished, exit]);
   return (
     <InlineLayout
-      title={<Heading>ink-kit / configuration setup</Heading>}
+      title={<Heading>{pkg.name} / configuration setup</Heading>}
       footer={<Muted>{finished ? 'Back to your shell.' : 'ctrl+c cancels without saving'}</Muted>}
     >
       <ConfigWizard path={path} onFinish={() => setFinished(true)} />

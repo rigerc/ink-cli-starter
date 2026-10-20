@@ -5,7 +5,7 @@ import {App, PlainView, type AppOptions} from './app';
 import {appConfig, resolveConfig, type Config} from './config';
 import {ConfigSetup} from './demos/ConfigSetup';
 import {InlineDemo} from './demos/InlineDemo';
-import {loadConfig} from './lib/config';
+import {APP_NAME, APP_THEME_ENV, loadConfig} from './lib/config';
 import {AppError, toAppError} from './lib/errors';
 import {logger} from './lib/logger';
 import {isInteractive, noColor, supportsUnicode} from './lib/terminal';
@@ -15,8 +15,8 @@ import {resolveThemeName} from './theme/resolve';
 const cli = meow(
   `
   Usage
-    $ ink-kit [options]
-    $ ink-kit --setup [--config path]
+    $ ${APP_NAME} [options]
+    $ ${APP_NAME} --setup [--config path]
 
   Options
     --theme <name>   dark | light | contrast | mono | auto
@@ -30,7 +30,7 @@ const cli = meow(
 
   Environment
     NO_COLOR=1       Force the mono theme
-    INK_KIT_THEME    Default theme
+    ${APP_THEME_ENV}    Default theme
     CLI_ASCII=1      Force ASCII symbols
 `,
   {
@@ -75,7 +75,7 @@ async function main() {
   const options: AppOptions = {
     theme: resolveThemeName({
       flag: flags.theme,
-      env: process.env.INK_KIT_THEME,
+      env: process.env[APP_THEME_ENV],
       config: config.theme,
       noColor: noColor(),
     }),
@@ -90,7 +90,7 @@ async function main() {
   if (flags.setup && (flags.plain || !isInteractive()))
     throw new AppError('Configuration wizard requires an interactive terminal', {
       exitCode: 2,
-      hint: 'Run ink-kit --setup in a TTY, or edit the JSON config directly.',
+      hint: `Run ${APP_NAME} --setup in a TTY, or edit the JSON config directly.`,
     });
 
   if (flags.plain || !isInteractive()) {
