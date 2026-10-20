@@ -18,13 +18,23 @@ export function Badge({
   const color = t.color[tone];
   if (variant === 'solid') {
     return t.mono ? (
-      <Text inverse bold> {children} </Text>
+      <Text inverse bold>
+        {' '}
+        {children}{' '}
+      </Text>
     ) : (
-      <Text backgroundColor={color} color={t.color.onTone} bold> {children} </Text>
+      <Text backgroundColor={color} color={t.color.onTone} bold>
+        {' '}
+        {children}{' '}
+      </Text>
     );
   }
   if (variant === 'outline') {
-    return <Text color={color} dimColor={t.mono && tone === 'muted'}>[{children}]</Text>;
+    return (
+      <Text color={color} dimColor={t.mono && tone === 'muted'}>
+        [{children}]
+      </Text>
+    );
   }
   return (
     <Text color={color} dimColor={t.mono && tone === 'muted'}>

@@ -7,7 +7,11 @@ import {APP_NAME} from './config';
 let enabled = false;
 
 export const logPath = (): string =>
-  join(process.env.XDG_STATE_HOME ?? join(homedir(), '.local', 'state'), APP_NAME, `${APP_NAME}.log`);
+  join(
+    process.env.XDG_STATE_HOME ?? join(homedir(), '.local', 'state'),
+    APP_NAME,
+    `${APP_NAME}.log`,
+  );
 
 function write(level: string, args: unknown[]) {
   if (!enabled) return;

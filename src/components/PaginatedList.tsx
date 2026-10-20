@@ -18,8 +18,17 @@ export interface PaginatedListProps<T> {
 }
 
 /** Left/right or PageUp/PageDown change pages; Home/End jump to first/last. */
-export function PaginatedList<T>({items, renderItem, getKey, pageSize = 5, page,
-  initialPage = 0, onPageChange, isActive = true, emptyMessage = 'No items.'}: PaginatedListProps<T>) {
+export function PaginatedList<T>({
+  items,
+  renderItem,
+  getKey,
+  pageSize = 5,
+  page,
+  initialPage = 0,
+  onPageChange,
+  isActive = true,
+  emptyMessage = 'No items.',
+}: PaginatedListProps<T>) {
   const [internal, setInternal] = useState(initialPage);
   const size = listSize(pageSize, 5);
   const count = Math.ceil(items.length / size);
@@ -31,11 +40,17 @@ export function PaginatedList<T>({items, renderItem, getKey, pageSize = 5, page,
     if (page === undefined) setInternal(target);
     onPageChange?.(target);
   };
-  useKeymap([
-    {key: 'left', run: () => change(current - 1)}, {key: 'pageup', run: () => change(current - 1)},
-    {key: 'right', run: () => change(current + 1)}, {key: 'pagedown', run: () => change(current + 1)},
-    {key: 'home', run: () => change(0)}, {key: 'end', run: () => change(count - 1)},
-  ], {isActive});
+  useKeymap(
+    [
+      {key: 'left', run: () => change(current - 1)},
+      {key: 'pageup', run: () => change(current - 1)},
+      {key: 'right', run: () => change(current + 1)},
+      {key: 'pagedown', run: () => change(current + 1)},
+      {key: 'home', run: () => change(0)},
+      {key: 'end', run: () => change(count - 1)},
+    ],
+    {isActive},
+  );
   if (!items.length) return <Muted>{emptyMessage}</Muted>;
   const start = current * size;
   const end = Math.min(start + size, items.length);
@@ -43,11 +58,19 @@ export function PaginatedList<T>({items, renderItem, getKey, pageSize = 5, page,
     <Box flexDirection="column">
       {items.slice(start, end).map((item, offset) => {
         const content = renderItem(item, start + offset);
-        return <Box key={getKey(item, start + offset)} flexDirection="column">
-          {typeof content === 'string' || typeof content === 'number' ? <Text>{content}</Text> : content}
-        </Box>;
+        return (
+          <Box key={getKey(item, start + offset)} flexDirection="column">
+            {typeof content === 'string' || typeof content === 'number' ? (
+              <Text>{content}</Text>
+            ) : (
+              content
+            )}
+          </Box>
+        );
       })}
-      <Muted>Page {current + 1}/{count} / {start + 1}-{end} of {items.length}</Muted>
+      <Muted>
+        Page {current + 1}/{count} / {start + 1}-{end} of {items.length}
+      </Muted>
     </Box>
   );
 }

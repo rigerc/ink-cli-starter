@@ -18,7 +18,7 @@ export function HelpScreen() {
       <Panel title="Flags">
         <Text>--theme dark|light|contrast|mono</Text>
         <Text>--screen home|tasks|gallery|settings|help</Text>
-        <Text>--plain  --ascii  --debug  --demo</Text>
+        <Text>{'--plain  --ascii  --debug  --demo'}</Text>
       </Panel>
     </Stack>
   );

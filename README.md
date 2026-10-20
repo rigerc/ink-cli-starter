@@ -114,12 +114,12 @@ All four components are exported from `src/components`, use theme tokens, and su
 `isActive={false}` for static previews or when another control owns keyboard input.
 Use unique option `value`s and stable pagination keys.
 
-| Component | Main props | Keyboard |
-| --- | --- | --- |
-| `MultiSelect` | `items`, `value` / `defaultValue`, `onChange`, `onSubmit`, `maxVisible` | Up/Down or j/k move; Space toggles; Enter submits; Home/End jump |
-| `SearchSelect` | `items`, `onSelect`, `onCancel`, `query` / `defaultQuery`, `onQueryChange`, `maxVisible` | Type to filter; Backspace edits; Ctrl+U clears; Up/Down move; Enter selects; Escape cancels |
-| `Toggle` | `label`, `value` / `defaultValue`, `onChange`, `onLabel`, `offLabel` | Space/Enter toggle; Left turns off; Right turns on |
-| `PaginatedList` | `items`, `getKey`, `renderItem`, `pageSize`, `page` / `initialPage`, `onPageChange` | Left/Right or PageUp/PageDown move; Home/End jump |
+| Component       | Main props                                                                               | Keyboard                                                                                    |
+| --------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `MultiSelect`   | `items`, `value` / `defaultValue`, `onChange`, `onSubmit`, `maxVisible`                  | Up/Down or j/k move; Space toggles; Enter submits; Home/End jump                            |
+| `SearchSelect`  | `items`, `onSelect`, `onCancel`, `query` / `defaultQuery`, `onQueryChange`, `maxVisible` | Type to filter; Backspace edits; Ctrl+U clears; Up/Down move; Enter selects; Escape cancels |
+| `Toggle`        | `label`, `value` / `defaultValue`, `onChange`, `onLabel`, `offLabel`                     | Space/Enter toggle; Left turns off; Right turns on                                          |
+| `PaginatedList` | `items`, `getKey`, `renderItem`, `pageSize`, `page` / `initialPage`, `onPageChange`      | Left/Right or PageUp/PageDown move; Home/End jump                                           |
 
 ```tsx
 <MultiSelect
@@ -174,12 +174,10 @@ import {InlineLayout, Stepper, Step, StepperNavigation} from './components';
       <StepperNavigation />
     </Step>
     <Step name="Validate" canProceed={async () => await validate()}>
-      {({isValidating}) => (
-        <Text>{isValidating ? 'Checking...' : 'Press Enter to finish.'}</Text>
-      )}
+      {({isValidating}) => <Text>{isValidating ? 'Checking...' : 'Press Enter to finish.'}</Text>}
     </Step>
   </Stepper>
-</InlineLayout>
+</InlineLayout>;
 ```
 
 `Stepper` accepts direct `Step` children, fragments, and conditional Steps. Give conditional

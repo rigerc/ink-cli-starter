@@ -14,22 +14,31 @@ export interface ConfirmProps {
 export function Confirm({message, defaultValue = false, onConfirm, isActive = true}: ConfirmProps) {
   const [value, setValue] = useState(defaultValue);
   const t = useTheme();
-  useInput((input, key) => {
-    if (key.ctrl || key.meta) return;
-    if (input.toLowerCase() === 'y' || key.leftArrow) setValue(true);
-    if (input.toLowerCase() === 'n' || key.rightArrow) setValue(false);
-    if (key.return) onConfirm(value);
-  }, {isActive});
+  useInput(
+    (input, key) => {
+      if (key.ctrl || key.meta) return;
+      if (input.toLowerCase() === 'y' || key.leftArrow) setValue(true);
+      if (input.toLowerCase() === 'n' || key.rightArrow) setValue(false);
+      if (key.return) onConfirm(value);
+    },
+    {isActive},
+  );
   return (
     <Box flexDirection="column">
       <Text>{message}</Text>
       <Box gap={2}>
         {[true, false].map((option) => (
-          <Text key={String(option)} bold={option === value} color={option === value ? t.color.primary : t.color.muted}>
+          <Text
+            key={String(option)}
+            bold={option === value}
+            color={option === value ? t.color.primary : t.color.muted}
+          >
             {option === value ? t.symbols.pointer : ' '} {option ? 'Yes' : 'No'}
           </Text>
         ))}
-        <Muted><Kbd>y/n</Kbd> choose <Kbd>enter</Kbd> confirm</Muted>
+        <Muted>
+          <Kbd>y/n</Kbd> choose <Kbd>enter</Kbd> confirm
+        </Muted>
       </Box>
     </Box>
   );

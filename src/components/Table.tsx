@@ -30,12 +30,23 @@ function CellText({cell}: {cell: Cell | undefined}) {
  * allowed to shrink (and truncate with an ellipsis) so the table always fits
  * its container, with no dependency on the terminal width.
  */
-export function Table({columns, rows, selected}: {columns: Column[]; rows: Record<string, Cell>[]; selected?: number}) {
+export function Table({
+  columns,
+  rows,
+  selected,
+}: {
+  columns: Column[];
+  rows: Record<string, Cell>[];
+  selected?: number;
+}) {
   const t = useTheme();
   const primary = useTone('primary');
 
   const widths = columns.map((c) =>
-    Math.min(c.maxWidth ?? Infinity, Math.max(stringWidth(c.header), ...rows.map((r) => stringWidth(textOf(r[c.key]))))),
+    Math.min(
+      c.maxWidth ?? Infinity,
+      Math.max(stringWidth(c.header), ...rows.map((r) => stringWidth(textOf(r[c.key])))),
+    ),
   );
   const shrinkable = widths.indexOf(Math.max(...widths));
 
@@ -66,7 +77,9 @@ export function Table({columns, rows, selected}: {columns: Column[]; rows: Recor
         </Text>
       ))}
       <Divider />
-      {rows.map((row, i) => renderRow(String(i), (c) => <CellText cell={row[c.key]} />, i === selected))}
+      {rows.map((row, i) =>
+        renderRow(String(i), (c) => <CellText cell={row[c.key]} />, i === selected),
+      )}
     </Box>
   );
 }

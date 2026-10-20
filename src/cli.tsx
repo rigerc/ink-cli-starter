@@ -46,14 +46,22 @@ async function main() {
   logger.setDebug(Boolean(flags.debug));
 
   if (!isScreenId(flags.screen)) {
-    throw new AppError(`Unknown screen "${flags.screen}"`, {exitCode: 2, hint: `Try one of: ${screenIds.join(', ')}`});
+    throw new AppError(`Unknown screen "${flags.screen}"`, {
+      exitCode: 2,
+      hint: `Try one of: ${screenIds.join(', ')}`,
+    });
   }
 
   const {config, error} = loadConfig();
   if (error) logger.error('config:', error);
 
   const options: AppOptions = {
-    theme: resolveThemeName({flag: flags.theme, env: process.env.INK_KIT_THEME, config: config.theme, noColor: noColor()}),
+    theme: resolveThemeName({
+      flag: flags.theme,
+      env: process.env.INK_KIT_THEME,
+      config: config.theme,
+      noColor: noColor(),
+    }),
     ascii: flags.ascii ?? config.ascii ?? !supportsUnicode(),
     debug: Boolean(flags.debug),
     screen: flags.screen,
@@ -61,11 +69,18 @@ async function main() {
   logger.debug('options', options);
 
   if (flags.plain || !isInteractive()) {
-    console.log(renderToString(flags.demo ? <InlineDemo options={options} /> : <PlainView options={options} />, {columns: process.stdout.columns || 80}));
+    console.log(
+      renderToString(
+        flags.demo ? <InlineDemo options={options} /> : <PlainView options={options} />,
+        {columns: process.stdout.columns || 80},
+      ),
+    );
     return;
   }
 
-  await render(flags.demo ? <InlineDemo options={options} interactive /> : <App options={options} />).waitUntilExit();
+  await render(
+    flags.demo ? <InlineDemo options={options} interactive /> : <App options={options} />,
+  ).waitUntilExit();
 }
 
 main().catch((error: unknown) => {

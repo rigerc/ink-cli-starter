@@ -26,7 +26,9 @@ export function TasksScreen() {
       await sleep(700);
       if (i === failAtStep) {
         patch(task.id, {status: 'failed', endedAt: Date.now(), detail: 'exit code 1'});
-        throw new AppError(`${task.label} failed`, {hint: 'Fix the error above and press r to retry.'});
+        throw new AppError(`${task.label} failed`, {
+          hint: 'Fix the error above and press r to retry.',
+        });
       }
       patch(task.id, {status: 'done', endedAt: Date.now()});
     }
@@ -47,7 +49,10 @@ export function TasksScreen() {
     <Stack gap={1}>
       <Panel title="Tasks" footer="r  re-run    x  run with a failure">
         <TaskList tasks={tasks} />
-        <ProgressBar value={done / tasks.length} tone={runner.status === 'error' ? 'danger' : 'primary'} />
+        <ProgressBar
+          value={done / tasks.length}
+          tone={runner.status === 'error' ? 'danger' : 'primary'}
+        />
       </Panel>
       {runner.status === 'error' && (
         <Alert tone="danger" title={runner.error.message}>
