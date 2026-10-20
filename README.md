@@ -5,7 +5,7 @@ hooks, helpers and a component library, with a gallery and tests.
 
 ## Scaffold a new app
 
-From a checkout of this repository (Node 22+; no dependencies needed to run the generator):
+From a Git checkout of this repository (Node.js 22+ and Git required):
 
 ```bash
 npm run scaffold -- my-cli
@@ -14,13 +14,17 @@ npm install
 npm run dev
 ```
 
-This creates a new `my-cli/` directory containing the current Ink screens, component
-library, tests, Vite+ configuration, and screenshot script (without CI workflows).
-It renames the package and executable, updates the CLI title and help, changes the
-config directory, and changes `INK_KIT_THEME` to `MY_CLI_THEME` throughout the copied
-source and docs. Names must use lowercase kebab-case (`my-cli`). The generator
-refuses to overwrite an existing directory; it does not install dependencies or
-initialize a Git repository.
+The generator copies **tracked files** from the current starter checkout, including any
+new screens, hooks, components, and tests—no file list or separate template to maintain.
+It excludes repository CI workflows, the scaffolding script and its tests, and writes
+a small app-specific README instead of copying the starter documentation. Untracked
+files, dependencies, and Git metadata are not copied.
+
+Only `package.json`, the root of `package-lock.json`, and the `APP_NAME` constant
+in `src/lib/config.ts` are renamed. The CLI title, help, theme environment variable
+(`MY_CLI_THEME`), and screenshot paths derive from those values. App names must be
+lowercase kebab-case (`my-cli`); existing directories are never overwritten.
+The generator does not install dependencies or initialize a new Git repository.
 
 ```bash
 npm install
