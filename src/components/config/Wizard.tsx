@@ -2,6 +2,7 @@ import {Box, Text, useInput} from 'ink';
 import {useState} from 'react';
 import {appConfig, configSections, getAtPath} from '../../config';
 import {useConfigDraft} from '../../hooks/useConfigDraft';
+import {useInputCapture} from '../../hooks/useInputCapture';
 import {Confirm} from '../Confirm';
 import {KeyValue} from '../KeyValue';
 import {StatusMessage} from '../Status';
@@ -38,6 +39,7 @@ export function ConfigWizard({path, onFinish}: {
   path?: string;
   onFinish?: (result: ConfigWizardResult) => void;
 }) {
+  useInputCapture(true);
   const draft = useConfigDraft(path);
   const [result, setResult] = useState<ConfigWizardResult>();
   const sections = configSections(appConfig.fields);
