@@ -6,6 +6,7 @@ export default defineConfig({
   },
   test: {
     include: ['tests/**/*.test.{ts,tsx}'],
+    exclude: ['node_modules/**', 'build/**', 'dist/**', 'tttt/**'],
   },
   pack: {
     entry: ['src/cli.tsx'],
@@ -26,10 +27,23 @@ export default defineConfig({
     // Keep the code style already used in this repository.
     singleQuote: true,
     bracketSpacing: false,
+    // Generated output, scaffolded apps and tool state are not sources.
+    ignorePatterns: [
+      'build/**',
+      'dist/**',
+      'screenshots/**',
+      'tttt/**',
+      '.serena/**',
+      '.claude/**',
+    ],
   },
   lint: {
     jsPlugins: [{name: 'vite-plus', specifier: 'vite-plus/oxlint-plugin'}],
     rules: {'vite-plus/prefer-vite-plus-imports': 'error'},
     options: {typeAware: true, typeCheck: true},
+    // templates/app holds overlay files for generated apps: their relative
+    // imports only resolve after scaffolding. Generated apps are typechecked
+    // and tested in .github/workflows/scaffold.yml instead.
+    ignorePatterns: ['build/**', 'dist/**', 'screenshots/**', 'tttt/**', 'templates/app/**'],
   },
 });

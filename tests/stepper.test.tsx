@@ -19,6 +19,8 @@ describe('Stepper', () => {
     const out = renderToString(
       <Stepper onComplete={() => {}}>
         <>
+          {/* Fixture: a conditionally hidden step must not render. */}
+          {/* oxlint-disable-next-line no-constant-binary-expression */}
           {false && (
             <Step name="Hidden">
               <Text>Hidden body</Text>
@@ -108,7 +110,7 @@ describe('Stepper', () => {
     const exit = vi.fn(() => pending.promise);
     const complete = vi.fn();
     const cancel = vi.fn();
-    const app = await mount(
+    await mount(
       <Stepper onComplete={complete} onCancel={cancel} onExitStep={exit}>
         <Step name="Only">
           {(context) => {
@@ -136,7 +138,7 @@ describe('Stepper', () => {
   it('holds the same-event lock for synchronous guards too', async () => {
     let current!: StepContext;
     const complete = vi.fn();
-    const app = await mount(
+    await mount(
       <Stepper onComplete={complete}>
         <Step name="One">
           {(context) => {
@@ -167,7 +169,7 @@ describe('Stepper', () => {
         <Step name="Two">{capture}</Step>
       </Stepper>
     );
-    const app = await mount(view());
+    await mount(view());
     await current.goTo(100);
     await settle();
     expect(current.currentStep).toBe(0);
@@ -285,6 +287,8 @@ describe('inline demo', () => {
     );
     expect(out).toContain('inline setup demo');
     expect(out).toContain('Preview only');
+    // Assert the plain-text render carries no ANSI escapes or theme glyphs.
+    // oxlint-disable-next-line no-control-regex
     expect(out).not.toMatch(/\u001b|[✔✖⚠ℹ❯█░─╭╮╰╯│○]/);
   });
 

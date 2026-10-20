@@ -9,7 +9,9 @@ import {ThemeProvider} from '../theme/context';
 function Content({path}: {path?: string}) {
   const {exit} = useApp();
   const [finished, setFinished] = useState(false);
-  useEffect(() => {if (finished) exit();}, [finished, exit]);
+  useEffect(() => {
+    if (finished) exit();
+  }, [finished, exit]);
   return (
     <InlineLayout
       title={<Heading>{pkg.name} / configuration setup</Heading>}

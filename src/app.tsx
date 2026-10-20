@@ -48,8 +48,12 @@ function Shell() {
   const {theme, cycleTheme} = useThemeControls();
   const inputCaptured = useHasInputCapture();
 
-  const index = Math.max(0, navScreens.findIndex((s) => s.id === router.current));
-  const go = (i: number) => router.replace(navScreens[(i + navScreens.length) % navScreens.length]!.id);
+  const index = Math.max(
+    0,
+    navScreens.findIndex((s) => s.id === router.current),
+  );
+  const go = (i: number) =>
+    router.replace(navScreens[(i + navScreens.length) % navScreens.length]!.id);
 
   useKeymap(
     [

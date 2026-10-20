@@ -56,8 +56,7 @@ async function main() {
   if (input.length > 0) {
     if (flags.setup || flags.plain)
       throw new AppError('Subcommands cannot be combined with --setup or --plain', {exitCode: 2});
-    if (runCommand(input[0]!, input.slice(1), {configFile: flags.config, json: flags.json}))
-      return;
+    if (runCommand(input[0]!, input.slice(1), {configFile: flags.config, json: flags.json})) return;
     throw new AppError(`Unknown command "${input[0]}"`, {
       exitCode: 2,
       hint: `Run ${APP_NAME} --help for available commands.`,
@@ -77,9 +76,10 @@ async function main() {
     throw new AppError('Cannot edit invalid configuration', {hint: error, exitCode: 2});
 
   const configFlags: Partial<Config> = {
-    theme: flags.theme && appConfig.fields[0]?.options?.some((item) => item.value === flags.theme)
-      ? flags.theme as Config['theme']
-      : undefined,
+    theme:
+      flags.theme && appConfig.fields[0]?.options?.some((item) => item.value === flags.theme)
+        ? (flags.theme as Config['theme'])
+        : undefined,
     ascii: flags.ascii ? true : undefined,
   };
   const resolved = resolveConfig(appConfig.fields, config, {flags: configFlags});
@@ -105,14 +105,17 @@ async function main() {
     });
 
   if (flags.plain || !isInteractive()) {
-    console.log(renderToString(<PlainView options={options} />, {
-      columns: process.stdout.columns || 80,
-    }));
+    console.log(
+      renderToString(<PlainView options={options} />, {
+        columns: process.stdout.columns || 80,
+      }),
+    );
     return;
   }
 
-  await render(flags.setup ? <ConfigSetup options={options} /> : <App options={options} />)
-    .waitUntilExit();
+  await render(
+    flags.setup ? <ConfigSetup options={options} /> : <App options={options} />,
+  ).waitUntilExit();
 }
 
 main().catch((error: unknown) => {

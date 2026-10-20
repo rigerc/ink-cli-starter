@@ -17,7 +17,11 @@ import {Text} from 'ink';
 import {Panel} from '../components';
 
 export function ExampleScreen() {
-  return <Panel title="Example"><Text>Your content goes here.</Text></Panel>;
+  return (
+    <Panel title="Example">
+      <Text>Your content goes here.</Text>
+    </Panel>
+  );
 }
 ```
 
@@ -40,8 +44,7 @@ In `runCommand()` of `src/commands/index.ts`:
 
 ```ts
 if (name === 'example') {
-  if (args.length)
-    throw new AppError('example takes no arguments', {exitCode: 2});
+  if (args.length) throw new AppError('example takes no arguments', {exitCode: 2});
   console.log('Example command');
   return true;
 }

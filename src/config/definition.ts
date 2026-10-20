@@ -34,16 +34,23 @@ export function getAtPath(values: object, path: string): unknown {
 /** Immutable nested update. Paths refer to object keys, never array indices. */
 export function setAtPath<T extends object>(values: T, path: string, value: unknown): T {
   const segments = path.split('.');
-  if (!segments.length || segments.some((segment) => !segment || segment === '__proto__' || segment === 'constructor' || segment === 'prototype')) {
+  if (
+    !segments.length ||
+    segments.some(
+      (segment) =>
+        !segment || segment === '__proto__' || segment === 'constructor' || segment === 'prototype',
+    )
+  ) {
     throw new Error('Invalid configuration path');
   }
-  const root: Record<string, unknown> = {...values};
+  const root: Record<string, unknown> = {...(values as Record<string, unknown>)};
   let node = root;
   for (const segment of segments.slice(0, -1)) {
     const old = node[segment];
-    const next = old && typeof old === 'object' && !Array.isArray(old)
-      ? {...(old as Record<string, unknown>)}
-      : {};
+    const next =
+      old && typeof old === 'object' && !Array.isArray(old)
+        ? {...(old as Record<string, unknown>)}
+        : {};
     node[segment] = next;
     node = next;
   }

@@ -66,9 +66,10 @@ async function main() {
     throw new AppError('Cannot edit invalid configuration', {hint: error, exitCode: 2});
 
   const configFlags: Partial<Config> = {
-    theme: flags.theme && appConfig.fields[0]?.options?.some((item) => item.value === flags.theme)
-      ? flags.theme as Config['theme']
-      : undefined,
+    theme:
+      flags.theme && appConfig.fields[0]?.options?.some((item) => item.value === flags.theme)
+        ? (flags.theme as Config['theme'])
+        : undefined,
     ascii: flags.ascii ? true : undefined,
   };
   const resolved = resolveConfig(appConfig.fields, config, {flags: configFlags});
@@ -104,11 +105,13 @@ async function main() {
   }
 
   await render(
-    flags.setup
-      ? <ConfigSetup options={options} />
-      : flags.demo
-        ? <InlineDemo options={options} interactive />
-        : <App options={options} />,
+    flags.setup ? (
+      <ConfigSetup options={options} />
+    ) : flags.demo ? (
+      <InlineDemo options={options} interactive />
+    ) : (
+      <App options={options} />
+    ),
   ).waitUntilExit();
 }
 

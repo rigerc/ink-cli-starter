@@ -37,21 +37,15 @@ First run: npx playwright install chromium`);
   process.env.CI = '1';
   process.env.XDG_CONFIG_HOME = path.join(tmpdir(), `${pkg.name}-screenshots`);
 
-  const [
-    {renderToString},
-    {App},
-    {screenIds},
-    {themeNames},
-    {default: Convert},
-    {chromium},
-  ] = await Promise.all([
-    import('ink'),
-    import('../src/app'),
-    import('../src/screens'),
-    import('../src/theme/tokens'),
-    import('ansi-to-html'),
-    import('playwright'),
-  ]);
+  const [{renderToString}, {App}, {screenIds}, {themeNames}, {default: Convert}, {chromium}] =
+    await Promise.all([
+      import('ink'),
+      import('../src/app'),
+      import('../src/screens'),
+      import('../src/theme/tokens'),
+      import('ansi-to-html'),
+      import('playwright'),
+    ]);
 
   const selectedScreens = [...new Set(values.screen ?? screenIds)];
   const selectedThemes = [...new Set(values.theme ?? themeNames)];
@@ -91,10 +85,7 @@ First run: npx playwright install chromium`);
             debug: false,
             screen,
           };
-          const ansi = renderToString(
-            <App options={options} />,
-            {columns},
-          );
+          const ansi = renderToString(<App options={options} />, {columns});
           if (!ansi.trim()) throw new Error(`Empty render: ${screen}/${theme}/${columns}`);
 
           const background =

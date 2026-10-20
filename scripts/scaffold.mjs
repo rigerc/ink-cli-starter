@@ -17,7 +17,7 @@ const excluded = new Set([
 const templatePrefix = 'templates/app/';
 
 function usage() {
-  console.log(`Usage: npm run scaffold -- [app-name] [options]
+  console.log(`Usage: npm run scaffold -- <app-name> [options]
 
 Create a new Ink CLI app. With no name in a terminal, prompts for app name and destination.
 
@@ -45,8 +45,9 @@ function trackedFiles() {
   }
   const tracked = output.split('\0').filter(Boolean);
   const overlays = tracked.filter((file) => file.startsWith(templatePrefix));
-  const files = tracked.filter((file) =>
-    !file.startsWith('.github/') && !file.startsWith(templatePrefix) && !excluded.has(file),
+  const files = tracked.filter(
+    (file) =>
+      !file.startsWith('.github/') && !file.startsWith(templatePrefix) && !excluded.has(file),
   );
   for (const required of ['package.json', 'package-lock.json', 'src/lib/config.ts']) {
     if (!files.includes(required)) throw new Error(`Required tracked file missing: ${required}`);
@@ -242,7 +243,9 @@ async function main() {
     throw error;
   }
 
-  console.log(`Created ${destination}\n\nNext steps:\n  cd "${destination}"\n  npm install\n  npm run dev`);
+  console.log(
+    `Created ${destination}\n\nNext steps:\n  cd "${destination}"\n  npm install\n  npm run dev`,
+  );
 }
 
 main().catch((error) => {

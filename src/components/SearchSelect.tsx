@@ -83,6 +83,8 @@ export function SearchSelect<T extends string>({
         changeQuery(trimLast(query));
         return;
       }
+      // Strip control characters Ink delivers for special keys.
+      // oxlint-disable-next-line no-control-regex
       const printable = input.replace(/[\u0000-\u001f\u007f-\u009f]/g, '');
       if (printable) changeQuery(query + printable);
     },

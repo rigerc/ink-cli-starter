@@ -58,18 +58,20 @@ describe('configuration persistence', () => {
 
   it('blocks unsupported future versions and supports migrations', () => {
     const path = fixture();
-    const store = createConfigStore(defineConfig({
-      version: 2,
-      schema: z.looseObject({
-        version: z.number().optional(),
-        name: z.string().optional(),
+    const store = createConfigStore(
+      defineConfig({
+        version: 2,
+        schema: z.looseObject({
+          version: z.number().optional(),
+          name: z.string().optional(),
+        }),
+        fields: [],
+        migrations: {
+          0: (raw) => ({...raw, name: raw.oldName}),
+          1: (raw) => raw,
+        },
       }),
-      fields: [],
-      migrations: {
-        0: (raw) => ({...raw, name: raw.oldName}),
-        1: (raw) => raw,
-      },
-    }));
+    );
     writeFileSync(path, JSON.stringify({oldName: 'legacy'}));
     expect(store.read(path).config.name).toBe('legacy');
     store.write({name: 'updated'}, path);
@@ -97,16 +99,26 @@ describe('configuration fields and precedence', () => {
   });
 
   it('resolves flags > environment > file > defaults and reports sources', () => {
-    const fields = [{
-      path: 'nested.level', section: 'General', kind: 'number' as const, label: 'Level',
-      env: 'APP_LEVEL', defaultValue: 1,
-    }];
+    const fields = [
+      {
+        path: 'nested.level',
+        section: 'General',
+        kind: 'number' as const,
+        label: 'Level',
+        env: 'APP_LEVEL',
+        defaultValue: 1,
+      },
+    ];
     const file = {nested: {level: 2}};
     expect(resolveConfig(fields, file, {env: {APP_LEVEL: '3'}})).toEqual({
-      values: {nested: {level: 3}}, sources: {'nested.level': 'environment'},
+      values: {nested: {level: 3}},
+      sources: {'nested.level': 'environment'},
     });
-    expect(resolveConfig(fields, file, {env: {APP_LEVEL: '3'}, flags: {nested: {level: 4}}})).toEqual({
-      values: {nested: {level: 4}}, sources: {'nested.level': 'flag'},
+    expect(
+      resolveConfig(fields, file, {env: {APP_LEVEL: '3'}, flags: {nested: {level: 4}}}),
+    ).toEqual({
+      values: {nested: {level: 4}},
+      sources: {'nested.level': 'flag'},
     });
     expect(resolveConfig(fields, file, {env: {}}).sources['nested.level']).toBe('file');
     expect(resolveConfig(fields, {}, {env: {}}).values).toEqual({nested: {level: 1}});
