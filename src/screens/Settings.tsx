@@ -1,7 +1,7 @@
 import {Box, Text} from 'ink';
 import {useState} from 'react';
 import {Panel, Stack, StatusMessage} from '../components';
-import {ConfigSectionEditor} from '../components/config';
+import {ConfigSectionEditor, ConfigWizard} from '../components/config';
 import {appConfig, configSections, resolveConfig} from '../config';
 import {useConfigRuntime} from '../config/context';
 import {useKeymap} from '../hooks';
@@ -10,7 +10,7 @@ import {useToast} from '../hooks/useToast';
 import {toAppError} from '../lib/errors';
 import {useTheme} from '../theme/context';
 
-export function SettingsScreen() {
+function SettingsEditor({onWizard}: {onWizard: () => void}) {
   const {path, flags} = useConfigRuntime();
   const draft = useConfigDraft(path);
   const theme = useTheme();
@@ -35,11 +35,12 @@ export function SettingsScreen() {
     {key: 'enter', run: () => setEditing(true)},
     {key: 's', run: save},
     {key: 'd', run: draft.discard},
+    {key: 'w', run: onWizard},
   ], {isActive: !editing});
 
   return (
     <Stack gap={1}>
-      <Panel title="Configuration" footer="↑/↓ section  enter edit  s save  d discard">
+      <Panel title="Configuration" footer="↑/↓ section  enter edit  s save  d discard  w wizard">
         <Text wrap="truncate-end">{draft.path}</Text>
         <Text>{draft.changed ? 'Unsaved changes' : 'No pending changes'}</Text>
         {sections.map((name, index) => (
@@ -71,4 +72,20 @@ export function SettingsScreen() {
       </Box>}
     </Stack>
   );
+}
+
+/** The guided setup flow is available inside the main application's Settings tab. */
+export function SettingsScreen() {
+  const {path} = useConfigRuntime();
+  const [wizard, setWizard] = useState(false);
+  const [revision, setRevision] = useState(0);
+  if (wizard) return (
+    <Panel title="Guided configuration">
+      <ConfigWizard path={path} onFinish={() => {
+        setWizard(false);
+        setRevision((value) => value + 1);
+      }} />
+    </Panel>
+  );
+  return <SettingsEditor key={revision} onWizard={() => setWizard(true)} />;
 }
