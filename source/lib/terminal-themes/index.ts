@@ -1,6 +1,6 @@
 // Termcn (MIT) · https://github.com/shadcn-labs/termcn
-import { BASE_NAMES } from "@/registry/bases";
-import type { BaseName } from "@/registry/bases";
+const BASE_NAMES = ["ink"] as const;
+type BaseName = (typeof BASE_NAMES)[number];
 import type { Theme as InkTheme } from "../../components/ui/types.js";
 
 import { amoledTheme } from "./amoled.js";

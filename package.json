@@ -21,11 +21,13 @@
     "format": "prettier --write ."
   },
   "dependencies": {
-    "cli-spinners": "^3.3.0",
+    "cli-spinners": "^3.4.0",
     "ink": "^8.0.0",
     "pastel": "^4.0.1",
     "react": "^19.3.0",
-    "zod": "^4.1.12"
+    "zod": "^4.1.12",
+    "strip-ansi": "^7.2.0",
+    "string-width": "^8.2.0"
   },
   "devDependencies": {
     "@types/node": "^22.15.24",
