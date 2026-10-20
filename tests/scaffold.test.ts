@@ -97,6 +97,8 @@ describe('app scaffolding', () => {
       expect(existsSync(join(target, 'src/commands/doctor.ts'))).toBe(true);
       expect(readFileSync(join(target, 'src/screens/index.ts'), 'utf8')).toContain('showInNav: false');
       expect(readFileSync(join(target, 'src/cli.tsx'), 'utf8')).not.toContain('InlineDemo');
+      expect(readFileSync(join(target, 'scripts/screenshot.tsx'), 'utf8')).not.toContain('InlineDemo');
+      expect(readFileSync(join(target, 'tests/stepper.test.tsx'), 'utf8')).not.toContain('InlineDemo');
       expect(readFileSync(join(target, 'scripts/screenshot.tsx'), 'utf8')).toContain('pkg.name');
       expect(readFileSync(join(target, 'README.md'), 'utf8')).toMatch(/^# sample-cli\n/);
       expect(readFileSync(join(target, 'README.md'), 'utf8')).toContain('npm run dev');
