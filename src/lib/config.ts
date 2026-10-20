@@ -1,35 +1,13 @@
-import {mkdirSync, readFileSync, writeFileSync} from 'node:fs';
-import {homedir} from 'node:os';
-import {dirname, join} from 'node:path';
-import {z} from 'zod';
-import {themeNames} from '../theme/tokens';
+import {appConfig, createConfigStore, type Config} from '../config';
 
+export type {Config} from '../config';
 export const APP_NAME = 'ink-kit';
 export const APP_THEME_ENV = `${APP_NAME.replaceAll('-', '_').toUpperCase()}_THEME`;
 
-const schema = z.object({
-  theme: z.enum(themeNames).optional(),
-  ascii: z.boolean().optional(),
-});
-export type Config = z.infer<typeof schema>;
-
-export const configPath = (): string =>
-  join(process.env.XDG_CONFIG_HOME ?? join(homedir(), '.config'), APP_NAME, 'config.json');
-
-export function loadConfig(): {config: Config; error?: string} {
-  try {
-    const parsed = schema.safeParse(JSON.parse(readFileSync(configPath(), 'utf8')));
-    if (parsed.success) return {config: parsed.data};
-    const error = parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ');
-    return {config: {}, error};
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return {config: {}};
-    return {config: {}, error: (error as Error).message};
-  }
-}
-
-export function saveConfig(patch: Config): void {
-  const next = {...loadConfig().config, ...patch};
-  mkdirSync(dirname(configPath()), {recursive: true});
-  writeFileSync(configPath(), JSON.stringify(next, null, 2) + '\n');
+export const configStore = createConfigStore(appConfig, APP_NAME);
+/** Compatibility facade: callers can optionally provide an explicit JSON file path. */
+export const configPath = (override?: string): string => configStore.pathFor(override);
+export const loadConfig = (override?: string) => configStore.read(override);
+export function saveConfig(patch: Config, override?: string): void {
+  configStore.write(patch, override);
 }

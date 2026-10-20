@@ -1,6 +1,8 @@
 import type {ReactNode} from 'react';
 import pkg from '../package.json';
 import {AppShell, Badge, ErrorBoundary, Header, StatusBar, Tabs} from './components';
+import {ConfigRuntimeProvider} from './config/context';
+import type {Config} from './config';
 import {
   useExit,
   useKeymap,
@@ -20,19 +22,23 @@ export interface AppOptions {
   ascii: boolean;
   debug: boolean;
   screen: string;
+  configFile?: string;
+  configFlags?: Partial<Config>;
 }
 
 export function AppProviders({options, children}: {options: AppOptions; children: ReactNode}) {
   return (
-    <ThemeProvider name={options.theme} ascii={options.ascii}>
-      <InputCaptureProvider>
-        <ToastProvider>
-          <RouterProvider initial={options.screen}>
-            <ErrorBoundary debug={options.debug}>{children}</ErrorBoundary>
-          </RouterProvider>
-        </ToastProvider>
-      </InputCaptureProvider>
-    </ThemeProvider>
+    <ConfigRuntimeProvider path={options.configFile} flags={options.configFlags}>
+      <ThemeProvider name={options.theme} ascii={options.ascii}>
+        <InputCaptureProvider>
+          <ToastProvider>
+            <RouterProvider initial={options.screen}>
+              <ErrorBoundary debug={options.debug}>{children}</ErrorBoundary>
+            </RouterProvider>
+          </ToastProvider>
+        </InputCaptureProvider>
+      </ThemeProvider>
+    </ConfigRuntimeProvider>
   );
 }
 
@@ -76,8 +82,8 @@ function Shell() {
           hints={
             inputCaptured
               ? [
-                  {key: 'esc', label: 'leave search'},
-                  {key: 'enter', label: 'select'},
+                  {key: 'esc', label: 'back'},
+                  {key: 'enter', label: 'edit/select'},
                 ]
               : [...globalKeys]
           }

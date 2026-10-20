@@ -107,6 +107,64 @@ Themes: `dark`, `light`, `contrast` (ANSI names only), `mono` (no color; weight 
 
 To add a theme: add a name in `theme/tokens.ts`, a palette in `theme/themes.ts`. The gallery and tests pick it up.
 
+## Configuration framework
+
+The starter includes a Zod-validated JSON configuration store and two interactive
+editors. All changes are drafts until explicitly saved.
+
+```bash
+ink-kit --setup                         # guided interactive wizard (TTY required)
+ink-kit --config ./custom-config.json   # load an explicit config file
+ink-kit --setup --config ./custom.json  # configure that file interactively
+ink-kit --screen settings               # open Settings (press w for the wizard)
+```
+
+The default file is `$XDG_CONFIG_HOME/ink-kit/config.json` or
+`~/.config/ink-kit/config.json`. A relative `--config` path resolves relative
+to the current working directory. Both Settings and the standalone wizard use
+the same file; they **never** write until the user confirms Save. Press
+Escape to back out of editing, `s` to save and `d` to discard changes in Settings.
+The Settings screen also has `w` for the guided wizard.
+
+Resolution is **defaults < file < environment < CLI flags**. `NO_COLOR`
+takes precedence over theme selection. Settings displays the current
+source of overridden fields. Configuration edits take effect on the next run;
+runtime environment/flag overrides are not written to disk.
+
+The starter's application definition is in `src/config/schema.ts`. The
+`appConfig.fields` registry drives the settings editor and wizard sections
+without additional UI wiring. A field can have a section, label,
+description, kind (`toggle`, `select`, `text`, `number`, `multi`),
+options, optional default, environment variable and conditional visibility.
+Extend the Zod schema and fields together to add application-specific
+settings, for example:
+
+```ts
+// In src/config/schema.ts:
+const schema = z.looseObject({
+  version: z.number().int().positive().optional(),
+  theme: z.enum(['auto', ...themeNames]).optional(),
+  ascii: z.boolean().optional(),
+  endpoint: z.string().url().optional(),
+});
+// Register a field in appConfig.fields:
+{path: 'endpoint', label: 'API endpoint', section: 'General',
+ kind: 'text', description: 'URL to contact'}
+```
+
+For other applications, `defineConfig()` and `createConfigStore()` are
+public reusable APIs; `ConfigSectionEditor` can render an arbitrary registry.
+`setAtPath()`, `getAtPath()` and `resolveConfig()` support nested
+settings and source-aware precedence. The existing `loadConfig()` and
+`saveConfig()` remain supported; both also accept an optional explicit path.
+
+Writes validate the entire merged document, preserve unknown extension
+keys, use a same-directory temporary file and rename atomically.
+Malformed/unsupported configurations are never overwritten silently. The
+store writes `version: 1` and supports explicit migration functions for
+future schema changes. No automatic prompts appear in pipes or CI; `--setup`
+instead reports that a TTY is required.
+
 ## Add a screen
 
 Create `src/screens/Foo.tsx`, add one line to the `screens` array in `src/screens/index.ts`.
