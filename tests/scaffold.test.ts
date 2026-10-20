@@ -41,7 +41,8 @@ describe('app scaffolding', () => {
       expect(existsSync(join(target, 'src/screens'))).toBe(true);
       expect(existsSync(join(target, 'tests/screens.test.tsx'))).toBe(true);
       expect(existsSync(join(target, 'scripts/screenshot.tsx'))).toBe(true);
-      expect(existsSync(join(target, '.github/workflows/screenshots.yml'))).toBe(true);
+      expect(existsSync(join(target, '.github'))).toBe(false);
+      expect(readFileSync(join(target, 'README.md'), 'utf8')).not.toContain('The **Screenshots** GitHub Actions workflow');
       expect(existsSync(join(target, 'node_modules'))).toBe(false);
       expect(existsSync(join(target, '.git'))).toBe(false);
     });
