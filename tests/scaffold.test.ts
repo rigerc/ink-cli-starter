@@ -80,6 +80,7 @@ describe('app scaffolding', () => {
       expect(pkg.name).toBe('sample-cli');
       expect(pkg.bin).toEqual({'sample-cli': './dist/cli.js'});
       expect(pkg.scripts.scaffold).toBeUndefined();
+      expect(pkg.scripts['demo:inline']).toBeUndefined();
       expect(lock.name).toBe('sample-cli');
       expect(lock.packages[''].name).toBe('sample-cli');
       expect(lock.packages[''].bin).toEqual({'sample-cli': 'dist/cli.js'});
@@ -89,16 +90,26 @@ describe('app scaffolding', () => {
       );
       expect(readFileSync(join(target, 'src/cli.tsx'), 'utf8')).toContain('APP_THEME_ENV');
       expect(readFileSync(join(target, 'src/app.tsx'), 'utf8')).toContain('title={pkg.name}');
-      expect(readFileSync(join(target, 'src/demos/InlineDemo.tsx'), 'utf8')).toContain('APP_NAME');
+      expect(existsSync(join(target, 'src/demos/InlineDemo.tsx'))).toBe(false);
+      expect(existsSync(join(target, 'src/screens/Tasks.tsx'))).toBe(false);
+      expect(existsSync(join(target, 'templates'))).toBe(false);
+      expect(existsSync(join(target, 'src/commands/index.ts'))).toBe(true);
+      expect(existsSync(join(target, 'src/commands/doctor.ts'))).toBe(true);
+      expect(readFileSync(join(target, 'src/screens/index.ts'), 'utf8')).toContain('showInNav: false');
+      expect(readFileSync(join(target, 'src/cli.tsx'), 'utf8')).not.toContain('InlineDemo');
+      expect(readFileSync(join(target, 'scripts/screenshot.tsx'), 'utf8')).not.toContain('InlineDemo');
+      expect(readFileSync(join(target, 'tests/stepper.test.tsx'), 'utf8')).not.toContain('InlineDemo');
       expect(readFileSync(join(target, 'scripts/screenshot.tsx'), 'utf8')).toContain('pkg.name');
       expect(readFileSync(join(target, 'README.md'), 'utf8')).toMatch(/^# sample-cli\n/);
       expect(readFileSync(join(target, 'README.md'), 'utf8')).toContain('npm run dev');
-      expect(readFileSync(join(target, 'README.md'), 'utf8')).not.toContain('GitHub Actions');
+      expect(readFileSync(join(target, 'README.md'), 'utf8')).toContain('docs/adding-a-feature.md');
+      expect(existsSync(join(target, 'docs/architecture.md'))).toBe(true);
+      expect(existsSync(join(target, 'docs/adding-a-feature.md'))).toBe(true);
+      expect(existsSync(join(target, '.github/workflows/ci.yml'))).toBe(true);
       expect(existsSync(join(target, 'src/screens'))).toBe(true);
       expect(existsSync(join(target, 'tests/screens.test.tsx'))).toBe(true);
       expect(existsSync(join(target, 'scripts/screenshot.tsx'))).toBe(true);
       for (const excluded of [
-        '.github',
         '.git',
         'node_modules',
         'scripts/scaffold.mjs',
