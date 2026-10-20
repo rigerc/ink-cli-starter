@@ -10,12 +10,12 @@ From a checkout of this repository (Node 22+; no dependencies needed to run the 
 ```bash
 npm run scaffold -- my-cli
 cd my-cli
-npm ci
+npm install
 npm run dev
 ```
 
 This creates a new `my-cli/` directory containing the current Ink screens, component
-library, tests, Vite+ configuration, screenshot script, and GitHub Actions workflow.
+library, tests, Vite+ configuration, and screenshot script (without CI workflows).
 It renames the package and executable, updates the CLI title and help, changes the
 config directory, and changes `INK_KIT_THEME` to `MY_CLI_THEME` throughout the copied
 source and docs. Names must use lowercase kebab-case (`my-cli`). The generator
