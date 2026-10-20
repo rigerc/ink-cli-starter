@@ -1,56 +1,37 @@
-import {PassThrough, Writable} from 'node:stream';
 import {setTimeout as tick} from 'node:timers/promises';
-import {render, type Instance} from 'ink';
-import type {ReactNode} from 'react';
-import {afterEach, vi} from 'vite-plus/test';
+import {render} from 'ink-testing-library';
+import type {ReactElement} from 'react';
+import {afterEach} from 'vite-plus/test';
 
-const instances: Instance[] = [];
+type TestInstance = ReturnType<typeof render>;
+
+const instances: TestInstance[] = [];
+
 afterEach(() => {
-  for (const instance of instances.splice(0)) instance.cleanup();
+  for (const instance of instances.splice(0)) {
+    instance.unmount();
+    instance.cleanup();
+  }
 });
 
-export async function mount(node: ReactNode) {
-  let output = '';
-  let frame = '';
-  const stdout = Object.assign(
-    new Writable({
-      write(chunk, _encoding, done) {
-        const text = chunk.toString();
-        if (text.trim()) frame = text; // Ignore flush barriers and teardown newlines.
-        output += text;
-        done();
-      },
-    }),
-    {columns: 80, rows: 24},
-  );
-  const stdin = Object.assign(new PassThrough(), {
-    isTTY: true,
-    setRawMode: vi.fn(),
-    ref() {},
-    unref() {},
-  });
-  const instance = render(node, {
-    stdout,
-    stdin,
-    stderr: stdout,
-    debug: true,
-    patchConsole: false,
-    exitOnCtrlC: false,
-  });
-  instances.push(instance);
-  const settle = async () => {
-    await tick(10);
-    await instance.waitUntilRenderFlush();
-  };
+/** Ink throttles terminal updates; allow its scheduled frame to be emitted. */
+export async function settle() {
+  await tick(50);
+}
+
+export async function mount(node: ReactElement) {
+  const app = render(node);
+  instances.push(app);
   await settle();
-  return {
-    instance,
-    output: () => output,
-    frame: () => frame,
-    settle,
-    key: async (key: string) => {
-      stdin.write(key);
-      await settle();
-    },
-  };
+  return app;
+}
+
+export async function press(app: TestInstance, key: string) {
+  app.stdin.write(key);
+  await settle();
+}
+
+/** Include intermediate frames when asserting transient UI states. */
+export function output(app: TestInstance) {
+  return app.frames.join('');
 }

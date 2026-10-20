@@ -9,9 +9,13 @@ npm run dev                 # interactive app
 npm run gallery             # jump straight to the component gallery
 npm run demo:inline         # compact setup wizard in normal terminal scrollback
 npm run dev -- --plain      # one-shot static render (what pipes/CI get)
-npm test                    # every screen × 4 themes × 2 widths, checks nothing overflows
+npm test                    # interactive Ink tests + screen/theme/width overflow checks
 npm run build && npm start
 ```
+
+Interactive tests use `ink-testing-library` to send keyboard input and assert rendered
+frames. Width-specific tests retain Ink's `renderToString()` for deterministic
+terminal-column checks.
 
 Keys: `tab` / `1-5` switch screens, `t` cycles themes, `?` help, `q` quit.
 
