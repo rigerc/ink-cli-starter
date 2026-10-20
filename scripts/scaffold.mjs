@@ -7,6 +7,7 @@ import {fileURLToPath} from 'node:url';
 import {parseArgs} from 'node:util';
 
 const sourceRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const appWorkflows = new Set(['.github/workflows/ci.yml', '.github/workflows/release.yml']);
 const excluded = new Set([
   'README.md', // Generated apps get their own concise README.
   'scripts/scaffold.mjs',
@@ -41,7 +42,7 @@ function trackedFiles() {
     throw new Error('Git is required: run scaffolding from a checkout of this starter.');
   }
   const files = output.split('\0').filter((file) =>
-    file && !file.startsWith('.github/') && !excluded.has(file),
+    file && (!file.startsWith('.github/') || appWorkflows.has(file)) && !excluded.has(file),
   );
   for (const required of ['package.json', 'package-lock.json', 'src/lib/config.ts']) {
     if (!files.includes(required)) throw new Error(`Required tracked file missing: ${required}`);

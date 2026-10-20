@@ -97,8 +97,10 @@ describe('app scaffolding', () => {
       expect(existsSync(join(target, 'src/screens'))).toBe(true);
       expect(existsSync(join(target, 'tests/screens.test.tsx'))).toBe(true);
       expect(existsSync(join(target, 'scripts/screenshot.tsx'))).toBe(true);
+      expect(existsSync(join(target, '.github/workflows/ci.yml'))).toBe(true);
+      expect(existsSync(join(target, '.github/workflows/release.yml'))).toBe(true);
+      expect(existsSync(join(target, '.github/workflows/screenshots.yml'))).toBe(false);
       for (const excluded of [
-        '.github',
         '.git',
         'node_modules',
         'scripts/scaffold.mjs',
@@ -145,7 +147,7 @@ describe('app scaffolding', () => {
       );
       expect(readFileSync(join(target, 'src/lib/config.ts'), 'utf8')).toContain("APP_NAME = 'new-app'");
       expect(existsSync(join(target, 'src/untracked.ts'))).toBe(false);
-      expect(existsSync(join(target, '.github'))).toBe(false);
+      expect(readFileSync(join(target, '.github/workflows/ci.yml'), 'utf8')).toContain('CI should not be copied');
       expect(existsSync(join(target, 'scripts/scaffold.mjs'))).toBe(false);
       expect(existsSync(join(target, 'tests/scaffold.test.ts'))).toBe(false);
     });

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import {render, renderToString} from 'ink';
+import {executeCommand} from './commands';
 import meow from 'meow';
 import {App, PlainView, type AppOptions} from './app';
 import {appConfig, resolveConfig, type Config} from './config';
@@ -17,6 +18,10 @@ const cli = meow(
   Usage
     $ ${APP_NAME} [options]
     $ ${APP_NAME} --setup [--config path]
+    $ ${APP_NAME} tasks list [--json]
+    $ ${APP_NAME} tasks add <title>
+    $ ${APP_NAME} tasks complete <id>
+    $ ${APP_NAME} doctor
 
   Options
     --theme <name>   dark | light | contrast | mono | auto
@@ -27,6 +32,8 @@ const cli = meow(
     --plain          Print once and exit (also the default when piped or in CI)
     --demo           Run the compact inline setup demo
     --debug          Write logs to a file and show stack traces
+    --json           Emit machine-readable JSON for commands
+    --data <path>    Override the tasks data file
 
   Environment
     NO_COLOR=1       Force the mono theme
@@ -44,6 +51,8 @@ const cli = meow(
       plain: {type: 'boolean'},
       demo: {type: 'boolean'},
       debug: {type: 'boolean'},
+      json: {type: 'boolean'},
+      data: {type: 'string'},
     },
   },
 );
@@ -59,6 +68,12 @@ async function main() {
       exitCode: 2,
       hint: `Try one of: ${screenIds.join(', ')}`,
     });
+
+  if (cli.input.length > 0) {
+    if (flags.setup || flags.demo) throw new AppError('Commands cannot be combined with --setup or --demo', {exitCode: 2});
+    executeCommand(cli.input, {json: Boolean(flags.json), dataFile: flags.data});
+    return;
+  }
 
   const {config, error} = loadConfig(flags.config);
   if (error) logger.error('config:', error);
@@ -83,6 +98,7 @@ async function main() {
     debug: Boolean(flags.debug),
     screen: flags.screen,
     configFile: flags.config,
+    dataFile: flags.data,
     configFlags,
   };
   logger.debug('options', options);

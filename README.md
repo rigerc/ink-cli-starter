@@ -32,7 +32,8 @@ npm run dev
 
 The generator copies **tracked files** from the current starter checkout, including any
 new screens, hooks, components, and tests—no file list or separate template to maintain.
-It excludes repository CI workflows, the scaffolding script and its tests, and writes
+It includes the generic CI and package-artifact workflows (but not the starter-only
+screenshots workflow), excludes the scaffolding script and its tests, and writes
 a small app-specific README instead of copying the starter documentation. Untracked
 files, dependencies, and Git metadata are not copied.
 
@@ -111,6 +112,52 @@ src/
   screens/           Home Tasks Gallery Settings Help  (+ registry in index.ts)
 tests/
 ```
+
+## Working reference application
+
+The generated app includes a functional local-first task manager as an end-to-end
+example of domain services, validation, persistence, TUI and headless commands.
+No database service or account is required.
+
+```bash
+npm run dev                             # Interactive dashboard, tasks, gallery, settings, help
+npm run dev -- tasks list --json        # Structured output for automation
+npm run dev -- tasks add "Write docs"
+npm run dev -- tasks complete <uuid>
+npm run dev -- tasks rename <uuid> "Updated title"
+npm run dev -- tasks reopen <uuid>
+npm run dev -- tasks remove <uuid>
+npm run dev -- doctor                   # Environment and data checks
+npm run dev -- config path
+npm run dev -- tasks list --data ./my-tasks.json
+```
+
+The installed CLI supports the same commands (`my-cli tasks ...` after scaffolding).
+Interactive Tasks supports `n` to create, arrows or `j/k` to select, Enter
+for details, Space to toggle completion, `e` to rename, `d` to delete with
+confirmation, and Escape to go back.
+
+The application separates these layers:
+
+- `src/features/tasks/schema.ts`: validated domain models.
+- `src/features/tasks/service.ts`: operations shared by CLI and TUI.
+- `src/features/tasks/repository.ts`: persistence boundary.
+- `src/storage/`: versioned JSON storage and XDG data paths.
+- `src/commands/`: noninteractive dispatch and JSON output.
+- `src/features/tasks/context.tsx`: service injection into Ink screens.
+
+Task data resides at `$XDG_DATA_HOME/<app-name>/tasks.json`, defaulting to
+`~/.local/share/<app-name>/tasks.json`, and can be overridden with `--data`.
+This is separate from the existing user-editable JSON configuration. Changes
+are validated and written using an atomic same-directory rename; malformed
+or future-version files are refused rather than overwritten. The JSON backend
+assumes a single writer; use a locking or transactional backend for simultaneous
+writer processes.
+
+Scaffolding retains generic CI and release-archive workflows, and continues to
+exclude the starter's Playwright screenshot workflow. The release workflow
+uploads an npm tarball as an artifact on version tags; it does not publish to
+a registry.
 
 ## Theming
 

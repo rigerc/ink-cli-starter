@@ -18,7 +18,13 @@ export function HelpScreen() {
       <Panel title="Flags">
         <Text>--theme dark|light|contrast|mono</Text>
         <Text>--screen home|tasks|gallery|settings|help</Text>
-        <Text>{'--plain  --ascii  --debug  --demo'}</Text>
+        <Text>{'--plain  --ascii  --debug  --demo  --data PATH'}</Text>
+        <Text>{'--json (headless commands)'}</Text>
+      </Panel>
+      <Panel title="Commands">
+        <Text>tasks list | add TITLE | show ID | rename ID TITLE</Text>
+        <Text>tasks complete ID | reopen ID | remove ID</Text>
+        <Text>doctor | config path</Text>
       </Panel>
     </Stack>
   );

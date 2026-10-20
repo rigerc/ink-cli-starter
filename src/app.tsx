@@ -1,4 +1,5 @@
 import type {ReactNode} from 'react';
+import {TaskProvider} from './features/tasks/context';
 import pkg from '../package.json';
 import {AppShell, Badge, ErrorBoundary, Header, StatusBar, Tabs} from './components';
 import {ConfigRuntimeProvider} from './config/context';
@@ -23,6 +24,7 @@ export interface AppOptions {
   debug: boolean;
   screen: string;
   configFile?: string;
+  dataFile?: string;
   configFlags?: Partial<Config>;
 }
 
@@ -32,9 +34,11 @@ export function AppProviders({options, children}: {options: AppOptions; children
       <ThemeProvider name={options.theme} ascii={options.ascii}>
         <InputCaptureProvider>
           <ToastProvider>
+            <TaskProvider dataFile={options.dataFile}>
             <RouterProvider initial={options.screen}>
               <ErrorBoundary debug={options.debug}>{children}</ErrorBoundary>
             </RouterProvider>
+            </TaskProvider>
           </ToastProvider>
         </InputCaptureProvider>
       </ThemeProvider>
