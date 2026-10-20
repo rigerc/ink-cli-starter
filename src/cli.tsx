@@ -3,7 +3,7 @@ import {render, renderToString} from 'ink';
 import meow from 'meow';
 import {App, PlainView, type AppOptions} from './app';
 import {InlineDemo} from './demos/InlineDemo';
-import {loadConfig} from './lib/config';
+import {APP_NAME, APP_THEME_ENV, loadConfig} from './lib/config';
 import {AppError, toAppError} from './lib/errors';
 import {logger} from './lib/logger';
 import {isInteractive, noColor, supportsUnicode} from './lib/terminal';
@@ -13,7 +13,7 @@ import {resolveThemeName} from './theme/resolve';
 const cli = meow(
   `
   Usage
-    $ ink-kit [options]
+    $ ${APP_NAME} [options]
 
   Options
     --theme <name>   dark | light | contrast | mono
@@ -25,7 +25,7 @@ const cli = meow(
 
   Environment
     NO_COLOR=1       Force the mono theme
-    INK_KIT_THEME    Default theme
+    ${APP_THEME_ENV}    Default theme
     CLI_ASCII=1      Force ASCII symbols
 `,
   {
@@ -58,7 +58,7 @@ async function main() {
   const options: AppOptions = {
     theme: resolveThemeName({
       flag: flags.theme,
-      env: process.env.INK_KIT_THEME,
+      env: process.env[APP_THEME_ENV],
       config: config.theme,
       noColor: noColor(),
     }),
