@@ -11,3 +11,5 @@ React terminal runtime libraries:
 - Pastel: https://github.com/vadimdemedes/pastel (MIT)
 
 For redistributed copies, preserve original copyright notices and applicable MIT license text.
+
+The upstream MIT license text and copyright are preserved in [`LICENSES/termcn-MIT.txt`](../LICENSES/termcn-MIT.txt).

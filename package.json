@@ -17,8 +17,9 @@
     "demo": "npm run build && node build/cli.js demo",
     "doctor": "npm run build && node build/cli.js doctor",
     "test": "node --import tsx --test test/*.test.tsx",
-    "check": "npm run typecheck && npm test && npm run build",
-    "format": "prettier --write ."
+    "check": "npm run check:vendor && npm run typecheck && npm test && npm run build",
+    "format": "prettier --write .",
+    "check:vendor": "node scripts/check-vendored.mjs"
   },
   "dependencies": {
     "cli-spinners": "^3.4.0",
