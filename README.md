@@ -3,6 +3,29 @@
 A skeleton for polished terminal apps on **Ink 8** (React 19, Node 22+): theme system,
 hooks, helpers and a component library, with a gallery and tests.
 
+## Scaffold a new app
+
+From a Git checkout of this repository (Node.js 22+ and Git required):
+
+```bash
+npm run scaffold -- my-cli
+cd my-cli
+npm install
+npm run dev
+```
+
+The generator copies **tracked files** from the current starter checkout, including any
+new screens, hooks, components, and tests—no file list or separate template to maintain.
+It excludes repository CI workflows, the scaffolding script and its tests, and writes
+a small app-specific README instead of copying the starter documentation. Untracked
+files, dependencies, and Git metadata are not copied.
+
+Only `package.json`, the root of `package-lock.json`, and the `APP_NAME` constant
+in `src/lib/config.ts` are renamed. The CLI title, help, theme environment variable
+(`MY_CLI_THEME`), and screenshot paths derive from those values. App names must be
+lowercase kebab-case (`my-cli`); existing directories are never overwritten.
+The generator does not install dependencies or initialize a new Git repository.
+
 ```bash
 npm install
 npm run dev                 # interactive app
@@ -219,4 +242,4 @@ entry that must suspend host shortcuts.
 - Ink has no border titles, so `Panel` draws its title as the first row.
 - Status is never color-only: every tone pairs with a symbol.
 - Config lives at `$XDG_CONFIG_HOME/ink-kit/config.json` (default `~/.config/ink-kit/`).
-- Rename the package: search/replace `ink-kit` (package.json, `APP_NAME` in `lib/config.ts`, header).
+- Scaffold a renamed app with `npm run scaffold -- my-cli`.

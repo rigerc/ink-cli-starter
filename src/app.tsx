@@ -65,7 +65,7 @@ function Shell() {
     <AppShell
       header={
         <Header
-          title="ink-kit"
+          title={pkg.name}
           version={pkg.version}
           right={<Badge tone="accent">{theme.name}</Badge>}
         />
@@ -100,7 +100,7 @@ export function PlainView({options}: {options: AppOptions}) {
   const Screen = (screens.find((s) => s.id === options.screen) ?? screens[0]!).Component;
   return (
     <AppProviders options={options}>
-      <AppShell header={<Header title="ink-kit" version={pkg.version} />}>
+      <AppShell header={<Header title={pkg.name} version={pkg.version} />}>
         <Screen />
       </AppShell>
     </AppProviders>
