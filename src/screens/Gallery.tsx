@@ -13,7 +13,10 @@ import {
   Table,
   Heading,
   type BadgeVariant,
+  Confirm,
+  StepperProgress,
 } from '../components';
+import {CollectionGallery} from '../demos/CollectionGallery';
 import {formatBytes, formatDuration} from '../lib/format';
 import {tones} from '../theme/tokens';
 
@@ -67,6 +70,18 @@ export function GalleryScreen() {
           ]}
         />
       </Panel>
+
+      <Panel title="Stepper progress">
+        <StepperProgress steps={[{id: 'install', name: 'Install'}, {id: 'configure', name: 'Configure'}, {id: 'done', name: 'Done'}]} currentStep={1} />
+        <Divider label="vertical" />
+        <StepperProgress steps={[{id: 'first', name: 'First'}, {id: 'second', name: 'Second'}]} currentStep={1} orientation="vertical" />
+      </Panel>
+
+      <Panel title="Confirm" footer="Static example; press w to open the interactive wizard">
+        <Confirm message="Continue with deployment?" onConfirm={() => {}} isActive={false} />
+      </Panel>
+
+      <CollectionGallery />
 
       <Alert tone="warn" title="Heads up">
         <Muted>Alerts carry a title and optional body.</Muted>

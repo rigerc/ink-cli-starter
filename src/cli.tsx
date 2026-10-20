@@ -2,6 +2,7 @@
 import {render, renderToString} from 'ink';
 import meow from 'meow';
 import {App, PlainView, type AppOptions} from './app';
+import {InlineDemo} from './demos/InlineDemo';
 import {loadConfig} from './lib/config';
 import {AppError, toAppError} from './lib/errors';
 import {logger} from './lib/logger';
@@ -19,6 +20,7 @@ const cli = meow(
     --screen <id>    ${screenIds.join(' | ')}
     --ascii          Use ASCII symbols and borders
     --plain          Print once and exit (also the default when piped or in CI)
+    --demo           Run the compact inline setup wizard
     --debug          Write logs to a file and show stack traces
 
   Environment
@@ -33,6 +35,7 @@ const cli = meow(
       screen: {type: 'string', default: 'home'},
       ascii: {type: 'boolean'},
       plain: {type: 'boolean'},
+      demo: {type: 'boolean'},
       debug: {type: 'boolean'},
     },
   },
@@ -58,11 +61,11 @@ async function main() {
   logger.debug('options', options);
 
   if (flags.plain || !isInteractive()) {
-    console.log(renderToString(<PlainView options={options} />, {columns: process.stdout.columns || 80}));
+    console.log(renderToString(flags.demo ? <InlineDemo options={options} /> : <PlainView options={options} />, {columns: process.stdout.columns || 80}));
     return;
   }
 
-  await render(<App options={options} />).waitUntilExit();
+  await render(flags.demo ? <InlineDemo options={options} interactive /> : <App options={options} />).waitUntilExit();
 }
 
 main().catch((error: unknown) => {

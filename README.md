@@ -7,6 +7,7 @@ hooks, helpers and a component library, with a gallery and tests.
 npm install
 npm run dev                 # interactive app
 npm run gallery             # jump straight to the component gallery
+npm run demo:inline         # compact setup wizard in normal terminal scrollback
 npm run dev -- --plain      # one-shot static render (what pipes/CI get)
 npm test                    # every screen × 4 themes × 2 widths, checks nothing overflows
 npm run build && npm start
@@ -24,10 +25,12 @@ src/
   theme/             tokens, 4 themes, resolve order, ThemeProvider/useTheme/useTone
   components/        Stack Row Panel Card Badge StatusMessage Alert Spinner ProgressBar
                      KeyValue Table TaskList Select Tabs EmptyState ErrorPanel
+                     MultiSelect SearchSelect Toggle PaginatedList
+                     Stepper Step StepperProgress StepperNavigation Confirm InlineLayout
                      Header StatusBar ToastHost AppShell + typography (Heading, Label,
                      Muted, Code, Kbd, Icon, Divider)
   hooks/             useKeymap useRouter useAsync useToast useElapsed useInterval
-                     useExit useTerminalSize
+                     useExit useTerminalSize InputCaptureProvider/useInputCapture
   lib/               format, gradient, terminal, config (zod), logger, errors
   screens/           Home Tasks Gallery Settings Help  (+ registry in index.ts)
 tests/
@@ -48,6 +51,132 @@ To add a theme: add a name in `theme/tokens.ts`, a palette in `theme/themes.ts`.
 
 Create `src/screens/Foo.tsx`, add one line to the `screens` array in `src/screens/index.ts`.
 It gets a tab, a number shortcut, a `--screen foo` flag value, and test coverage.
+
+## Inline demo
+
+The shell already uses normal terminal output. `npm run demo:inline` (or `ink-kit --demo`)
+shows a separate, compact setup wizard without tabs or global shortcuts. It takes only
+the rows its content needs, preserves shell scrollback, and exits with its result visible.
+Enter starts the wizard, arrows choose a template, and Enter confirms. Escape goes back
+or cancels from the first step; Ctrl+C quits. On Review, choose No to cancel or Yes to run
+async validation and finish. This demo does not create files or run external commands.
+
+```bash
+npm run demo:inline -- --theme contrast
+npm run demo:inline -- --plain --ascii --theme mono
+npm run build
+node dist/cli.js --demo
+```
+
+Pipes, CI, and `--plain` print a static preview and exit without waiting for input.
+Theme flags, `NO_COLOR`, config, and ASCII glyph handling work as in the main app.
+The gallery includes progress variants, a confirmation preview, and an interactive panel.
+Press `m` for MultiSelect, `/` to edit SearchSelect, `o` for Toggle, `p` for PaginatedList,
+or `w` for the inline wizard (`r` restarts it). Search owns keyboard input until Enter
+selects a result or Escape releases it; app shortcuts resume afterward.
+
+## Selection and collection components
+
+All four components are exported from `src/components`, use theme tokens, and support
+`isActive={false}` for static previews or when another control owns keyboard input.
+Use unique option `value`s and stable pagination keys.
+
+| Component | Main props | Keyboard |
+| --- | --- | --- |
+| `MultiSelect` | `items`, `value` / `defaultValue`, `onChange`, `onSubmit`, `maxVisible` | Up/Down or j/k move; Space toggles; Enter submits; Home/End jump |
+| `SearchSelect` | `items`, `onSelect`, `onCancel`, `query` / `defaultQuery`, `onQueryChange`, `maxVisible` | Type to filter; Backspace edits; Ctrl+U clears; Up/Down move; Enter selects; Escape cancels |
+| `Toggle` | `label`, `value` / `defaultValue`, `onChange`, `onLabel`, `offLabel` | Space/Enter toggle; Left turns off; Right turns on |
+| `PaginatedList` | `items`, `getKey`, `renderItem`, `pageSize`, `page` / `initialPage`, `onPageChange` | Left/Right or PageUp/PageDown move; Home/End jump |
+
+```tsx
+<MultiSelect
+  items={[{value: 'lint', label: 'Linting'}, {value: 'tests', label: 'Tests'}]}
+  defaultValue={['tests']}
+  onSubmit={(features) => saveFeatures(features)}
+/>
+
+<SearchSelect items={packages} onSelect={choosePackage} onCancel={closeSearch} />
+<Toggle label="Enable caching" value={cacheEnabled} onChange={setCacheEnabled} />
+
+<PaginatedList
+  items={packages}
+  pageSize={5}
+  getKey={(pkg) => pkg.value}
+  renderItem={(pkg, index) => `${index + 1}. ${pkg.label}`}
+/>
+```
+
+MultiSelect and SearchSelect display at most `maxVisible` options (default 6) and scroll
+the visible window with the cursor. MultiSelect emits available selected values in item
+order; Enter on an empty list does nothing. SearchSelect filters labels and hints without
+case sensitivity, resets its cursor when the query changes, and does not submit when there
+are no matches. Its query editor appends text and removes the last Unicode grapheme with
+Backspace; it is a search prompt, without cursor-position editing.
+
+Toggle defaults to Off and always shows its state in text. PaginatedList uses zero-based
+page indexes, defaults to 5 items per page, clamps indexes when data shrinks, and does not
+wrap at boundaries. `renderItem` receives the absolute item index. Empty lists show an
+`emptyMessage`; non-positive sizes normalize to 1 and non-finite sizes use the default.
+Controlled values only update when their parent supplies a new prop.
+
+`AppProviders` includes `InputCaptureProvider`. Active SearchSelect instances capture input,
+and the shell pauses global shortcuts (including q/t/number keys) until they deactivate.
+For another host, wrap it with `InputCaptureProvider`, use `useHasInputCapture()` to pause
+its keymap, and deactivate SearchSelect from `onSelect`/`onCancel`. Other text inputs can
+call `useInputCapture(isActive)` to participate. Keep only one control active at a time.
+
+## Wizard components
+
+The Stepper API is inspired by [archcorsair/ink-stepper](https://github.com/archcorsair/ink-stepper)
+(MIT). This is a local implementation using the starter's theme tokens, with no new runtime dependency.
+
+```tsx
+import {Text} from 'ink';
+import {InlineLayout, Stepper, Step, StepperNavigation} from './components';
+
+<InlineLayout>
+  <Stepper onComplete={finish} onCancel={cancel}>
+    <Step name="Welcome">
+      <Text>Press Enter to begin.</Text>
+      <StepperNavigation />
+    </Step>
+    <Step name="Validate" canProceed={async () => await validate()}>
+      {({isValidating}) => (
+        <Text>{isValidating ? 'Checking...' : 'Press Enter to finish.'}</Text>
+      )}
+    </Step>
+  </Stepper>
+</InlineLayout>
+```
+
+`Stepper` accepts direct `Step` children, fragments, and conditional Steps. Give conditional
+steps stable keys so inserting another step preserves the active step. Unlike upstream,
+custom components wrapping `Step` are not supported; wrap a step's content instead.
+Only the active step's content mounts. Empty wizards render nothing.
+
+- `Step`: `name`, `canProceed` (boolean or sync/async function), and content or a render function.
+- Render context / `useStepper()`: `goNext`, `goBack`, `goTo`, `cancel`, `currentStep`,
+  `totalSteps`, `isFirst`, `isLast`, `isValidating`. Indexes are zero-based.
+- `Stepper`: `initialStep`, controlled `step` + `onStepChange`, `onExitStep`, `onEnterStep`,
+  `onError`, `keyboardNav`, `showProgress`, and `renderProgress`.
+- `StepperProgress`: `steps` (`{id, name}[]`), `currentStep`, and horizontal/vertical `orientation`.
+  Labels wrap to terminal width. Set `currentStep` to `steps.length` for all complete.
+- `StepperNavigation`: themed Enter/Escape hints inside an active Step.
+- `Confirm`: `message`, `defaultValue` (defaults to No), `onConfirm(boolean)`, and `isActive`.
+  Y/N or left/right selects an answer; Enter submits it.
+- `InlineLayout`: optional `title`, `footer`, and `maxWidth` (defaults to 72 columns).
+  Height follows its content and width shrinks with the terminal.
+
+Next checks `canProceed`; back does not. `goTo` clamps its target and skips `canProceed`.
+All navigation calls `onExitStep` first (return `false` to block), then `onStepChange`
+and `onEnterStep` after a move. Errors block the move, show feedback, and call `onError`
+when supplied. Navigation is locked through both async validation and exit hooks;
+completion and cancellation fire once per mount. Remount with a new key to restart.
+
+When a child input owns Enter/Escape, set `keyboardNav={false}` on the Stepper for that
+step and navigate through the render context or `useStepper()`. See `src/demos/SetupWizard.tsx`
+for Select and Confirm integration. Use the input-capture hooks above for free-form text
+entry that must suspend host shortcuts.
 
 ## Notes
 
