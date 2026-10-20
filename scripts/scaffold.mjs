@@ -13,7 +13,8 @@ const files = [
   'tsconfig.json',
   'vite.config.ts',
 ];
-const directories = ['.github', '.vite-hooks', 'scripts', 'src', 'tests'];
+// CI configuration belongs to the starter repository, not to generated apps.
+const directories = ['.vite-hooks', 'scripts', 'src', 'tests'];
 const textExtensions = new Set(['.js', '.jsx', '.json', '.md', '.mjs', '.ts', '.tsx', '.yml', '.yaml']);
 
 function usage() {
@@ -24,16 +25,23 @@ The name must use lowercase letters, numbers, and hyphens (e.g. my-cli).
 The destination must not already exist.`);
 }
 
-async function replaceNames(dir, oldName, newName) {
+async function replaceNames(dir, oldName, newName, destination) {
   for (const entry of await readdir(dir, {withFileTypes: true})) {
     const path = join(dir, entry.name);
     if (entry.isDirectory()) {
-      await replaceNames(path, oldName, newName);
+      await replaceNames(path, oldName, newName, destination);
     } else if (entry.isFile() && (textExtensions.has(extname(entry.name)) || entry.name === '.gitignore' || entry.name === 'pre-commit')) {
       const original = await readFile(path, 'utf8');
-      const updated = original
+      let updated = original
         .replaceAll(oldName, newName)
         .replaceAll(oldName.toUpperCase().replaceAll('-', '_'), newName.toUpperCase().replaceAll('-', '_'));
+      if (path === join(dir, 'README.md') && dir === destination) {
+        // Do not describe the starter repository's CI workflow in the new app.
+        updated = updated.replace(
+          /The \*\*Screenshots\*\* GitHub Actions workflow runs[\s\S]*?review artifacts; the workflow does not compare them against a visual baseline\.\n\n/,
+          '',
+        );
+      }
       if (updated !== original) await writeFile(path, updated);
     }
   }
@@ -66,13 +74,13 @@ async function main() {
       await cp(join(sourceRoot, dir), join(destination, dir), {recursive: true});
 
     const pkg = JSON.parse(await readFile(join(sourceRoot, 'package.json'), 'utf8'));
-    await replaceNames(destination, pkg.name, name);
+    await replaceNames(destination, pkg.name, name, destination);
   } catch (error) {
     await rm(destination, {recursive: true, force: true});
     throw error;
   }
 
-  console.log(`Created ${destination}\n\nNext steps:\n  cd ${name}\n  npm ci\n  npm run dev`);
+  console.log(`Created ${destination}\n\nNext steps:\n  cd ${name}\n  npm install\n  npm run dev`);
 }
 
 main().catch((error) => {
