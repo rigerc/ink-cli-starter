@@ -5,6 +5,7 @@ import {z} from 'zod';
 import {themeNames} from '../theme/tokens';
 
 export const APP_NAME = 'ink-kit';
+export const APP_THEME_ENV = `${APP_NAME.replaceAll('-', '_').toUpperCase()}_THEME`;
 
 const schema = z.object({
   theme: z.enum(themeNames).optional(),
