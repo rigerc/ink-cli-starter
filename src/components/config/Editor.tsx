@@ -25,7 +25,7 @@ function EditText({value, isNumber, onSubmit, onCancel}: {
     if (key.escape) { onCancel(); return; }
     if (key.return) {
       const parsed = isNumber ? Number(text) : text;
-      if (isNumber && (!text.trim() || !Number.isFinite(parsed))) {
+      if (isNumber && (!text.trim() || !Number.isFinite(Number(text)))) {
         setError('Enter a valid number');
       } else onSubmit(parsed);
       return;
@@ -79,7 +79,7 @@ export function ConfigSectionEditor({
     else if (field.kind === 'select') setMode('select');
     else if (field.kind === 'multi') setMode('multi');
     else setMode('text');
-  }, {isActive: active && mode === 'list'});
+  }, {isActive: active && (mode === 'list' || mode === 'select' || mode === 'multi')});
 
   return (
     <Box flexDirection="column" gap={1}>
