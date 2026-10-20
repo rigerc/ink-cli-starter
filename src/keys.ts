@@ -1,0 +1,8 @@
+/** Global bindings, shared by the app shell, status bar and Help screen. */
+export const globalKeys = [
+  {key: 'tab', label: 'next screen'},
+  {key: '1-5', label: 'jump to screen'},
+  {key: 't', label: 'cycle theme'},
+  {key: '?', label: 'help'},
+  {key: 'q', label: 'quit'},
+] as const;

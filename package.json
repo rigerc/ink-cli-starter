@@ -1,40 +1,38 @@
 {
-  "name": "ink-cli-starter",
+  "name": "ink-kit",
   "version": "0.1.0",
-  "private": true,
+  "description": "Ink 8 CLI skeleton with a theme system, hooks, helpers and a component library",
   "type": "module",
-  "description": "Ink 8 + Pastel + termcn terminal CLI starter",
+  "bin": {
+    "ink-kit": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
   "engines": {
     "node": ">=22"
   },
-  "bin": {
-    "ink-starter": "./build/cli.js"
-  },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "start": "node build/cli.js",
-    "demo": "npm run build && node build/cli.js demo",
-    "doctor": "npm run build && node build/cli.js doctor",
-    "test": "node --import tsx --test test/*.test.tsx",
-    "check": "npm run check:vendor && npm run typecheck && npm test && npm run build",
-    "format": "prettier --write .",
-    "check:vendor": "node scripts/check-vendored.mjs"
+    "dev": "tsx src/cli.tsx",
+    "gallery": "tsx src/cli.tsx --screen gallery",
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "start": "node dist/cli.js"
   },
   "dependencies": {
-    "cli-spinners": "^3.4.0",
     "ink": "^8.0.0",
-    "pastel": "^4.0.1",
-    "react": "^19.3.0",
-    "zod": "^4.1.12",
-    "strip-ansi": "^7.2.0",
-    "string-width": "^8.2.0"
+    "meow": "^14.1.0",
+    "react": "^19.3.1",
+    "string-width": "^8.3.0",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@types/node": "^22.15.24",
+    "@types/node": "^22.20.5",
     "@types/react": "^19.3.0",
-    "prettier": "^3.6.2",
-    "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "tsup": "^8.5.1",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.12"
   }
 }
