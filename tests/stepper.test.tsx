@@ -4,7 +4,7 @@ import {describe, expect, it, vi} from 'vite-plus/test';
 import {Step, Stepper, type StepContext} from '../src/components';
 import {InlineDemo} from '../src/demos/InlineDemo';
 import {SetupWizard} from '../src/demos/SetupWizard';
-import {mount} from './helpers/terminal';
+import {mount, output, press, settle} from './helpers/terminal';
 
 function deferred<T>() {
   let resolve!: (value: T) => void;
@@ -52,13 +52,13 @@ describe('Stepper', () => {
         <Step name="Two">{capture}</Step>
       </Stepper>,
     );
-    await app.key('\r');
+    await press(app, '\r');
     expect(current.currentStep).toBe(1);
-    await app.key('\u001b');
+    await press(app, '\u001b');
     await tick(30);
-    await app.settle(); // Ink waits for a possible escape-sequence suffix.
+    await settle(); // Ink waits for a possible escape-sequence suffix.
     expect(current.currentStep).toBe(0);
-    await app.key('\u001b');
+    await press(app, '\u001b');
     await expect.poll(() => cancel.mock.calls.length).toBe(1);
     expect(change.mock.calls).toEqual([[1], [0]]);
   });
@@ -79,9 +79,9 @@ describe('Stepper', () => {
       </Stepper>,
     );
     await current.goNext();
-    await app.settle();
+    await settle();
     expect(complete).not.toHaveBeenCalled();
-    app.instance.rerender(
+    app.rerender(
       <Stepper onComplete={complete} onError={onError}>
         <Step
           name="Input"
@@ -93,11 +93,11 @@ describe('Stepper', () => {
         </Step>
       </Stepper>,
     );
-    await app.settle();
+    await settle();
     await current.goNext();
-    await app.settle();
+    await settle();
     expect(onError).toHaveBeenCalledOnce();
-    expect(app.output()).toContain('Validation failed');
+    expect(output(app)).toContain('Validation failed');
     expect(current.isValidating).toBe(false);
     expect(complete).not.toHaveBeenCalled();
   });
@@ -119,7 +119,7 @@ describe('Stepper', () => {
       </Stepper>,
     );
     const navigation = current.goNext();
-    await app.settle();
+    await settle();
     expect(current.isValidating).toBe(true);
     await current.goNext();
     await current.goBack();
@@ -128,7 +128,7 @@ describe('Stepper', () => {
     expect(cancel).not.toHaveBeenCalled();
     pending.resolve(true);
     await navigation;
-    await app.settle();
+    await settle();
     await current.goNext();
     expect(complete).toHaveBeenCalledOnce();
   });
@@ -147,7 +147,7 @@ describe('Stepper', () => {
       </Stepper>,
     );
     await Promise.all([current.goNext(), current.goNext(), current.goNext()]);
-    await app.settle();
+    await settle();
     expect(complete).toHaveBeenCalledOnce();
   });
 
@@ -169,15 +169,15 @@ describe('Stepper', () => {
     );
     const app = await mount(view());
     await current.goTo(100);
-    await app.settle();
+    await settle();
     expect(current.currentStep).toBe(0);
     exit.mockReturnValue(true); // onExitStep accepts any result except false.
     await current.goTo(100);
-    await app.settle();
+    await settle();
     expect(current.currentStep).toBe(1);
     expect(change).toHaveBeenCalledWith(1);
     await current.goTo(-5);
-    await app.settle();
+    await settle();
     expect(current.currentStep).toBe(0);
   });
 
@@ -196,11 +196,11 @@ describe('Stepper', () => {
     );
     const app = await mount(view(0));
     await current.goNext();
-    await app.settle();
+    await settle();
     expect(change).toHaveBeenCalledWith(1);
     expect(current.currentStep).toBe(0);
-    app.instance.rerender(view(1));
-    await app.settle();
+    app.rerender(view(1));
+    await settle();
     expect(current.currentStep).toBe(1);
   });
 
@@ -226,8 +226,8 @@ describe('Stepper', () => {
       </Stepper>
     );
     const app = await mount(view(false));
-    app.instance.rerender(view(true));
-    await app.settle();
+    app.rerender(view(true));
+    await settle();
     expect(current.currentStep).toBe(2);
   });
 
@@ -249,12 +249,12 @@ describe('Stepper', () => {
     );
     const app = await mount(view(0));
     const navigation = current.goNext();
-    await app.settle();
-    app.instance.rerender(view(1));
-    await app.settle();
+    await settle();
+    app.rerender(view(1));
+    await settle();
     pending.resolve(true);
     await navigation;
-    await app.settle();
+    await settle();
     expect(change).not.toHaveBeenCalled();
     expect(current.currentStep).toBe(1);
   });
@@ -268,11 +268,11 @@ describe('Stepper', () => {
         </Step>
       </Stepper>,
     );
-    await app.key('\r');
+    await press(app, '\r');
     expect(complete).not.toHaveBeenCalled();
-    app.instance.rerender(<Stepper onComplete={complete}>{null}</Stepper>);
-    await app.settle();
-    await app.key('\r');
+    app.rerender(<Stepper onComplete={complete}>{null}</Stepper>);
+    await settle();
+    await press(app, '\r');
     expect(complete).not.toHaveBeenCalled();
   });
 });
@@ -291,29 +291,29 @@ describe('inline demo', () => {
   it('coordinates Enter with Select and Confirm, then completes after async validation', async () => {
     const finish = vi.fn();
     const app = await mount(<SetupWizard onFinish={finish} />);
-    await app.key('\r');
-    expect(app.output()).toContain('Choose a starter template');
-    await app.key('\u001b[B');
-    await app.key('\r');
-    expect(app.output()).toContain('Finish the demo setup?');
+    await press(app, '\r');
+    expect(output(app)).toContain('Choose a starter template');
+    await press(app, '\u001b[B');
+    await press(app, '\r');
+    expect(output(app)).toContain('Finish the demo setup?');
     expect(finish).not.toHaveBeenCalled();
-    await app.key('\r');
-    expect(app.output()).toContain('Validating setup');
-    await app.key('\r');
+    await press(app, '\r');
+    expect(output(app)).toContain('Validating setup');
+    await press(app, '\r');
     await expect.poll(() => finish.mock.calls.length, {timeout: 3000}).toBe(1);
-    await app.settle();
+    await settle();
     expect(finish).toHaveBeenCalledWith('completed');
-    expect(app.output()).toContain('my-cli (dashboard)');
+    expect(output(app)).toContain('my-cli (dashboard)');
   });
 
   it('cancels when No is confirmed', async () => {
     const finish = vi.fn();
     const app = await mount(<SetupWizard onFinish={finish} />);
-    await app.key('\r');
-    await app.key('\r');
-    await app.key('n');
-    await app.key('\r');
+    await press(app, '\r');
+    await press(app, '\r');
+    await press(app, 'n');
+    await press(app, '\r');
     expect(finish).toHaveBeenCalledWith('cancelled');
-    expect(app.output()).toContain('Setup cancelled');
+    expect(output(app)).toContain('Setup cancelled');
   });
 });
