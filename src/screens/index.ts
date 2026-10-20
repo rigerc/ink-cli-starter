@@ -9,6 +9,8 @@ export interface ScreenDef {
   id: string;
   label: string;
   Component: ComponentType;
+  /** Hidden development screens remain addressable via --screen. */
+  showInNav?: boolean;
 }
 
 /** Order here is tab order and the 1-5 shortcuts. */
@@ -20,5 +22,6 @@ export const screens: ScreenDef[] = [
   {id: 'help', label: 'Help', Component: HelpScreen},
 ];
 
+export const navScreens = screens.filter((s) => s.showInNav !== false);
 export const screenIds = screens.map((s) => s.id);
 export const isScreenId = (id: string) => screenIds.includes(id);
