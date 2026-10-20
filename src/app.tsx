@@ -13,7 +13,7 @@ import {
   useHasInputCapture,
 } from './hooks';
 import {globalKeys} from './keys';
-import {screens} from './screens';
+import {navScreens, screens} from './screens';
 import {ThemeProvider, useThemeControls} from './theme/context';
 import type {ThemeName} from './theme/tokens';
 
@@ -48,11 +48,8 @@ function Shell() {
   const {theme, cycleTheme} = useThemeControls();
   const inputCaptured = useHasInputCapture();
 
-  const index = Math.max(
-    0,
-    screens.findIndex((s) => s.id === router.current),
-  );
-  const go = (i: number) => router.replace(screens[(i + screens.length) % screens.length]!.id);
+  const index = Math.max(0, navScreens.findIndex((s) => s.id === router.current));
+  const go = (i: number) => router.replace(navScreens[(i + navScreens.length) % navScreens.length]!.id);
 
   useKeymap(
     [
@@ -61,12 +58,12 @@ function Shell() {
       {key: 'shift+tab', run: () => go(index - 1)},
       {key: 't', run: cycleTheme},
       {key: '?', run: () => router.replace('help')},
-      ...screens.map((s, i) => ({key: String(i + 1), run: () => go(i)})),
+      ...navScreens.map((s, i) => ({key: String(i + 1), run: () => go(i)})),
     ],
     {isActive: !inputCaptured},
   );
 
-  const Screen = screens[index]!.Component;
+  const Screen = (screens.find((s) => s.id === router.current) ?? navScreens[0]!).Component;
   return (
     <AppShell
       header={
@@ -76,7 +73,7 @@ function Shell() {
           right={<Badge tone="accent">{theme.name}</Badge>}
         />
       }
-      nav={<Tabs items={screens} activeId={router.current} />}
+      nav={<Tabs items={navScreens} activeId={router.current} />}
       footer={
         <StatusBar
           hints={

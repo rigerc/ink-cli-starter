@@ -11,7 +11,10 @@ const excluded = new Set([
   'README.md', // Generated apps get their own concise README.
   'scripts/scaffold.mjs',
   'tests/scaffold.test.ts',
+  'src/screens/Tasks.tsx',
+  'src/demos/InlineDemo.tsx',
 ]);
+const templatePrefix = 'templates/app/';
 
 function usage() {
   console.log(`Usage: npm run scaffold -- [app-name] [options]
@@ -40,13 +43,15 @@ function trackedFiles() {
   } catch {
     throw new Error('Git is required: run scaffolding from a checkout of this starter.');
   }
-  const files = output.split('\0').filter((file) =>
-    file && !file.startsWith('.github/') && !excluded.has(file),
+  const tracked = output.split('\0').filter(Boolean);
+  const overlays = tracked.filter((file) => file.startsWith(templatePrefix));
+  const files = tracked.filter((file) =>
+    !file.startsWith('.github/') && !file.startsWith(templatePrefix) && !excluded.has(file),
   );
   for (const required of ['package.json', 'package-lock.json', 'src/lib/config.ts']) {
     if (!files.includes(required)) throw new Error(`Required tracked file missing: ${required}`);
   }
-  return files;
+  return {files, overlays};
 }
 
 async function writeJson(path, value) {
@@ -67,6 +72,8 @@ async function renameApp(destination, name) {
   pkg.name = name;
   pkg.bin = renameBin(pkg.bin, previous, name);
   delete pkg.scripts?.scaffold;
+  delete pkg.scripts?.['demo:inline'];
+  pkg.description = 'An extensible Ink terminal application';
   await writeJson(packagePath, pkg);
 
   const lockPath = join(destination, 'package-lock.json');
@@ -87,7 +94,55 @@ async function renameApp(destination, name) {
 
   await writeFile(
     join(destination, 'README.md'),
-    `# ${name}\n\nAn Ink 8 / React CLI application. Requires Node.js 22+.\n\n## Getting started\n\n\`\`\`bash\nnpm install\nnpm run dev\n\`\`\`\n\n## Commands\n\n\`\`\`bash\nnpm run gallery       # Browse the component gallery\nnpm run demo:inline   # Run the interactive setup demo\nnpm test              # Test the application\nnpm run build         # Build the CLI\nnpm start             # Run the built CLI\n\`\`\`\n\nEdit \`src/screens\` to customize screens, \`src/lib/config.ts\` for configuration,\nand \`src/theme\` for themes.\n`,
+    `# ${name}
+
+A domain-agnostic terminal application built with Ink 8, React 19, and TypeScript. Requires Node.js 22+.
+
+## Getting started
+
+\`\`\`bash
+npm install
+npm run dev             # Interactive terminal UI
+npm run dev -- --plain  # One-shot output for CI/pipes
+npm run build
+npm start
+\`\`\`
+
+## Commands
+
+\`\`\`bash
+${name} --help
+${name} --screen settings
+${name} --setup          # Interactive configuration wizard
+${name} doctor           # Environment and config diagnostics
+${name} doctor --json    # Machine-readable diagnostics
+${name} --screen gallery # Optional component gallery
+\`\`\`
+
+## Extend your app
+
+- Create screens in \`src/screens/\` and register them in \`src/screens/index.ts\`.
+- Register noninteractive commands in \`src/commands/index.ts\`.
+- Add feature modules under \`src/features/\` only when needed.
+- Extend \`src/config/schema.ts\` for validated application settings.
+- Reuse \`src/components/\`, \`src/hooks/\`, and \`src/theme/\`.
+- See \`docs/architecture.md\` and \`docs/adding-a-feature.md\`.
+
+Home, Settings, and Help are the only navigation tabs. The component gallery is
+accessible by flag but is not part of your app's product functionality. No
+business domain, fake task runner, or data backend is included.
+
+## Checks
+
+\`\`\`bash
+npm run typecheck
+npm test
+npm run build
+npm run screenshot  # Requires Playwright Chromium
+\`\`\`
+
+GitHub Actions CI is included in \`.github/workflows/ci.yml\`.
+`,
   );
 }
 
@@ -157,7 +212,7 @@ async function main() {
     rl?.close();
   }
 
-  const files = trackedFiles();
+  const {files, overlays} = trackedFiles();
   // Parent directories can be new; the final directory must not exist.
   await mkdir(dirname(destination), {recursive: true});
   await mkdir(destination);
@@ -168,6 +223,16 @@ async function main() {
         throw new Error(`Tracked path is not a regular file: ${file}`);
       }
       const target = join(destination, file);
+      await mkdir(dirname(target), {recursive: true});
+      await copyFile(source, target);
+    }
+    // Overlays replace showcase files with a clean, domain-agnostic application.
+    for (const file of overlays) {
+      const source = join(sourceRoot, file);
+      if (!(await lstat(source)).isFile()) {
+        throw new Error(`Tracked path is not a regular file: ${file}`);
+      }
+      const target = join(destination, file.slice(templatePrefix.length));
       await mkdir(dirname(target), {recursive: true});
       await copyFile(source, target);
     }

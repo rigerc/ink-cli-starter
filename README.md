@@ -30,14 +30,16 @@ npm install
 npm run dev
 ```
 
-The generator copies **tracked files** from the current starter checkout, including any
-new screens, hooks, components, and tests—no file list or separate template to maintain.
-It excludes repository CI workflows, the scaffolding script and its tests, and writes
-a small app-specific README instead of copying the starter documentation. Untracked
-files, dependencies, and Git metadata are not copied.
+The generator copies tracked reusable files, but **generates a clean application**
+rather than copying showcase workflows. Tracked overrides in `templates/app/` provide
+a clean CLI, Home/Help screens, screen registry, shortcuts, and screenshot script.
+The generated application has Home, Settings, and Help tabs, with the component
+gallery available through `--screen gallery`. The simulated Tasks screen and inline
+demo are omitted. Generated apps also include headless `doctor [--json]` diagnostics,
+CI, and extension documentation. Untracked files and Git metadata are not copied.
 
-Only `package.json`, the root of `package-lock.json`, and the `APP_NAME` constant
-in `src/lib/config.ts` are renamed. The CLI title, help, theme environment variable
+The generator renames `package.json`, the root of `package-lock.json`, and the `APP_NAME`
+constant in `src/lib/config.ts`, and removes starter-only scripts. The CLI title, help, theme environment variable
 (`MY_CLI_THEME`), and screenshot paths derive from those values. App names must be
 lowercase kebab-case (`my-cli`); existing directories are never overwritten.
 The generator does not install dependencies or initialize a new Git repository.
@@ -56,7 +58,8 @@ Interactive tests use `ink-testing-library` to send keyboard input and assert re
 frames. Width-specific tests retain Ink's `renderToString()` for deterministic
 terminal-column checks.
 
-Keys: `tab` / `1-5` switch screens, `t` cycles themes, `?` help, `q` quit.
+Starter keys: `tab` / `1-5` switch screens, `t` cycles themes, `?` help, `q` quit.
+Generated apps start with three visible tabs (Home, Settings, Help).
 
 ## Automated screenshots
 
