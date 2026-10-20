@@ -1,0 +1,34 @@
+name: Scaffold smoke test
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generated-app:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run scaffold -- smoke-cli --path /tmp/ink-skeleton-smoke
+      - run: npm ci
+        working-directory: /tmp/ink-skeleton-smoke
+      - run: npm run typecheck
+        working-directory: /tmp/ink-skeleton-smoke
+      - run: npm test
+        working-directory: /tmp/ink-skeleton-smoke
+      - run: npm run build
+        working-directory: /tmp/ink-skeleton-smoke
+      - run: node dist/cli.js --plain
+        working-directory: /tmp/ink-skeleton-smoke
+      - run: node dist/cli.js doctor --json
+        working-directory: /tmp/ink-skeleton-smoke
