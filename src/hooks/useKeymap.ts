@@ -18,6 +18,10 @@ function matches(spec: string, input: string, key: Key): boolean {
     return: key.return,
     up: key.upArrow,
     down: key.downArrow,
+    home: key.home,
+    end: key.end,
+    pageup: key.pageUp,
+    pagedown: key.pageDown,
     left: key.leftArrow,
     right: key.rightArrow,
     backspace: key.backspace,
@@ -36,6 +40,8 @@ function matches(spec: string, input: string, key: Key): boolean {
 export function useKeymap(bindings: Binding[], options: {isActive?: boolean} = {}) {
   useInput(
     (input, key) => {
+      // A disabled listener may still be attached until its effect cleanup runs.
+      if (options.isActive === false) return;
       for (const binding of bindings) {
         if (matches(binding.key, input, key)) {
           binding.run();

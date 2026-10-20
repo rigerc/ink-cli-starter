@@ -1,5 +1,4 @@
 import {Box} from 'ink';
-import {useState} from 'react';
 import {
   Alert,
   Badge,
@@ -15,11 +14,9 @@ import {
   Heading,
   type BadgeVariant,
   Confirm,
-  InlineLayout,
   StepperProgress,
 } from '../components';
-import {SetupWizard} from '../demos/SetupWizard';
-import {useKeymap} from '../hooks';
+import {CollectionGallery} from '../demos/CollectionGallery';
 import {formatBytes, formatDuration} from '../lib/format';
 import {tones} from '../theme/tokens';
 
@@ -27,8 +24,6 @@ const variants: BadgeVariant[] = ['solid', 'subtle', 'outline'];
 
 /** Every component and variant in one place: docs + manual QA. Press t to switch themes. */
 export function GalleryScreen() {
-  const [wizardKey, setWizardKey] = useState(0);
-  useKeymap([{key: 'r', run: () => setWizardKey((key) => key + 1)}]);
   return (
     <Stack gap={1}>
       <Panel title="Badges">
@@ -82,15 +77,11 @@ export function GalleryScreen() {
         <StepperProgress steps={[{id: 'first', name: 'First'}, {id: 'second', name: 'Second'}]} currentStep={1} orientation="vertical" />
       </Panel>
 
-      <Panel title="Inline layout / Stepper / Step / StepperNavigation" footer="Enter to start; r restarts the wizard">
-        <InlineLayout title={<Heading>Setup wizard</Heading>}>
-          <SetupWizard key={wizardKey} />
-        </InlineLayout>
-      </Panel>
-
-      <Panel title="Confirm" footer="Static example; the interactive prompt is in the wizard above">
+      <Panel title="Confirm" footer="Static example; press w to open the interactive wizard">
         <Confirm message="Continue with deployment?" onConfirm={() => {}} isActive={false} />
       </Panel>
+
+      <CollectionGallery />
 
       <Alert tone="warn" title="Heads up">
         <Muted>Alerts carry a title and optional body.</Muted>

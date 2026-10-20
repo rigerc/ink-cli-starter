@@ -1,25 +1,10 @@
-import {PassThrough, Writable} from 'node:stream';
 import {setTimeout as tick} from 'node:timers/promises';
-import {render, renderToString, Text, type Instance} from 'ink';
-import type {ReactNode} from 'react';
-import {afterEach, describe, expect, it, vi} from 'vitest';
+import {renderToString, Text} from 'ink';
+import {describe, expect, it, vi} from 'vitest';
 import {Step, Stepper, type StepContext} from '../src/components';
 import {InlineDemo} from '../src/demos/InlineDemo';
 import {SetupWizard} from '../src/demos/SetupWizard';
-
-const instances: Instance[] = [];
-afterEach(() => { for (const instance of instances.splice(0)) instance.cleanup(); });
-
-async function mount(node: ReactNode) {
-  let output = '';
-  const stdout = Object.assign(new Writable({write(chunk, _encoding, done) { output += chunk.toString(); done(); }}), {columns: 80, rows: 24});
-  const stdin = Object.assign(new PassThrough(), {isTTY: true, setRawMode: vi.fn(), ref() {}, unref() {}});
-  const instance = render(node, {stdout, stdin, stderr: stdout, debug: true, patchConsole: false, exitOnCtrlC: false});
-  instances.push(instance);
-  const settle = async () => { await tick(10); await instance.waitUntilRenderFlush(); };
-  await settle();
-  return {instance, output: () => output, settle, key: async (key: string) => { stdin.write(key); await settle(); }};
-}
+import {mount} from './helpers/terminal';
 
 function deferred<T>() {
   let resolve!: (value: T) => void;

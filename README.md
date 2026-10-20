@@ -25,11 +25,12 @@ src/
   theme/             tokens, 4 themes, resolve order, ThemeProvider/useTheme/useTone
   components/        Stack Row Panel Card Badge StatusMessage Alert Spinner ProgressBar
                      KeyValue Table TaskList Select Tabs EmptyState ErrorPanel
+                     MultiSelect SearchSelect Toggle PaginatedList
                      Stepper Step StepperProgress StepperNavigation Confirm InlineLayout
                      Header StatusBar ToastHost AppShell + typography (Heading, Label,
                      Muted, Code, Kbd, Icon, Divider)
   hooks/             useKeymap useRouter useAsync useToast useElapsed useInterval
-                     useExit useTerminalSize
+                     useExit useTerminalSize InputCaptureProvider/useInputCapture
   lib/               format, gradient, terminal, config (zod), logger, errors
   screens/           Home Tasks Gallery Settings Help  (+ registry in index.ts)
 tests/
@@ -69,8 +70,60 @@ node dist/cli.js --demo
 
 Pipes, CI, and `--plain` print a static preview and exit without waiting for input.
 Theme flags, `NO_COLOR`, config, and ASCII glyph handling work as in the main app.
-The gallery includes progress variants, a restartable wizard (`r`), a confirmation
-preview, and the inline layout.
+The gallery includes progress variants, a confirmation preview, and an interactive panel.
+Press `m` for MultiSelect, `/` to edit SearchSelect, `o` for Toggle, `p` for PaginatedList,
+or `w` for the inline wizard (`r` restarts it). Search owns keyboard input until Enter
+selects a result or Escape releases it; app shortcuts resume afterward.
+
+## Selection and collection components
+
+All four components are exported from `src/components`, use theme tokens, and support
+`isActive={false}` for static previews or when another control owns keyboard input.
+Use unique option `value`s and stable pagination keys.
+
+| Component | Main props | Keyboard |
+| --- | --- | --- |
+| `MultiSelect` | `items`, `value` / `defaultValue`, `onChange`, `onSubmit`, `maxVisible` | Up/Down or j/k move; Space toggles; Enter submits; Home/End jump |
+| `SearchSelect` | `items`, `onSelect`, `onCancel`, `query` / `defaultQuery`, `onQueryChange`, `maxVisible` | Type to filter; Backspace edits; Ctrl+U clears; Up/Down move; Enter selects; Escape cancels |
+| `Toggle` | `label`, `value` / `defaultValue`, `onChange`, `onLabel`, `offLabel` | Space/Enter toggle; Left turns off; Right turns on |
+| `PaginatedList` | `items`, `getKey`, `renderItem`, `pageSize`, `page` / `initialPage`, `onPageChange` | Left/Right or PageUp/PageDown move; Home/End jump |
+
+```tsx
+<MultiSelect
+  items={[{value: 'lint', label: 'Linting'}, {value: 'tests', label: 'Tests'}]}
+  defaultValue={['tests']}
+  onSubmit={(features) => saveFeatures(features)}
+/>
+
+<SearchSelect items={packages} onSelect={choosePackage} onCancel={closeSearch} />
+<Toggle label="Enable caching" value={cacheEnabled} onChange={setCacheEnabled} />
+
+<PaginatedList
+  items={packages}
+  pageSize={5}
+  getKey={(pkg) => pkg.value}
+  renderItem={(pkg, index) => `${index + 1}. ${pkg.label}`}
+/>
+```
+
+MultiSelect and SearchSelect display at most `maxVisible` options (default 6) and scroll
+the visible window with the cursor. MultiSelect emits available selected values in item
+order; Enter on an empty list does nothing. SearchSelect filters labels and hints without
+case sensitivity, resets its cursor when the query changes, and does not submit when there
+are no matches. Its query editor appends text and removes the last Unicode grapheme with
+Backspace; it is a search prompt, without cursor-position editing.
+
+Toggle defaults to Off and always shows its state in text. PaginatedList uses zero-based
+page indexes, defaults to 5 items per page, clamps indexes when data shrinks, and does not
+wrap at boundaries. `renderItem` receives the absolute item index. Empty lists show an
+`emptyMessage`; non-positive sizes normalize to 1 and non-finite sizes use the default.
+Controlled values only update when their parent supplies a new prop.
+
+`AppProviders` includes `InputCaptureProvider`. Active SearchSelect instances capture input,
+and the shell pauses global shortcuts (including q/t/number keys) until they deactivate.
+For another host, wrap it with `InputCaptureProvider`, use `useHasInputCapture()` to pause
+its keymap, and deactivate SearchSelect from `onSelect`/`onCancel`. Other text inputs can
+call `useInputCapture(isActive)` to participate. Keep only one control active at a time.
 
 ## Wizard components
 
@@ -122,8 +175,8 @@ completion and cancellation fire once per mount. Remount with a new key to resta
 
 When a child input owns Enter/Escape, set `keyboardNav={false}` on the Stepper for that
 step and navigate through the render context or `useStepper()`. See `src/demos/SetupWizard.tsx`
-for Select and Confirm integration. Avoid combining the host app's global letter shortcuts
-with free-form text entry.
+for Select and Confirm integration. Use the input-capture hooks above for free-form text
+entry that must suspend host shortcuts.
 
 ## Notes
 
