@@ -17,7 +17,11 @@ function fromEnvironment(field: ConfigField, env: NodeJS.ProcessEnv): unknown {
     const number = Number(raw);
     return Number.isFinite(number) ? number : undefined;
   }
-  if (field.kind === 'multi') return raw.split(',').map((item) => item.trim()).filter(Boolean);
+  if (field.kind === 'multi')
+    return raw
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean);
   return raw;
 }
 
@@ -33,10 +37,14 @@ export function resolveConfig<T extends object>(
     const fromFile = getAtPath(stored, field.path);
     const fromEnv = fromEnvironment(field, options.env ?? process.env);
     const fromFlag = options.flags ? getAtPath(options.flags, field.path) : undefined;
-    const source = fromFlag !== undefined ? 'flag'
-      : fromEnv !== undefined ? 'environment'
-      : fromFile !== undefined ? 'file'
-      : 'default';
+    const source =
+      fromFlag !== undefined
+        ? 'flag'
+        : fromEnv !== undefined
+          ? 'environment'
+          : fromFile !== undefined
+            ? 'file'
+            : 'default';
     const value = fromFlag ?? fromEnv ?? fromFile ?? field.defaultValue;
     if (value !== undefined) values = setAtPath(values, field.path, value);
     sources[field.path] = source;

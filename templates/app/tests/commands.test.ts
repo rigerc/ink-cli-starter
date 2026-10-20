@@ -23,8 +23,10 @@ describe('headless commands', () => {
     expect(runCommand('doctor', [], {configFile: fixture('missing.json'), json: true})).toBe(true);
     const report = JSON.parse(String(log.mock.calls[0]![0]));
     expect(report.ok).toBe(true);
-    expect(report.checks.map((check: {name: string}) => check.name))
-      .toEqual(['node', 'configuration']);
+    expect(report.checks.map((check: {name: string}) => check.name)).toEqual([
+      'node',
+      'configuration',
+    ]);
     expect(report.checks[1].detail).toContain('defaults in use');
   });
 

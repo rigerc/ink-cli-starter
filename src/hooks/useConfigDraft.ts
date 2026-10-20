@@ -30,6 +30,14 @@ export function useConfigDraft(path?: string) {
     }
   };
   const changed = JSON.stringify(draft) !== JSON.stringify(loaded.config);
-  return {draft, update, discard, save, changed, error, path: loaded.path,
-    get: (field: string) => getAtPath(draft, field)};
+  return {
+    draft,
+    update,
+    discard,
+    save,
+    changed,
+    error,
+    path: loaded.path,
+    get: (field: string) => getAtPath(draft, field),
+  };
 }

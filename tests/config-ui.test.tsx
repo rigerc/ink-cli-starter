@@ -74,7 +74,9 @@ describe('settings screen', () => {
   it('keeps a draft until explicit save, then persists through --config path', async () => {
     const path = fixture();
     const app = await mount(
-      <App options={{theme: 'mono', ascii: true, debug: false, screen: 'settings', configFile: path}} />,
+      <App
+        options={{theme: 'mono', ascii: true, debug: false, screen: 'settings', configFile: path}}
+      />,
     );
     await press(app, '\r'); // edit Appearance
     await press(app, '\u001b[B'); // ASCII

@@ -20,7 +20,7 @@ export function HelpScreen() {
         <Text>--theme dark|light|contrast|mono|auto</Text>
         <Text>{`--screen ${screenIds.join('|')}`}</Text>
         <Text>--setup --config path --plain --ascii --debug</Text>
-        <Text>doctor [--json]  Environment and configuration checks</Text>
+        <Text>doctor [--json] Environment and configuration checks</Text>
       </Panel>
     </Stack>
   );

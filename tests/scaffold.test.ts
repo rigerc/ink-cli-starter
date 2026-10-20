@@ -1,5 +1,13 @@
 import {spawn, spawnSync} from 'node:child_process';
-import {copyFileSync, existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync} from 'node:fs';
+import {
+  copyFileSync,
+  existsSync,
+  mkdtempSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {dirname, join, resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -95,10 +103,16 @@ describe('app scaffolding', () => {
       expect(existsSync(join(target, 'templates'))).toBe(false);
       expect(existsSync(join(target, 'src/commands/index.ts'))).toBe(true);
       expect(existsSync(join(target, 'src/commands/doctor.ts'))).toBe(true);
-      expect(readFileSync(join(target, 'src/screens/index.ts'), 'utf8')).toContain('showInNav: false');
+      expect(readFileSync(join(target, 'src/screens/index.ts'), 'utf8')).toContain(
+        'showInNav: false',
+      );
       expect(readFileSync(join(target, 'src/cli.tsx'), 'utf8')).not.toContain('InlineDemo');
-      expect(readFileSync(join(target, 'scripts/screenshot.tsx'), 'utf8')).not.toContain('InlineDemo');
-      expect(readFileSync(join(target, 'tests/stepper.test.tsx'), 'utf8')).not.toContain('InlineDemo');
+      expect(readFileSync(join(target, 'scripts/screenshot.tsx'), 'utf8')).not.toContain(
+        'InlineDemo',
+      );
+      expect(readFileSync(join(target, 'tests/stepper.test.tsx'), 'utf8')).not.toContain(
+        'InlineDemo',
+      );
       expect(readFileSync(join(target, 'scripts/screenshot.tsx'), 'utf8')).toContain('pkg.name');
       expect(readFileSync(join(target, 'README.md'), 'utf8')).toMatch(/^# sample-cli\n/);
       expect(readFileSync(join(target, 'README.md'), 'utf8')).toContain('npm run dev');
@@ -136,7 +150,10 @@ describe('app scaffolding', () => {
       );
       write(
         join(source, 'package-lock.json'),
-        JSON.stringify({name: 'ink-kit', packages: {'': {name: 'ink-kit', bin: {'ink-kit': 'dist/cli.js'}}}}),
+        JSON.stringify({
+          name: 'ink-kit',
+          packages: {'': {name: 'ink-kit', bin: {'ink-kit': 'dist/cli.js'}}},
+        }),
       );
       write(join(source, 'src/lib/config.ts'), "export const APP_NAME = 'ink-kit';\n");
       write(join(source, 'src/components/NewWidget.tsx'), '// ink-kit is mentioned in a comment\n');
@@ -148,13 +165,18 @@ describe('app scaffolding', () => {
       expect(spawnSync('git', ['add', '.'], {cwd: source}).status).toBe(0);
       write(join(source, 'src/untracked.ts'), 'Keep out');
 
-      const result = spawnSync(process.execPath, [scaffold, 'new-app'], {cwd: dir, encoding: 'utf8'});
+      const result = spawnSync(process.execPath, [scaffold, 'new-app'], {
+        cwd: dir,
+        encoding: 'utf8',
+      });
       expect(result.status, result.stderr).toBe(0);
       const target = join(dir, 'new-app');
       expect(readFileSync(join(target, 'src/components/NewWidget.tsx'), 'utf8')).toBe(
         '// ink-kit is mentioned in a comment\n',
       );
-      expect(readFileSync(join(target, 'src/lib/config.ts'), 'utf8')).toContain("APP_NAME = 'new-app'");
+      expect(readFileSync(join(target, 'src/lib/config.ts'), 'utf8')).toContain(
+        "APP_NAME = 'new-app'",
+      );
       expect(existsSync(join(target, 'src/untracked.ts'))).toBe(false);
       expect(existsSync(join(target, '.github'))).toBe(false);
       expect(existsSync(join(target, 'scripts/scaffold.mjs'))).toBe(false);
@@ -189,12 +211,16 @@ describe('app scaffolding', () => {
   it('prompts for an app name, destination and confirmation in interactive mode', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'ink-scaffold-interactive-'));
     try {
-      const result = await runInteractive(dir, ['--interactive'], [
-        {prompt: 'App name (lowercase kebab-case): ', answer: 'Bad_Name'},
-        {prompt: 'App name (lowercase kebab-case): ', answer: 'prompted-cli'},
-        {prompt: 'Destination path [prompted-cli]: ', answer: 'apps/new-location'},
-        {prompt: 'Create "prompted-cli" at "', answer: 'yes'},
-      ]);
+      const result = await runInteractive(
+        dir,
+        ['--interactive'],
+        [
+          {prompt: 'App name (lowercase kebab-case): ', answer: 'Bad_Name'},
+          {prompt: 'App name (lowercase kebab-case): ', answer: 'prompted-cli'},
+          {prompt: 'Destination path [prompted-cli]: ', answer: 'apps/new-location'},
+          {prompt: 'Create "prompted-cli" at "', answer: 'yes'},
+        ],
+      );
       expect(result.status, result.stderr).toBe(0);
       expect(result.stdout).toContain('Use lowercase letters');
       expect(existsSync(join(dir, 'apps/new-location/package.json'))).toBe(true);
@@ -208,9 +234,11 @@ describe('app scaffolding', () => {
   it('allows cancelling interactive scaffolding without creating files', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'ink-scaffold-cancel-'));
     try {
-      const result = await runInteractive(dir, ['cancelled-cli', '--interactive', '--path', 'somewhere'], [
-        {prompt: 'Create "cancelled-cli" at "', answer: 'n'},
-      ]);
+      const result = await runInteractive(
+        dir,
+        ['cancelled-cli', '--interactive', '--path', 'somewhere'],
+        [{prompt: 'Create "cancelled-cli" at "', answer: 'n'}],
+      );
       expect(result.status, result.stderr).toBe(0);
       expect(result.stdout).toContain('Cancelled.');
       expect(existsSync(join(dir, 'somewhere'))).toBe(false);

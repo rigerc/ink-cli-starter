@@ -87,7 +87,7 @@ export function CollectionGallery() {
           <Text>Selected: {searchValue}</Text>
           <Muted>
             {editing
-              ? 'type filter / arrows move / enter select / esc release shortcuts'
+              ? 'type filter / arrows move / enter select / esc leave search'
               : '/ edit search / shortcuts restored'}
           </Muted>
         </>

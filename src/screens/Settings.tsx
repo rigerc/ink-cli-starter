@@ -29,14 +29,17 @@ function SettingsEditor({onWizard}: {onWizard: () => void}) {
       toast.push(`Could not save: ${toAppError(error).message}`, 'warn');
     }
   };
-  useKeymap([
-    {key: 'up', run: () => setSectionIndex((i) => Math.max(i - 1, 0))},
-    {key: 'down', run: () => setSectionIndex((i) => Math.min(i + 1, sections.length - 1))},
-    {key: 'enter', run: () => setEditing(true)},
-    {key: 's', run: save},
-    {key: 'd', run: draft.discard},
-    {key: 'w', run: onWizard},
-  ], {isActive: !editing});
+  useKeymap(
+    [
+      {key: 'up', run: () => setSectionIndex((i) => Math.max(i - 1, 0))},
+      {key: 'down', run: () => setSectionIndex((i) => Math.min(i + 1, sections.length - 1))},
+      {key: 'enter', run: () => setEditing(true)},
+      {key: 's', run: save},
+      {key: 'd', run: draft.discard},
+      {key: 'w', run: onWizard},
+    ],
+    {isActive: !editing},
+  );
 
   return (
     <Stack gap={1}>
@@ -66,10 +69,12 @@ function SettingsEditor({onWizard}: {onWizard: () => void}) {
           />
         </Panel>
       )}
-      {!editing && <Box flexDirection="column">
-        <Text dimColor>Save commits all changes. Discard restores the loaded file.</Text>
-        <Text dimColor>Environment variables and CLI flags override saved settings.</Text>
-      </Box>}
+      {!editing && (
+        <Box flexDirection="column">
+          <Text dimColor>Save commits all changes. Discard restores the loaded file.</Text>
+          <Text dimColor>Environment variables and CLI flags override saved settings.</Text>
+        </Box>
+      )}
     </Stack>
   );
 }
@@ -79,13 +84,17 @@ export function SettingsScreen() {
   const {path} = useConfigRuntime();
   const [wizard, setWizard] = useState(false);
   const [revision, setRevision] = useState(0);
-  if (wizard) return (
-    <Panel title="Guided configuration">
-      <ConfigWizard path={path} onFinish={() => {
-        setWizard(false);
-        setRevision((value) => value + 1);
-      }} />
-    </Panel>
-  );
+  if (wizard)
+    return (
+      <Panel title="Guided configuration">
+        <ConfigWizard
+          path={path}
+          onFinish={() => {
+            setWizard(false);
+            setRevision((value) => value + 1);
+          }}
+        />
+      </Panel>
+    );
   return <SettingsEditor key={revision} onWizard={() => setWizard(true)} />;
 }

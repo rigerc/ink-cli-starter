@@ -17,7 +17,7 @@ export function Header({
 }) {
   const t = useTheme();
   const {primary, accent} = t.color;
-  const chars = [...title];
+  const chars = Array.from(title);
   const colors = isHex(primary) && isHex(accent) ? gradient(chars.length, primary, accent) : null;
   return (
     <Box justifyContent="space-between" paddingX={1}>

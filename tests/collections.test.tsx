@@ -5,7 +5,7 @@ import {MultiSelect, PaginatedList, SearchSelect, Toggle} from '../src/component
 import {ThemeProvider} from '../src/theme/context';
 import {themeNames} from '../src/theme/tokens';
 import stringWidth from 'string-width';
-import {mount, output, press, settle} from './helpers/terminal';
+import {mount, press, settle} from './helpers/terminal';
 
 const items = ['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon'].map((label) => ({
   value: label.toLowerCase(),
@@ -261,9 +261,7 @@ describe('PaginatedList', () => {
     );
     await settle();
     expect(app.lastFrame()).toContain('Page 1/1');
-    app.rerender(
-      <PaginatedList items={[]} pageSize={0} getKey={getKey} renderItem={renderItem} />,
-    );
+    app.rerender(<PaginatedList items={[]} pageSize={0} getKey={getKey} renderItem={renderItem} />);
     await settle();
     await press(app, '\u001b[C');
     expect(app.lastFrame()).toContain('No items.');

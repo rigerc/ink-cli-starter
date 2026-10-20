@@ -45,3 +45,23 @@ export function pad(text: string, width: number, align: 'left' | 'right' = 'left
 }
 
 export const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
+
+/** Render an unknown value for display; objects never degrade to `[object Object]`. */
+export function formatValue(value: unknown): string {
+  if (value === undefined || value === null) return '';
+  if (Array.isArray(value)) return value.map((item) => formatValue(item)).join(', ');
+  switch (typeof value) {
+    case 'string':
+      return value;
+    case 'number':
+    case 'boolean':
+    case 'bigint':
+      return String(value);
+    case 'symbol':
+      return value.toString();
+    case 'function':
+      return value.name || 'function';
+    default:
+      return JSON.stringify(value) ?? '';
+  }
+}
