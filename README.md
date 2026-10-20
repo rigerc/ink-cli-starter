@@ -8,7 +8,23 @@ hooks, helpers and a component library, with a gallery and tests.
 From a Git checkout of this repository (Node.js 22+ and Git required):
 
 ```bash
-npm run scaffold -- my-cli
+npm run scaffold                            # Interactive: name, destination, confirmation
+npm run scaffold -- my-cli                  # Non-interactive, creates ./my-cli
+npm run scaffold -- my-cli --path ../apps/my-cli  # Custom destination
+npm run scaffold -- my-cli --interactive    # Prompt for destination and confirmation
+```
+
+`--path` (or `-p`) is the **complete output directory**, not a parent folder.
+Relative paths resolve from the directory where the command is run. Missing parent
+directories are created automatically, but an existing destination is never
+overwritten. Omit the app name to enter interactive mode in a terminal; when
+input is piped/non-interactive, provide the app name or use `--interactive`.
+The app package name is always derived from the positional name (or prompt), not
+from the destination directory name.
+
+After scaffolding:
+
+```bash
 cd my-cli
 npm install
 npm run dev

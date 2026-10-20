@@ -1,4 +1,4 @@
-import {spawnSync} from 'node:child_process';
+import {spawn, spawnSync} from 'node:child_process';
 import {copyFileSync, existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {dirname, join, resolve} from 'node:path';
@@ -10,6 +10,49 @@ const script = join(repoRoot, 'scripts/scaffold.mjs');
 
 function run(cwd: string, ...args: string[]) {
   return spawnSync(process.execPath, [script, ...args], {cwd, encoding: 'utf8'});
+}
+
+async function runInteractive(
+  cwd: string,
+  args: string[],
+  steps: Array<{prompt: string; answer: string}>,
+) {
+  return await new Promise<{status: number | null; stdout: string; stderr: string}>(
+    (resolve, reject) => {
+      const child = spawn(process.execPath, [script, ...args], {
+        cwd,
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
+      let stdout = '';
+      let stderr = '';
+      let cursor = 0;
+      let next = 0;
+      const timeout = setTimeout(() => {
+        child.kill();
+        reject(new Error(`Interactive scaffold timed out: ${stdout}\n${stderr}`));
+      }, 4000);
+      child.stdout.on('data', (chunk: Buffer) => {
+        stdout += chunk.toString();
+        while (next < steps.length) {
+          const step = steps[next]!;
+          const position = stdout.indexOf(step.prompt, cursor);
+          if (position < 0) break;
+          cursor = position + step.prompt.length;
+          next++;
+          child.stdin.write(step.answer + '\n');
+        }
+      });
+      child.stderr.on('data', (chunk: Buffer) => (stderr += chunk.toString()));
+      child.on('error', (error) => {
+        clearTimeout(timeout);
+        reject(error);
+      });
+      child.on('close', (status) => {
+        clearTimeout(timeout);
+        resolve({status, stdout, stderr});
+      });
+    },
+  );
 }
 
 function withTempDir(check: (dir: string) => void) {
@@ -108,6 +151,63 @@ describe('app scaffolding', () => {
     });
   });
 
+  it('accepts an explicit destination path and creates missing parent directories', () => {
+    withTempDir((dir) => {
+      const destination = join(dir, 'nested folder', 'renamed-project');
+      const result = run(dir, 'custom-cli', '--path', destination);
+      expect(result.status, result.stderr).toBe(0);
+      expect(existsSync(join(destination, 'src/cli.tsx'))).toBe(true);
+      const pkg = JSON.parse(readFileSync(join(destination, 'package.json'), 'utf8'));
+      expect(pkg.name).toBe('custom-cli');
+      expect(existsSync(join(dir, 'custom-cli'))).toBe(false);
+
+      const existing = run(dir, 'custom-cli', '--path', destination);
+      expect(existing.status).not.toBe(0);
+      expect(pkg.name).toBe('custom-cli');
+    });
+  });
+
+  it('accepts short -p and resolves relative destinations against the caller cwd', () => {
+    withTempDir((dir) => {
+      const result = run(dir, 'local-cli', '-p', 'apps/local-cli');
+      expect(result.status, result.stderr).toBe(0);
+      expect(existsSync(join(dir, 'apps/local-cli/package.json'))).toBe(true);
+    });
+  });
+
+  it('prompts for an app name, destination and confirmation in interactive mode', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ink-scaffold-interactive-'));
+    try {
+      const result = await runInteractive(dir, ['--interactive'], [
+        {prompt: 'App name (lowercase kebab-case): ', answer: 'Bad_Name'},
+        {prompt: 'App name (lowercase kebab-case): ', answer: 'prompted-cli'},
+        {prompt: 'Destination path [prompted-cli]: ', answer: 'apps/new-location'},
+        {prompt: 'Create "prompted-cli" at "', answer: 'yes'},
+      ]);
+      expect(result.status, result.stderr).toBe(0);
+      expect(result.stdout).toContain('Use lowercase letters');
+      expect(existsSync(join(dir, 'apps/new-location/package.json'))).toBe(true);
+      const pkg = JSON.parse(readFileSync(join(dir, 'apps/new-location/package.json'), 'utf8'));
+      expect(pkg.name).toBe('prompted-cli');
+    } finally {
+      rmSync(dir, {recursive: true, force: true});
+    }
+  });
+
+  it('allows cancelling interactive scaffolding without creating files', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ink-scaffold-cancel-'));
+    try {
+      const result = await runInteractive(dir, ['cancelled-cli', '--interactive', '--path', 'somewhere'], [
+        {prompt: 'Create "cancelled-cli" at "', answer: 'n'},
+      ]);
+      expect(result.status, result.stderr).toBe(0);
+      expect(result.stdout).toContain('Cancelled.');
+      expect(existsSync(join(dir, 'somewhere'))).toBe(false);
+    } finally {
+      rmSync(dir, {recursive: true, force: true});
+    }
+  });
+
   it('never overwrites an existing directory', () => {
     withTempDir((dir) => {
       mkdirSync(join(dir, 'taken'));
@@ -123,6 +223,9 @@ describe('app scaffolding', () => {
     withTempDir((dir) => {
       expect(run(dir, '../outside').status).not.toBe(0);
       expect(run(dir, 'Bad_Name').status).not.toBe(0);
+      expect(run(dir).status).not.toBe(0);
+      expect(run(dir, 'valid-cli', '--path', '').status).not.toBe(0);
+      expect(run(dir, 'valid-cli', '--path').status).not.toBe(0);
       const result = run(dir, '--help');
       expect(result.status).toBe(0);
       expect(result.stdout).toContain('npm run scaffold -- <app-name>');
