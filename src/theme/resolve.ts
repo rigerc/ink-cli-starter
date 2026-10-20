@@ -18,6 +18,7 @@ export function resolveThemeName(input: {
 }): ThemeName {
   if (input.noColor) return 'mono';
   for (const candidate of [input.flag, input.env, input.config]) {
+    if (candidate === 'auto') return detectScheme();
     if (isThemeName(candidate)) return candidate;
   }
   return detectScheme();
