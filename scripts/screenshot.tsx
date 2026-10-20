@@ -1,6 +1,8 @@
 import {mkdir} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {parseArgs} from 'node:util';
+import pkg from '../package.json';
 
 async function main() {
   const {values} = parseArgs({
@@ -33,7 +35,7 @@ First run: npx playwright install chromium`);
   delete process.env.NO_COLOR;
   process.env.FORCE_COLOR = '3';
   process.env.CI = '1';
-  process.env.XDG_CONFIG_HOME = '/tmp/ink-kit-screenshots';
+  process.env.XDG_CONFIG_HOME = path.join(tmpdir(), `${pkg.name}-screenshots`);
 
   const [
     {renderToString},
