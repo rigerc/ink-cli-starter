@@ -1,6 +1,6 @@
 import {Box, Text} from 'ink';
 import pkg from '../../package.json';
-import {ScreenLayout, Muted, Panel, Stack} from '../components';
+import {Muted, Panel, ScreenLayout, Stack} from '../components';
 
 export function HomeScreen() {
   return (
