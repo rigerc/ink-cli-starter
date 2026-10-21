@@ -1,6 +1,7 @@
 import {z} from 'zod';
 import pkg from '../../package.json';
 import {themeNames} from '../theme/tokens';
+import {defaultTheme} from '../theme/resolve';
 import {defineConfig} from './definition';
 
 /** Loose parsing retains application-specific extension keys during edits. */
@@ -22,7 +23,7 @@ export const appConfig = defineConfig({
       section: 'Appearance',
       kind: 'select',
       description: 'Auto detects light/dark; NO_COLOR always forces mono.',
-      defaultValue: 'auto',
+      defaultValue: defaultTheme,
       env: `${pkg.name.replaceAll('-', '_').toUpperCase()}_THEME`,
       options: [
         {value: 'auto', label: 'Auto (terminal default)'},
