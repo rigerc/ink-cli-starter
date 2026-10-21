@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {ScreenLayout, Alert, Panel, ProgressBar, Stack, TaskList, type Task} from '../components';
+import {Alert, Panel, ProgressBar, ScreenLayout, Stack, TaskList, type Task} from '../components';
 import {useAsync, useKeymap, useToast} from '../hooks';
 import {AppError} from '../lib/errors';
 import {sleep} from '../lib/format';
