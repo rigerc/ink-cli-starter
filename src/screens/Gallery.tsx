@@ -34,7 +34,7 @@ export function GalleryScreen() {
         },
       },
     ],
-    {isActive: !captured && !pickerOpen && !searchActive},
+    {isActive: !captured && !pickerOpen && !searchActive, scope: 'screen'},
   );
 
   return (
