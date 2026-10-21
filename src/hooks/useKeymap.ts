@@ -66,7 +66,8 @@ const priority: Record<KeymapScope, number> = {global: 0, screen: 1, control: 2}
 
 /**
  * Dispatch registered keymaps once per keypress, with explicit scope priority.
- * A captured text input owns keyboard input, so every registered shortcut pauses.
+ * Captured text input suspends shortcuts except controls explicitly owned by
+ * the capturing editor.
  * Standalone components can still use useKeymap without this provider.
  */
 export function KeymapProvider({children}: {children: ReactNode}) {
@@ -106,7 +107,7 @@ export function KeymapProvider({children}: {children: ReactNode}) {
 /**
  * Declarative bindings. In KeymapProvider, only the highest-priority matching
  * callback runs. Without it, standalone controls retain their original behavior.
- * In both modes, text input capture suspends keyboard shortcuts.
+ * In both modes, text input capture pauses non-owner shortcuts.
  */
 export function useKeymap(bindings: Binding[], options: KeymapOptions = {}) {
   const register = useContext(KeymapContext);
@@ -132,6 +133,9 @@ export function useKeymap(bindings: Binding[], options: KeymapOptions = {}) {
         }
       }
     },
-    {isActive: !register && (!captured || options.allowWhenCaptured === true) && (options.isActive ?? true)},
+    {
+      isActive:
+        !register && (!captured || options.allowWhenCaptured === true) && (options.isActive ?? true),
+    },
   );
 }
