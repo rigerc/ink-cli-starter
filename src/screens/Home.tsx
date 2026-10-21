@@ -1,5 +1,5 @@
 import {Box, Text} from 'ink';
-import {ScreenLayout, Icon, KeyValue, Panel, Stack} from '../components';
+import {Icon, KeyValue, Panel, ScreenLayout, Stack} from '../components';
 import {useTerminalSize} from '../hooks';
 import {configPath} from '../lib/config';
 import {isInteractive} from '../lib/terminal';
