@@ -1,4 +1,4 @@
-import {Box, Text} from 'ink';
+import {Box, Text, useWindowSize} from 'ink';
 import type {ReactNode} from 'react';
 import {useToast} from '../hooks/useToast';
 import {gradient, isHex} from '../lib/gradient';
@@ -43,15 +43,23 @@ export function StatusBar({
   hints,
   right,
 }: {
-  hints: {key: string; label: string}[];
+  hints: readonly {key: string; label: string}[];
   right?: ReactNode;
 }) {
+  const {columns} = useWindowSize();
+  // Prioritize contextual hints; always preserve the quit shortcut if present.
+  const limit = columns < 60 ? 3 : columns < 90 ? 5 : 9;
+  const visible = hints.slice(0, limit);
+  const quit = hints.find((hint) => hint.key === 'q');
+  if (quit && !visible.some((hint) => hint.key === 'q') && visible.length === limit)
+    visible[visible.length - 1] = quit;
+
   return (
     <Box flexDirection="column">
       <Divider />
       <Box justifyContent="space-between" paddingX={1}>
-        <Box columnGap={2} flexWrap="wrap">
-          {hints.map((h) => (
+        <Box columnGap={2} flexWrap="wrap" flexShrink={1}>
+          {visible.map((h) => (
             <Box key={h.key} gap={1}>
               <Kbd>{h.key}</Kbd>
               <Muted>{h.label}</Muted>

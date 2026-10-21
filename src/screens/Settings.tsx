@@ -1,6 +1,6 @@
 import {Box, Text} from 'ink';
 import {useState} from 'react';
-import {Panel, Stack, StatusMessage} from '../components';
+import {Panel, ScreenLayout, Stack, StatusMessage} from '../components';
 import {ConfigSectionEditor, ConfigWizard} from '../components/config';
 import {appConfig, configSections, resolveConfig} from '../config';
 import {useConfigRuntime} from '../config/context';
@@ -43,7 +43,7 @@ function SettingsEditor({onWizard}: {onWizard: () => void}) {
 
   return (
     <Stack gap={1}>
-      <Panel title="Configuration" footer="↑/↓ section  enter edit  s save  d discard  w wizard">
+      <Panel title="Configuration">
         <Text wrap="truncate-end">{draft.path}</Text>
         <Text>{draft.changed ? 'Unsaved changes' : 'No pending changes'}</Text>
         {sections.map((name, index) => (
@@ -84,17 +84,21 @@ export function SettingsScreen() {
   const {path} = useConfigRuntime();
   const [wizard, setWizard] = useState(false);
   const [revision, setRevision] = useState(0);
-  if (wizard)
-    return (
-      <Panel title="Guided configuration">
-        <ConfigWizard
-          path={path}
-          onFinish={() => {
-            setWizard(false);
-            setRevision((value) => value + 1);
-          }}
-        />
-      </Panel>
-    );
-  return <SettingsEditor key={revision} onWizard={() => setWizard(true)} />;
+  return (
+    <ScreenLayout title="Settings" description="Review and configure application preferences">
+      {wizard ? (
+        <Panel title="Guided configuration">
+          <ConfigWizard
+            path={path}
+            onFinish={() => {
+              setWizard(false);
+              setRevision((value) => value + 1);
+            }}
+          />
+        </Panel>
+      ) : (
+        <SettingsEditor key={revision} onWizard={() => setWizard(true)} />
+      )}
+    </ScreenLayout>
+  );
 }

@@ -58,7 +58,7 @@ Interactive tests use `ink-testing-library` to send keyboard input and assert re
 frames. Width-specific tests retain Ink's `renderToString()` for deterministic
 terminal-column checks.
 
-Starter keys: `tab` / `1-5` switch screens, `t` cycles themes, `?` help, `q` quit.
+Starter keys: `tab` / `shift+tab` / `1-5` switch screens, `ctrl+k` opens the command menu, `t` cycles themes, `?` help, `q` quit.
 Generated apps start with three visible tabs (Home, Settings, Help).
 
 ## Automated screenshots
@@ -106,7 +106,8 @@ src/
                      KeyValue Table TaskList Select Tabs EmptyState ErrorPanel
                      MultiSelect SearchSelect Toggle PaginatedList
                      Stepper Step StepperProgress StepperNavigation Confirm InlineLayout
-                     Header StatusBar ToastHost AppShell + typography (Heading, Label,
+                     Header StatusBar ToastHost AppShell ScreenHeader ScreenLayout ScreenState
+                     CommandMenu + typography (Heading, Label,
                      Muted, Code, Kbd, Icon, Divider)
   hooks/             useKeymap useRouter useAsync useToast useElapsed useInterval
                      useExit useTerminalSize InputCaptureProvider/useInputCapture
@@ -188,6 +189,15 @@ instead reports that a TTY is required.
 
 Create `src/screens/Foo.tsx`, add one line to the `screens` array in `src/screens/index.ts`.
 It gets a tab, a number shortcut, a `--screen foo` flag value, and test coverage.
+
+Use `ScreenLayout` for a shared screen title, description, and content padding; the
+outer `AppShell` already owns the application header, tabs, toasts, and status bar.
+Register optional per-screen `hints` on `ScreenDef` to put contextual shortcuts
+first in the status bar. `src/keys.ts` is the single global shortcut definition
+used by key handling, Help, and footer hints; the numeric range adjusts when screens
+are added or removed. `ctrl+k` opens a searchable command menu of visible screens.
+The footer reduces visible hints on narrow terminals without switching to alternate
+screen mode. Use `ScreenState` for loading, empty, error, and success views.
 
 ## Inline demo
 

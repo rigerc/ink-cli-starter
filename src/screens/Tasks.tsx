@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {Alert, Panel, ProgressBar, Stack, TaskList, type Task} from '../components';
+import {Alert, Panel, ProgressBar, ScreenLayout, Stack, TaskList, type Task} from '../components';
 import {useAsync, useKeymap, useToast} from '../hooks';
 import {AppError} from '../lib/errors';
 import {sleep} from '../lib/format';
@@ -46,19 +46,21 @@ export function TasksScreen() {
 
   const done = tasks.filter((t) => t.status === 'done').length;
   return (
-    <Stack gap={1}>
-      <Panel title="Tasks" footer="r  re-run    x  run with a failure">
-        <TaskList tasks={tasks} />
-        <ProgressBar
-          value={done / tasks.length}
-          tone={runner.status === 'error' ? 'danger' : 'primary'}
-        />
-      </Panel>
-      {runner.status === 'error' && (
-        <Alert tone="danger" title={runner.error.message}>
-          {runner.error.hint}
-        </Alert>
-      )}
-    </Stack>
+    <ScreenLayout title="Tasks" description="Monitor and rerun the sample task pipeline">
+      <Stack gap={1}>
+        <Panel title="Tasks">
+          <TaskList tasks={tasks} />
+          <ProgressBar
+            value={done / tasks.length}
+            tone={runner.status === 'error' ? 'danger' : 'primary'}
+          />
+        </Panel>
+        {runner.status === 'error' && (
+          <Alert tone="danger" title={runner.error.message}>
+            {runner.error.hint}
+          </Alert>
+        )}
+      </Stack>
+    </ScreenLayout>
   );
 }
