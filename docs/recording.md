@@ -80,8 +80,10 @@ npm run record -- --screen home --theme dark --columns 100 --format mp4
 cp screenshots/home-dark-100-video.mp4 assets/demo.mp4
 ```
 
-Only the PNGs and `demo.mp4` should be committed. Generated `assets/screenshots/tapes/`
-is ignored, and the recording's working files in `screenshots/` remain ignored.
+Only the PNGs and `demo.mp4` should be committed. The workflow stages only
+`assets/screenshots/*.png` and `assets/demo.mp4`, leaving generated replay tapes
+in `assets/screenshots/tapes/` untracked (not ignored). The recording's working
+files in `screenshots/` remain ignored.
 Change the recording screen, theme, width or `--tape` in the workflow dispatch inputs
 to replace the demo; the gallery still captures every screen at the fixed defaults.
 The workflow checks the capture commands before committing, avoiding broken media.
