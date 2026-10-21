@@ -143,6 +143,12 @@ describe('app scaffolding', () => {
       const scaffold = join(source, 'scripts/scaffold.mjs');
       mkdirSync(dirname(scaffold), {recursive: true});
       copyFileSync(script, scaffold);
+      copyFileSync(join(repoRoot, 'scripts/scaffold-options.mjs'), join(source, 'scripts/scaffold-options.mjs'));
+      mkdirSync(join(source, 'docs'), {recursive: true});
+      write(join(source, 'docs/architecture.md'), 'fixture');
+      write(join(source, 'src/cli.tsx'), '// fixture\n');
+      write(join(source, 'src/screens/index.ts'), '// fixture\n');
+      write(join(source, 'src/screens/Help.tsx'), '// fixture\n');
       write(
         join(source, 'package.json'),
         JSON.stringify({
@@ -221,6 +227,10 @@ describe('app scaffolding', () => {
           {prompt: 'App name (lowercase kebab-case): ', answer: 'Bad_Name'},
           {prompt: 'App name (lowercase kebab-case): ', answer: 'prompted-cli'},
           {prompt: 'Destination path [prompted-cli]: ', answer: 'apps/new-location'},
+          {prompt: 'Preset [standard]', answer: ''},
+          {prompt: 'Package manager [npm]', answer: ''},
+          {prompt: 'Toolchain [vite-plus]', answer: ''},
+          {prompt: 'Features [', answer: ''},
           {prompt: 'Create "prompted-cli" at "', answer: 'yes'},
         ],
       );
@@ -240,7 +250,13 @@ describe('app scaffolding', () => {
       const result = await runInteractive(
         dir,
         ['cancelled-cli', '--interactive', '--path', 'somewhere'],
-        [{prompt: 'Create "cancelled-cli" at "', answer: 'n'}],
+        [
+          {prompt: 'Preset [standard]', answer: ''},
+          {prompt: 'Package manager [npm]', answer: ''},
+          {prompt: 'Toolchain [vite-plus]', answer: ''},
+          {prompt: 'Features [', answer: ''},
+          {prompt: 'Create "cancelled-cli" at "', answer: 'n'},
+        ],
       );
       expect(result.status, result.stderr).toBe(0);
       expect(result.stdout).toContain('Cancelled.');
@@ -248,6 +264,88 @@ describe('app scaffolding', () => {
     } finally {
       rmSync(dir, {recursive: true, force: true});
     }
+  });
+
+
+  it('creates a minimal project without optional screens and commands', () => {
+    withTempDir((dir) => {
+      const result = run(dir, 'tiny-cli', '--preset', 'minimal');
+      expect(result.status, result.stderr).toBe(0);
+      const target = join(dir, 'tiny-cli');
+      const pkg = JSON.parse(readFileSync(join(target, 'package.json'), 'utf8'));
+      expect(existsSync(join(target, 'src/screens/Settings.tsx'))).toBe(false);
+      expect(existsSync(join(target, 'src/screens/Gallery.tsx'))).toBe(false);
+      expect(existsSync(join(target, 'src/demos/ConfigSetup.tsx'))).toBe(false);
+      expect(existsSync(join(target, 'src/commands/doctor.ts'))).toBe(false);
+      expect(existsSync(join(target, 'scripts/screenshot.tsx'))).toBe(false);
+      expect(existsSync(join(target, '.github/workflows/ci.yml'))).toBe(false);
+      expect(pkg.scripts.gallery).toBeUndefined();
+      expect(pkg.scripts.screenshot).toBeUndefined();
+      expect(pkg.scripts.test).toBeDefined();
+      expect(readFileSync(join(target, 'src/cli.tsx'), 'utf8')).not.toContain('ConfigSetup');
+      expect(readFileSync(join(target, 'src/screens/index.ts'), 'utf8')).not.toContain('SettingsScreen');
+      expect(readFileSync(join(target, 'tests/screens.test.tsx'), 'utf8')).not.toContain("render('gallery'");
+    });
+  });
+
+  it('supports explicit features and no optional testing dependencies', () => {
+    withTempDir((dir) => {
+      const result = run(dir, 'lean-cli', '--features', 'doctor,ci');
+      expect(result.status, result.stderr).toBe(0);
+      const target = join(dir, 'lean-cli');
+      const pkg = JSON.parse(readFileSync(join(target, 'package.json'), 'utf8'));
+      expect(existsSync(join(target, 'tests'))).toBe(false);
+      expect(existsSync(join(target, 'src/commands/doctor.ts'))).toBe(true);
+      expect(existsSync(join(target, '.github/workflows/ci.yml'))).toBe(true);
+      expect(pkg.devDependencies['ink-testing-library']).toBeUndefined();
+      expect(pkg.devDependencies.playwright).toBeUndefined();
+      expect(pkg.scripts.test).toBeUndefined();
+      expect(readFileSync(join(target, '.github/workflows/ci.yml'), 'utf8')).not.toContain('npm run test');
+    });
+  });
+
+  it('switches to tsdown and Vitest without Vite+ configuration', () => {
+    withTempDir((dir) => {
+      const result = run(dir, 'tsdown-cli', '--toolchain', 'tsdown', '--package-manager', 'pnpm');
+      expect(result.status, result.stderr).toBe(0);
+      const target = join(dir, 'tsdown-cli');
+      const pkg = JSON.parse(readFileSync(join(target, 'package.json'), 'utf8'));
+      expect(pkg.scripts.build).toBe('tsdown');
+      expect(pkg.scripts.test).toBe('vitest run');
+      expect(pkg.devDependencies.tsdown).toBeDefined();
+      expect(pkg.devDependencies['vite-plus']).toBeUndefined();
+      expect(existsSync(join(target, 'tsdown.config.ts'))).toBe(true);
+      expect(existsSync(join(target, 'vitest.config.ts'))).toBe(true);
+      expect(existsSync(join(target, 'vite.config.ts'))).toBe(false);
+      expect(existsSync(join(target, 'package-lock.json'))).toBe(false);
+      expect(readFileSync(join(target, 'tests/theme.test.ts'), 'utf8')).toContain("from 'vitest'");
+      expect(readFileSync(join(target, '.github/workflows/ci.yml'), 'utf8')).toContain('pnpm install');
+    });
+  });
+
+  it('supports all package managers and rejects invalid options before writing files', () => {
+    withTempDir((dir) => {
+      for (const manager of ['npm', 'pnpm', 'yarn', 'bun']) {
+        const name = manager + '-cli';
+        const result = run(dir, name, '--package-manager', manager, '--features', 'none');
+        expect(result.status, result.stderr).toBe(0);
+        const target = join(dir, name);
+        expect(existsSync(join(target, 'tests'))).toBe(false);
+        if (manager !== 'npm') expect(existsSync(join(target, 'package-lock.json'))).toBe(false);
+      }
+      for (const args of [
+        ['--preset', 'unknown'],
+        ['--package-manager', 'nope'],
+        ['--toolchain', 'nope'],
+        ['--features', 'gallery,unknown'],
+        ['--features', 'settings,settings,'],
+      ]) {
+        const name = 'bad-cli';
+        const result = run(dir, name, ...args);
+        expect(result.status).not.toBe(0);
+        expect(existsSync(join(dir, name))).toBe(false);
+      }
+    });
   });
 
   it('never overwrites an existing directory', () => {
