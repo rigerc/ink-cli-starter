@@ -189,7 +189,7 @@ function generatedReadme(name, choices) {
     '- Register noninteractive commands in \`src/commands/index.ts\`.',
     '- Keep domain features independent of React/Ink.',
     '- Reuse \`src/components/\`, \`src/hooks/\`, and \`src/theme/\`.',
-    '- See \`docs/architecture.md\` and \`docs/adding-a-feature.md\`.',
+    '- See [UI framework guide](docs/ui-framework.md), [Architecture](docs/architecture.md), and [Add a feature](docs/adding-a-feature.md).',
     '',
     '## Checks',
     '',
@@ -251,6 +251,7 @@ function architecture(choices) {
     '- \`src/screens/index.ts\` defines screens and visible navigation order.',
     '- \`src/commands/index.ts\` registers headless commands.',
     '- \`src/components/\`, \`src/hooks/\`, and \`src/theme/\` supply reusable UI primitives.',
+    '- \`docs/ui-framework.md\` explains composition, input ownership, themes and tests.',
     '- \`src/config/\` and \`src/lib/config.ts\` provide versioned, validated config.',
     '',
     'Selected features: ' + (choices.features.join(', ') || 'none') + '.',
@@ -258,10 +259,47 @@ function architecture(choices) {
     'The generator removed unselected entry points, scripts, and dependencies.',
     'Add feature modules under \`src/features/\` when needed.',
     '',
+    '## UI framework',
+    '',
+    'Use [the UI framework guide](ui-framework.md) for shared shell ownership,',
+    'screen registration, keymap priority, text input capture, semantic theming,',
+    'async states and terminal-width-safe layouts.',
+    'The [feature walkthrough](adding-a-feature.md) shows the extension path.',
+    '',
     'Run your package manager scripts for typecheck and build' +
       (includes(choices, 'tests') ? ', plus tests' : '') + '.',
     '',
   ].join('\n'));
+}
+
+
+function generatedAgentGuide(choices, template) {
+  const marker = '<!-- SCAFFOLD_TOOLCHAIN_GUIDANCE -->';
+  if (!template.includes(marker))
+    throw new Error('Generated AGENTS.md template is missing the toolchain marker.');
+
+  const pm = choices.packageManager;
+  const runner = pm === 'npm' ? 'npm run' : pm === 'pnpm' ? 'pnpm run'
+    : pm === 'yarn' ? 'yarn' : 'bun run';
+  const lines = [
+    choices.toolchain === 'vite-plus'
+      ? 'This application uses **Vite+** for building and running tests. Run package.json scripts with the chosen package manager. If using the global `vp` CLI, note that `vp <name>` invokes a built-in command whereas `vp run <name>` runs a project script; inspect the scripts first.'
+      : 'This application uses **tsdown** for builds and standalone **Vitest** when tests are enabled. It does not use the Vite+ CLI or Vite+ configuration.',
+    '',
+    '- Install dependencies with `' + pm + ' install`.',
+    '- Run `' + runner + ' typecheck` and `' + runner + ' build`.',
+    ...(includes(choices, 'tests')
+      ? ['- Run `' + runner + ' test`; keep interactive and plain-rendering coverage.']
+      : ['- No test script is installed for this feature selection; do not assume test tooling is present.']),
+    ...(includes(choices, 'screenshots')
+      ? ['- For screenshot review, install Playwright Chromium and run `' + runner + ' screenshot`.']
+      : []),
+    ...(includes(choices, 'ci')
+      ? ['- The generated CI workflow lives in `.github/workflows/ci.yml`.']
+      : []),
+    '- Confirm `node dist/cli.js --plain` prints output after a build.',
+  ];
+  return line(template.replace(marker, lines.join('\n')).trimEnd());
 }
 
 export async function customizeGeneratedApp(destination, name, choices) {
@@ -337,7 +375,6 @@ export async function customizeGeneratedApp(destination, name, choices) {
     pkg.devDependencies.tsdown = '^0.23.1';
     delete pkg.overrides;
     await remove(destination, 'vite.config.ts');
-    await remove(destination, 'AGENTS.md');
     await put(destination, 'tsdown.config.ts', line([
       "import {defineConfig} from 'tsdown';",
       'export default defineConfig({',
@@ -383,5 +420,6 @@ export async function customizeGeneratedApp(destination, name, choices) {
   await put(destination, 'package.json', line(JSON.stringify(pkg, null, 2)));
   await put(destination, 'README.md', generatedReadme(name, choices));
   await put(destination, 'docs/architecture.md', architecture(choices));
+  await put(destination, 'AGENTS.md', generatedAgentGuide(choices, await get(destination, 'AGENTS.md')));
   if (ci) await put(destination, '.github/workflows/ci.yml', ciWorkflow(choices, hasNpmLock));
 }
