@@ -38,7 +38,7 @@ function SettingsEditor({onWizard}: {onWizard: () => void}) {
       {key: 'd', run: draft.discard},
       {key: 'w', run: onWizard},
     ],
-    {isActive: !editing},
+    {isActive: !editing, scope: 'screen'},
   );
 
   return (
