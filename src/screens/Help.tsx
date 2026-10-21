@@ -1,7 +1,7 @@
 import {Box, Text} from 'ink';
 import {Kbd, Panel, ScreenLayout, Stack} from '../components';
 import {getGlobalKeys} from '../keys';
-import {navScreens} from './index';
+import {navScreens, screenIds} from './index';
 
 export function HelpScreen() {
   return (
@@ -19,7 +19,7 @@ export function HelpScreen() {
         </Panel>
         <Panel title="Flags">
           <Text>--theme dark|light|contrast|mono</Text>
-          <Text>--screen home|tasks|gallery|settings|help</Text>
+          <Text>{`--screen ${screenIds.join('|')}`}</Text>
           <Text>{'--plain  --ascii  --debug  --demo'}</Text>
         </Panel>
       </Stack>
