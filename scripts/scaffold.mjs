@@ -5,11 +5,13 @@ import {copyFile, lstat, mkdir, readFile, rm, writeFile} from 'node:fs/promises'
 import {dirname, join, resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {parseArgs} from 'node:util';
+import {customizeGeneratedApp, packageManagers, presets, resolveChoices, toolchains} from './scaffold-options.mjs';
 
 const sourceRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const excluded = new Set([
   'README.md', // Generated apps get their own concise README.
   'scripts/scaffold.mjs',
+  'scripts/scaffold-options.mjs',
   'tests/scaffold.test.ts',
   'src/screens/Tasks.tsx',
   'src/screens/UiDemo.tsx',
@@ -26,13 +28,20 @@ Create a new Ink CLI app. With no name in a terminal, prompts for app name and d
 Options:
   -p, --path <directory>  Full destination directory (default: ./<app-name>)
   -i, --interactive       Prompt for missing options and confirm creation
+  --preset <name>         minimal | standard | full (default: standard)
+  --package-manager <pm>  npm | pnpm | yarn | bun (default: npm)
+  --toolchain <name>      vite-plus | tsdown (default: vite-plus)
+  --features <list>       Comma-separated features or none
+                          Choices: settings,doctor,gallery,tests,screenshots,ci
   -h, --help              Show this help
 
 Examples:
   npm run scaffold
   npm run scaffold -- my-cli
   npm run scaffold -- my-cli --path ../projects/my-cli
-  npm run scaffold -- my-cli --interactive`);
+  npm run scaffold -- my-cli --interactive
+  npm run scaffold -- my-cli --preset minimal --package-manager pnpm --toolchain tsdown
+  npm run scaffold -- my-cli --features settings,tests,ci`);
 }
 function trackedFiles() {
   let output;
@@ -160,10 +169,23 @@ async function askName(rl) {
   }
 }
 
+async function askOption(rl, label, options, defaultValue) {
+  while (true) {
+    const response = (await rl.question(label + ' [' + defaultValue + '] (' + options.join('/') + '): ')).trim();
+    const value = response || defaultValue;
+    if (options.includes(value)) return value;
+    console.log('Choose one of: ' + options.join(', '));
+  }
+}
+
 async function main() {
   const {values, positionals} = parseArgs({
     options: {
       path: {type: 'string', short: 'p'},
+      preset: {type: 'string'},
+      'package-manager': {type: 'string'},
+      toolchain: {type: 'string'},
+      features: {type: 'string'},
       interactive: {type: 'boolean', short: 'i'},
       help: {type: 'boolean', short: 'h'},
     },
@@ -194,6 +216,7 @@ async function main() {
     ? createInterface({input: process.stdin, output: process.stdout})
     : undefined;
   let destination;
+  let choices;
   try {
     if (!name) name = await askName(rl);
     const defaultPath = join('.', name);
@@ -203,7 +226,25 @@ async function main() {
     }
     destination = resolve(process.cwd(), targetPath ?? defaultPath);
 
+    const preset = values.preset ?? (interactive
+      ? await askOption(rl, 'Preset', Object.keys(presets), 'standard') : 'standard');
+    const packageManager = values['package-manager'] ?? (interactive
+      ? await askOption(rl, 'Package manager', packageManagers, 'npm') : 'npm');
+    const toolchain = values.toolchain ?? (interactive
+      ? await askOption(rl, 'Toolchain', toolchains, 'vite-plus') : 'vite-plus');
+    let features = values.features;
+    if (interactive && features === undefined) {
+      const suggested = presets[preset];
+      if (!suggested) throw new Error('Unknown preset "' + preset + '".');
+      const response = (await rl.question(
+        'Features [' + (suggested.join(',') || 'none') + '] (comma-separated or none): ',
+      )).trim();
+      if (response) features = response;
+    }
+    choices = resolveChoices({preset, packageManager, toolchain, features});
+
     if (interactive) {
+      console.log('Selected: ' + choices.preset + ', ' + choices.packageManager + ', ' + choices.toolchain + '; features: ' + (choices.features.join(', ') || 'none'));
       const answer = (await rl.question(`Create "${name}" at "${destination}"? [Y/n]: `))
         .trim()
         .toLowerCase();
@@ -241,14 +282,15 @@ async function main() {
       await copyFile(source, target);
     }
     await renameApp(destination, name);
+    await customizeGeneratedApp(destination, name, choices);
   } catch (error) {
     await rm(destination, {recursive: true, force: true});
     throw error;
   }
 
-  console.log(
-    `Created ${destination}\n\nNext steps:\n  cd "${destination}"\n  npm install\n  npm run dev`,
-  );
+  const pm = choices.packageManager;
+  const runner = pm === 'npm' ? 'npm run' : pm === 'pnpm' ? 'pnpm run' : pm === 'yarn' ? 'yarn' : 'bun run';
+  console.log(`Created ${destination}\n\nNext steps:\n  cd "${destination}"\n  ${pm} install\n  ${runner} dev`);
 }
 
 main().catch((error) => {
