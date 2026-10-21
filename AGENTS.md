@@ -25,3 +25,17 @@ release. Add a tool name to select part of the graph. For example, run
 - [ ] If setup, runtime, or package-manager behavior looks wrong, run `vp env doctor` and include its output when asking for help.
 
 <!--VITE PLUS END-->
+
+## ink-kit repository instructions
+
+These instructions apply to work on the **starter and scaffold generator**.
+Read `README.md` and `docs/ui-framework.md` before changing shared UI behavior.
+
+- Core runtime: `src/cli.tsx` selects interactive vs. `--plain` rendering; `src/app.tsx` owns providers, the shell, router and global shortcuts. Register screens through `src/screens/index.ts`, and compose screen content with `ScreenLayout`, not an additional `AppShell`.
+- Reuse `src/components/` and `src/hooks/`. Prefer `ScreenState` and `useAsync` for async UI and `useToast` for feedback. Keep feature logic separate from React/Ink, and keep headless commands independent of terminal rendering.
+- Shared keyboard dispatch prioritizes control over screen over global bindings. Use `{scope: 'screen'}` for screen handlers. When a control edits text, capture input with `useInputCapture` (or use `SearchSelect`) and release capture when it closes; do not leave conflicting controls active.
+- Use semantic colors via `useTheme()` / `useTone()`. Preserve mono, `NO_COLOR`, ASCII glyphs, narrow-width rendering and noninteractive output. Do not log to stdout while Ink owns the terminal.
+- Scaffolding is driven by `scripts/scaffold.mjs` (Git-tracked files and `templates/app/` overlays) and `scripts/scaffold-options.mjs` (feature pruning and generated files). Generated README, architecture and agent guidance must reflect selected toolchain/features; the reusable `docs/ui-framework.md` must be copied for every preset.
+- `templates/app/AGENTS.md` is the generated application's instructions, whereas this file describes starter maintenance. Keep both correct; do not apply Vite+-only instructions to generated tsdown apps.
+- Check `package.json` scripts, not assumed Vite+ aliases. For this starter, validate with `npm run typecheck`, `npm test` and `npm run build`. Test scaffold variants via `tests/scaffold.test.ts` and the PR smoke-test workflow.
+- Changes to shared UI APIs require updated docs, gallery/examples where applicable, and rendering/input/width regression coverage.

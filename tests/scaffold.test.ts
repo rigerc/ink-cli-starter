@@ -140,6 +140,21 @@ describe('app scaffolding', () => {
       expect(readFileSync(join(target, 'README.md'), 'utf8')).toContain('docs/adding-a-feature.md');
       expect(existsSync(join(target, 'docs/architecture.md'))).toBe(true);
       expect(existsSync(join(target, 'docs/adding-a-feature.md'))).toBe(true);
+      const uiGuide = readFileSync(join(target, 'docs/ui-framework.md'), 'utf8');
+      expect(uiGuide).toBe(readFileSync(join(repoRoot, 'docs/ui-framework.md'), 'utf8'));
+      expect(uiGuide).toContain('## Keyboard routing and focus');
+      expect(readFileSync(join(target, 'README.md'), 'utf8')).toContain(
+        '[UI framework guide](docs/ui-framework.md)',
+      );
+      expect(readFileSync(join(target, 'docs/architecture.md'), 'utf8')).toContain(
+        '[the UI framework guide](ui-framework.md)',
+      );
+      const agents = readFileSync(join(target, 'AGENTS.md'), 'utf8');
+      expect(agents).toContain('[UI framework guide](docs/ui-framework.md)');
+      expect(agents).toContain('Vite+');
+      expect(agents).toContain('npm run typecheck');
+      expect(agents).toContain('npm run test');
+      expect(agents).not.toContain('<!-- SCAFFOLD_TOOLCHAIN_GUIDANCE -->');
       expect(existsSync(join(target, '.github/workflows/ci.yml'))).toBe(true);
       expect(existsSync(join(target, 'src/screens'))).toBe(true);
       expect(existsSync(join(target, 'tests/screens.test.tsx'))).toBe(true);
@@ -164,6 +179,8 @@ describe('app scaffolding', () => {
       copyFileSync(join(repoRoot, 'scripts/scaffold-options.mjs'), join(source, 'scripts/scaffold-options.mjs'));
       mkdirSync(join(source, 'docs'), {recursive: true});
       write(join(source, 'docs/architecture.md'), 'fixture');
+      write(join(source, 'docs/ui-framework.md'), 'fixture UI guide');
+      write(join(source, 'AGENTS.md'), '# Fixture agents\n\n<!-- SCAFFOLD_TOOLCHAIN_GUIDANCE -->\n');
       write(join(source, 'src/cli.tsx'), '// fixture\n');
       write(join(source, 'src/screens/index.ts'), '// fixture\n');
       write(join(source, 'src/screens/Help.tsx'), '// fixture\n');
@@ -206,6 +223,10 @@ describe('app scaffolding', () => {
       );
       expect(existsSync(join(target, 'src/untracked.ts'))).toBe(false);
       expect(existsSync(join(target, '.github'))).toBe(false);
+      expect(readFileSync(join(target, 'docs/ui-framework.md'), 'utf8')).toBe('fixture UI guide');
+      const agents = readFileSync(join(target, 'AGENTS.md'), 'utf8');
+      expect(agents).toContain('npm run typecheck');
+      expect(agents).not.toContain('SCAFFOLD_TOOLCHAIN_GUIDANCE');
       expect(existsSync(join(target, 'scripts/scaffold.mjs'))).toBe(false);
       expect(existsSync(join(target, 'tests/scaffold.test.ts'))).toBe(false);
     });
@@ -303,6 +324,9 @@ describe('app scaffolding', () => {
       expect(readFileSync(join(target, 'src/cli.tsx'), 'utf8')).not.toContain('ConfigSetup');
       expect(readFileSync(join(target, 'src/screens/index.ts'), 'utf8')).not.toContain('SettingsScreen');
       expect(readFileSync(join(target, 'tests/screens.test.tsx'), 'utf8')).not.toContain("render('gallery'");
+      expect(existsSync(join(target, 'docs/ui-framework.md'))).toBe(true);
+      expect(readFileSync(join(target, 'AGENTS.md'), 'utf8')).toContain('npm run test');
+      expect(readFileSync(join(target, 'AGENTS.md'), 'utf8')).not.toContain('screenshot`');
     });
   });
 
@@ -319,6 +343,10 @@ describe('app scaffolding', () => {
       expect(pkg.devDependencies.playwright).toBeUndefined();
       expect(pkg.scripts.test).toBeUndefined();
       expect(readFileSync(join(target, '.github/workflows/ci.yml'), 'utf8')).not.toContain('npm run test');
+      expect(existsSync(join(target, 'docs/ui-framework.md'))).toBe(true);
+      expect(readFileSync(join(target, 'AGENTS.md'), 'utf8')).toContain(
+        'No test script is installed',
+      );
     });
   });
 
@@ -338,6 +366,13 @@ describe('app scaffolding', () => {
       expect(existsSync(join(target, 'package-lock.json'))).toBe(false);
       expect(readFileSync(join(target, 'tests/theme.test.ts'), 'utf8')).toContain("from 'vitest'");
       expect(readFileSync(join(target, '.github/workflows/ci.yml'), 'utf8')).toContain('pnpm install');
+      const agents = readFileSync(join(target, 'AGENTS.md'), 'utf8');
+      expect(agents).toContain('tsdown');
+      expect(agents).toContain('pnpm run typecheck');
+      expect(agents).toContain('pnpm run test');
+      expect(agents).not.toContain('Vite+');
+      expect(agents).not.toContain('SCAFFOLD_TOOLCHAIN_GUIDANCE');
+      expect(existsSync(join(target, 'docs/ui-framework.md'))).toBe(true);
     });
   });
 
