@@ -7,6 +7,7 @@ import {
   type Theme,
   type ThemeName,
 } from './tokens';
+import palettes from './palettes.json';
 
 const make = (name: ThemeName, color: Palette, extra: Partial<Theme> = {}): Theme => ({
   name,
@@ -18,51 +19,12 @@ const make = (name: ThemeName, color: Palette, extra: Partial<Theme> = {}): Them
   ...extra,
 });
 
-const dark = make('dark', {
-  primary: '#7aa2f7',
-  accent: '#bb9af7',
-  success: '#9ece6a',
-  warn: '#e0af68',
-  danger: '#f7768e',
-  info: '#7dcfff',
-  muted: '#565f89',
-  text: '#c0caf5',
-  subtle: '#737aa2',
-  border: '#3b4261',
-  focus: '#7aa2f7',
-  onTone: '#1a1b26',
-});
+const dark = make('dark', palettes.dark);
 
-const light = make('light', {
-  primary: '#2e5cb8',
-  accent: '#7b3fb5',
-  success: '#2f7d32',
-  warn: '#a15c00',
-  danger: '#c62828',
-  info: '#00698f',
-  muted: '#6b7280',
-  text: '#1f2937',
-  subtle: '#4b5563',
-  border: '#9ca3af',
-  focus: '#2e5cb8',
-  onTone: '#ffffff',
-});
+const light = make('light', palettes.light);
 
-/** ANSI named colors only, so the user's terminal palette stays in control. */
-const contrast = make('contrast', {
-  primary: 'cyanBright',
-  accent: 'magentaBright',
-  success: 'greenBright',
-  warn: 'yellowBright',
-  danger: 'redBright',
-  info: 'blueBright',
-  muted: 'white',
-  text: 'whiteBright',
-  subtle: 'white',
-  border: 'whiteBright',
-  focus: 'yellowBright',
-  onTone: 'black',
-});
+/** Contrast uses ANSI named colors so the terminal palette stays in control. */
+const contrast = make('contrast', palettes.contrast);
 
 const none = undefined;
 const mono = make(
