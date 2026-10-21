@@ -1,9 +1,26 @@
 import {useInput, type Key} from 'ink';
+import {
+  createContext,
+  createElement,
+  useCallback,
+  useContext,
+  useLayoutEffect,
+  useRef,
+  type ReactNode,
+} from 'react';
+import {useHasInputCapture} from './useInputCapture';
 
 export interface Binding {
   /** "q", "tab", "shift+tab", "ctrl+r", "enter", "esc", "up", "down", "space"… */
   key: string;
   run: () => void;
+}
+
+export type KeymapScope = 'global' | 'screen' | 'control';
+export interface KeymapOptions {
+  isActive?: boolean;
+  /** When bindings overlap, controls win over screens, then global shortcuts. */
+  scope?: KeymapScope;
 }
 
 function matches(spec: string, input: string, key: Key): boolean {
@@ -36,12 +53,76 @@ function matches(spec: string, input: string, key: Key): boolean {
   return mods.has('ctrl') === key.ctrl && !key.meta && input === name;
 }
 
-/** Declarative key bindings. First match wins. Ctrl+C is handled by Ink itself. */
-export function useKeymap(bindings: Binding[], options: {isActive?: boolean} = {}) {
+interface Listener {
+  id: number;
+  getBindings: () => Binding[];
+  getOptions: () => KeymapOptions;
+}
+type Register = (listener: Omit<Listener, 'id'>) => () => void;
+const KeymapContext = createContext<Register | null>(null);
+const priority: Record<KeymapScope, number> = {global: 0, screen: 1, control: 2};
+
+/**
+ * Dispatch registered keymaps once per keypress, with explicit scope priority.
+ * A captured text input owns keyboard input, so every registered shortcut pauses.
+ * Standalone components can still use useKeymap without this provider.
+ */
+export function KeymapProvider({children}: {children: ReactNode}) {
+  const listeners = useRef(new Map<number, Listener>());
+  const nextId = useRef(0);
+  const captured = useHasInputCapture();
+
+  const register = useCallback<Register>((listener) => {
+    const id = ++nextId.current;
+    listeners.current.set(id, {...listener, id});
+    return () => {
+      listeners.current.delete(id);
+    };
+  }, []);
+
+  useInput((input, key) => {
+    if (captured) return;
+    const ordered = [...listeners.current.values()].sort((a, b) => {
+      const scopeA = priority[a.getOptions().scope ?? 'control'];
+      const scopeB = priority[b.getOptions().scope ?? 'control'];
+      return scopeB - scopeA || b.id - a.id;
+    });
+    for (const listener of ordered) {
+      if (listener.getOptions().isActive === false) continue;
+      for (const binding of listener.getBindings()) {
+        if (matches(binding.key, input, key)) {
+          binding.run();
+          return;
+        }
+      }
+    }
+  });
+
+  return createElement(KeymapContext.Provider, {value: register}, children);
+}
+
+/**
+ * Declarative bindings. In KeymapProvider, only the highest-priority matching
+ * callback runs. Without it, standalone controls retain their original behavior.
+ * In both modes, text input capture suspends keyboard shortcuts.
+ */
+export function useKeymap(bindings: Binding[], options: KeymapOptions = {}) {
+  const register = useContext(KeymapContext);
+  const captured = useHasInputCapture();
+  const latest = useRef({bindings, options});
+  latest.current = {bindings, options};
+
+  useLayoutEffect(() => {
+    if (!register) return;
+    return register({
+      getBindings: () => latest.current.bindings,
+      getOptions: () => latest.current.options,
+    });
+  }, [register]);
+
   useInput(
     (input, key) => {
-      // A disabled listener may still be attached until its effect cleanup runs.
-      if (options.isActive === false) return;
+      if (register || captured || options.isActive === false) return;
       for (const binding of bindings) {
         if (matches(binding.key, input, key)) {
           binding.run();
@@ -49,6 +130,6 @@ export function useKeymap(bindings: Binding[], options: {isActive?: boolean} = {
         }
       }
     },
-    {isActive: options.isActive ?? true},
+    {isActive: !register && !captured && (options.isActive ?? true)},
   );
 }
