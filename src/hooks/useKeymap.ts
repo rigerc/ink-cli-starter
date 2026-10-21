@@ -21,6 +21,8 @@ export interface KeymapOptions {
   isActive?: boolean;
   /** When bindings overlap, controls win over screens, then global shortcuts. */
   scope?: KeymapScope;
+  /** Only for controls explicitly owned by a capturing editor. */
+  allowWhenCaptured?: boolean;
 }
 
 function matches(spec: string, input: string, key: Key): boolean {
@@ -81,7 +83,6 @@ export function KeymapProvider({children}: {children: ReactNode}) {
   }, []);
 
   useInput((input, key) => {
-    if (captured) return;
     const ordered = [...listeners.current.values()].sort((a, b) => {
       const scopeA = priority[a.getOptions().scope ?? 'control'];
       const scopeB = priority[b.getOptions().scope ?? 'control'];
@@ -89,6 +90,7 @@ export function KeymapProvider({children}: {children: ReactNode}) {
     });
     for (const listener of ordered) {
       if (listener.getOptions().isActive === false) continue;
+      if (captured && !listener.getOptions().allowWhenCaptured) continue;
       for (const binding of listener.getBindings()) {
         if (matches(binding.key, input, key)) {
           binding.run();
@@ -122,7 +124,7 @@ export function useKeymap(bindings: Binding[], options: KeymapOptions = {}) {
 
   useInput(
     (input, key) => {
-      if (register || captured || options.isActive === false) return;
+      if (register || (captured && !options.allowWhenCaptured) || options.isActive === false) return;
       for (const binding of bindings) {
         if (matches(binding.key, input, key)) {
           binding.run();
@@ -130,6 +132,6 @@ export function useKeymap(bindings: Binding[], options: KeymapOptions = {}) {
         }
       }
     },
-    {isActive: !register && !captured && (options.isActive ?? true)},
+    {isActive: !register && (!captured || options.allowWhenCaptured === true) && (options.isActive ?? true)},
   );
 }
