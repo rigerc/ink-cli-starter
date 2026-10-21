@@ -13,6 +13,7 @@
     "dev": "tsx src/cli.tsx",
     "gallery": "tsx src/cli.tsx --screen gallery",
     "demo:inline": "node --import tsx src/cli.tsx --demo",
+    "demo:ui": "tsx src/cli.tsx --screen ui-demo",
     "build": "vp pack",
     "typecheck": "tsc --noEmit",
     "test": "vp test run",
