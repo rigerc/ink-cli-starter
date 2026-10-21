@@ -5,6 +5,7 @@ import {HelpScreen} from './Help';
 import {HomeScreen} from './Home';
 import {SettingsScreen} from './Settings';
 import {TasksScreen} from './Tasks';
+import {UiDemoScreen} from './UiDemo';
 
 export interface ScreenDef {
   id: string;
@@ -16,7 +17,7 @@ export interface ScreenDef {
   hints?: readonly KeyHint[];
 }
 
-/** Order here is tab order and the 1-5 shortcuts. */
+/** Order here controls tab order and numeric shortcuts. */
 export const screens: ScreenDef[] = [
   {id: 'home', label: 'Home', Component: HomeScreen},
   {id: 'tasks', label: 'Tasks', Component: TasksScreen, hints: [
@@ -32,6 +33,16 @@ export const screens: ScreenDef[] = [
     {key: 'w', label: 'wizard'},
   ]},
   {id: 'help', label: 'Help', Component: HelpScreen},
+  {
+    id: 'ui-demo',
+    label: 'UI Demo',
+    Component: UiDemoScreen,
+    hints: [
+      {key: 's', label: 'next state'},
+      {key: 'r', label: 'reset'},
+      {key: 'm', label: 'message'},
+    ],
+  },
 ];
 
 export const navScreens = screens.filter((s) => s.showInNav !== false);

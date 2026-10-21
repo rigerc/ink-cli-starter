@@ -89,6 +89,7 @@ describe('app scaffolding', () => {
       expect(pkg.bin).toEqual({'sample-cli': './dist/cli.js'});
       expect(pkg.scripts.scaffold).toBeUndefined();
       expect(pkg.scripts['demo:inline']).toBeUndefined();
+      expect(pkg.scripts['demo:ui']).toBeUndefined();
       expect(lock.name).toBe('sample-cli');
       expect(lock.packages[''].name).toBe('sample-cli');
       expect(lock.packages[''].bin).toEqual({'sample-cli': 'dist/cli.js'});
@@ -100,6 +101,8 @@ describe('app scaffolding', () => {
       expect(readFileSync(join(target, 'src/app.tsx'), 'utf8')).toContain('title={pkg.name}');
       expect(existsSync(join(target, 'src/demos/InlineDemo.tsx'))).toBe(false);
       expect(existsSync(join(target, 'src/screens/Tasks.tsx'))).toBe(false);
+      expect(existsSync(join(target, 'src/screens/UiDemo.tsx'))).toBe(false);
+      expect(existsSync(join(target, 'tests/ui-demo.test.tsx'))).toBe(false);
       expect(existsSync(join(target, 'templates'))).toBe(false);
       expect(existsSync(join(target, 'src/commands/index.ts'))).toBe(true);
       expect(existsSync(join(target, 'src/commands/doctor.ts'))).toBe(true);
