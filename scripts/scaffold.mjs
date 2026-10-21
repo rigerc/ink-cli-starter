@@ -123,8 +123,24 @@ ${name} doctor --json    # Machine-readable diagnostics
 ${name} --screen gallery # Optional component gallery
 \`\`\`
 
-## Extend your app
+## Theme customization
 
+Colors are semantic tokens stored in \`src/theme/palettes.json\`. To inspect
+or edit them, and to change the project's built-in default theme:
+
+\`\`\`bash
+npm run theme:list
+npm run theme:token -- dark primary '#ff80aa'
+npm run theme:token -- contrast focus cyanBright
+npm run theme:default -- light
+npm run theme:default -- auto  # Restore terminal detection
+\`\`\`
+
+The contrast theme accepts ANSI color names only; mono has no color tokens.
+The project default is stored in \`src/theme/defaults.json\` and is used
+only when no flag, environment override, or user config specifies a theme.
+
+## Extend your app
 - Create screens in \`src/screens/\` and register them in \`src/screens/index.ts\`.
 - Register noninteractive commands in \`src/commands/index.ts\`.
 - Add feature modules under \`src/features/\` only when needed.

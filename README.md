@@ -126,7 +126,39 @@ Resolution order: `NO_COLOR` > `--theme` > `INK_KIT_THEME` > config file > light
 Themes: `dark`, `light`, `contrast` (ANSI names only), `mono` (no color; weight and symbols).
 `--ascii` / `CLI_ASCII=1` swaps all glyphs and borders for ASCII.
 
-To add a theme: add a name in `theme/tokens.ts`, a palette in `theme/themes.ts`. The gallery and tests pick it up.
+### Customize theme tokens and the project default
+
+The shipped semantic color palettes live in `src/theme/palettes.json`. Use the
+scripts below to modify a token or select a project-wide fallback theme:
+
+```bash
+npm run theme:list                                 # Display palettes and current default
+npm run theme:token -- dark primary '#ff80aa'      # Edit a semantic color
+npm run theme:token -- contrast focus cyanBright  # Contrast allows ANSI colors only
+npm run theme:default -- light                     # Default for new runs
+npm run theme:default -- auto                      # Restore terminal detection
+```
+
+Available tokens are `primary`, `accent`, `success`, `warn`, `danger`, `info`,
+`muted`, `text`, `subtle`, `border`, `focus`, and `onTone`. Values are six-digit
+hex colors (`#RRGGBB`) or ANSI color names. `mono` deliberately has no colors.
+Commands validate inputs before writing, and update JSON atomically.
+
+The project default is stored in `src/theme/defaults.json` and is **not** a
+per-user saved setting. `auto` preserves the original light/dark autodetection.
+Resolution order remains `NO_COLOR` > CLI flag > environment variable > saved
+config > project default. A saved `theme: auto` forces detection even when a
+different project default was selected. The Settings editor shows the project
+default for otherwise unset preferences.
+
+These scripts are copied to scaffolded applications and operate on the project
+containing `scripts/theme.mjs`, regardless of your shell's working directory.
+The generated README includes the same commands.
+
+To add an entirely new theme, extend the names in `src/theme/tokens.ts`,
+register the palette in `src/theme/themes.ts`, and update other theme-facing
+registries and tests as needed. The scripts above edit built-in palettes; they
+do not generate new theme definitions.
 
 ## Configuration framework
 
