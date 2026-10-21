@@ -12,6 +12,7 @@ const excluded = new Set([
   'scripts/scaffold.mjs',
   'tests/scaffold.test.ts',
   'src/screens/Tasks.tsx',
+  'src/screens/UiDemo.tsx',
   'src/demos/InlineDemo.tsx',
 ]);
 const templatePrefix = 'templates/app/';
@@ -74,6 +75,7 @@ async function renameApp(destination, name) {
   pkg.bin = renameBin(pkg.bin, previous, name);
   delete pkg.scripts?.scaffold;
   delete pkg.scripts?.['demo:inline'];
+  delete pkg.scripts?.['demo:ui'];
   pkg.description = 'An extensible Ink terminal application';
   await writeJson(packagePath, pkg);
 
