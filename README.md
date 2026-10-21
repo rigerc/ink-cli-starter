@@ -8,42 +8,54 @@ hooks, helpers and a component library, with a gallery and tests.
 From a Git checkout of this repository (Node.js 22+ and Git required):
 
 ```bash
-npm run scaffold                            # Interactive: name, destination, confirmation
-npm run scaffold -- my-cli                  # Non-interactive, creates ./my-cli
-npm run scaffold -- my-cli --path ../apps/my-cli  # Custom destination
-npm run scaffold -- my-cli --interactive    # Prompt for destination and confirmation
+npm run scaffold                                           # Guided interactive setup
+npm run scaffold -- my-cli                                 # Backward-compatible default
+npm run scaffold -- my-cli --path ../apps/my-cli
+npm run scaffold -- my-cli --preset minimal
+npm run scaffold -- my-cli --package-manager pnpm --toolchain tsdown
+npm run scaffold -- my-cli --features settings,doctor,tests,ci
+npm run scaffold -- my-cli --features none                 # No optional features
+npm run scaffold -- my-cli --interactive                   # Prompt even with a name
 ```
 
-`--path` (or `-p`) is the **complete output directory**, not a parent folder.
-Relative paths resolve from the directory where the command is run. Missing parent
-directories are created automatically, but an existing destination is never
-overwritten. Omit the app name to enter interactive mode in a terminal; when
-input is piped/non-interactive, provide the app name or use `--interactive`.
-The app package name is always derived from the positional name (or prompt), not
-from the destination directory name.
+### Choices
+
+| Flag | Values | Default |
+| --- | --- | --- |
+| `--preset` | `minimal`, `standard`, `full` | `standard` |
+| `--package-manager` | `npm`, `pnpm`, `yarn`, `bun` | `npm` |
+| `--toolchain` | `vite-plus`, `tsdown` | `vite-plus` |
+| `--features` | Comma-separated feature IDs or `none` | Preset features |
+
+Available features: `settings`, `doctor`, `gallery`, `tests`, `screenshots`, `ci`.
+The `minimal` preset includes tests only. Both `standard` and `full` currently
+include all six features, matching the original generated app. `--features`
+replaces the preset feature selection rather than merging with it.
+
+The interactive flow offers name, destination, preset, package manager, toolchain,
+optional features, and final confirmation. Explicit CLI flags take precedence
+over the corresponding prompts. Every selection works non-interactively.
+
+`--path` (or `-p`) means the complete destination directory, not its parent.
+Relative paths resolve from your current directory. The destination must not
+already exist. Invalid combinations fail before creating any output.
+
+### Generated projects
+
+Vite+ is the original build and test stack. `tsdown` uses tsdown to build and
+standalone Vitest for tests, with its own configuration files. For non-default
+dependency selections, the generator omits the stale npm lockfile. The first
+`npm install` produces a new lockfile, to be committed by the app owner. pnpm,
+Yarn, and Bun similarly create their own native lockfile on first install.
+The scaffold does not install dependencies or initialize Git.
+
+Unselected features are omitted from the generated screens, commands, scripts,
+dependencies, tests, and CI. Core Ink components and configuration primitives
+remain reusable even in minimal apps. The default `standard` preset still
+includes Home, Settings, Help, the hidden Gallery, doctor, tests, screenshots
+and CI. See the generated README for exact commands.
 
 After scaffolding:
-
-```bash
-cd my-cli
-npm install
-npm run dev
-```
-
-The generator copies tracked reusable files, but **generates a clean application**
-rather than copying showcase workflows. Tracked overrides in `templates/app/` provide
-a clean CLI, Home/Help screens, screen registry, shortcuts, and screenshot script.
-The generated application has Home, Settings, and Help tabs, with the component
-gallery available through `--screen gallery`. The simulated Tasks screen and inline
-demo are omitted. Generated apps also include headless `doctor [--json]` diagnostics,
-CI, and extension documentation. Untracked files and Git metadata are not copied.
-
-The generator renames `package.json`, the root of `package-lock.json`, and the `APP_NAME`
-constant in `src/lib/config.ts`, and removes starter-only scripts. The CLI title, help, theme environment variable
-(`MY_CLI_THEME`), and screenshot paths derive from those values. App names must be
-lowercase kebab-case (`my-cli`); existing directories are never overwritten.
-The generator does not install dependencies or initialize a new Git repository.
-
 ```bash
 npm install
 npm run dev                 # interactive app
