@@ -1,8 +1,7 @@
 import {Box, Text} from 'ink';
 import {ScreenLayout, Kbd, Panel, Stack} from '../components';
 import {getGlobalKeys} from '../keys';
-import {navScreens} from './index';
-import {screenIds} from './index';
+import {navScreens, screenIds} from './index';
 
 export function HelpScreen() {
   return (
@@ -11,7 +10,7 @@ export function HelpScreen() {
         <Panel title="Keyboard">
           {getGlobalKeys(navScreens.length).map((binding) => (
             <Box key={binding.key} gap={2}>
-              <Box width={5}>
+              <Box width={12}>
                 <Kbd>{binding.key}</Kbd>
               </Box>
               <Text>{binding.label}</Text>
