@@ -1,5 +1,5 @@
 import {Box, Text} from 'ink';
-import {ScreenLayout, Kbd, Panel, Stack} from '../components';
+import {Kbd, Panel, ScreenLayout, Stack} from '../components';
 import {getGlobalKeys} from '../keys';
 import {navScreens} from './index';
 
