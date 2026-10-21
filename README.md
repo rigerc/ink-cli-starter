@@ -236,10 +236,24 @@ node dist/cli.js --demo
 
 Pipes, CI, and `--plain` print a static preview and exit without waiting for input.
 Theme flags, `NO_COLOR`, config, and ASCII glyph handling work as in the main app.
-The gallery includes progress variants, a confirmation preview, and an interactive panel.
-Press `m` for MultiSelect, `/` to edit SearchSelect, `o` for Toggle, `p` for PaginatedList,
-or `w` for the inline wizard (`r` restarts it). Search owns keyboard input until Enter
-selects a result or Escape releases it; app shortcuts resume afterward.
+## Component gallery
+
+Run `npm run gallery` or `npm run dev -- --screen gallery`. The gallery displays
+**one component family at a time**; no off-screen demo is mounted or receives
+keyboard events.
+
+- `[` / `]` steps through components; `/` explicitly opens a searchable
+  component picker. Enter selects, Escape cancels.
+- On the **SearchSelect** example, press Enter to focus its input. Only then
+  does typing edit the query. Escape releases focus and restores shortcuts.
+- Interactive examples keep their own documented keys (Space/Enter for Toggle,
+  arrows/Space for MultiSelect, left/right for PaginatedList, and so on).
+- Global navigation (`Tab`, numbers, `Ctrl+K`, `?`, `q`) is suspended
+  while a search field owns input. Theme and ASCII modes work as usual.
+
+The previous gallery-wide letter shortcuts (`m`, `o`, `p`, `w`, `r`)
+were removed to prevent competing input handlers and accidental example
+switching.
 
 ## Selection and collection components
 
