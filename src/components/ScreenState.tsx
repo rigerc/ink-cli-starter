@@ -1,4 +1,4 @@
-import {Box, Text} from 'ink';
+import {Box} from 'ink';
 import type {ReactNode} from 'react';
 import {EmptyState} from './EmptyState';
 import {ErrorPanel} from './ErrorPanel';
