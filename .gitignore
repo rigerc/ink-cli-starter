@@ -3,6 +3,7 @@ dist
 build
 *.log
 screenshots/
+assets/screenshots/tapes/
 .vitest/
 
 # Tool state and scaffold scratch output
