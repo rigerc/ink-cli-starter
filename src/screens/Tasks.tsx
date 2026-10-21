@@ -42,7 +42,7 @@ export function TasksScreen() {
   useKeymap([
     {key: 'r', run: () => void runner.run(null)},
     {key: 'x', run: () => void runner.run(2)},
-  ]);
+  ], {scope: 'screen'});
 
   const done = tasks.filter((t) => t.status === 'done').length;
   return (
