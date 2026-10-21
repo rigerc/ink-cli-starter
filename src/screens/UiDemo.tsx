@@ -34,7 +34,7 @@ export function UiDemoScreen() {
     },
     {key: 'r', run: () => setStatus('success')},
     {key: 'm', run: () => toast.push('This is a sample notification.', 'info')},
-  ]);
+  ], {scope: 'screen'});
 
   return (
     <ScreenLayout
