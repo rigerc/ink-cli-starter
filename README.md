@@ -10,7 +10,7 @@ screen/layout patterns, component choices, keyboard routing and input ownership,
 semantic theming, async states, responsive terminals and tests. Then follow the
 [feature walkthrough](templates/app/docs/adding-a-feature.md) for a minimal
 screen and headless command. The guide is copied into generated projects as
-`docs/ui-framework.md`; generated READMEs link to it.
+`docs/framework/ui-framework.md`; generated READMEs link to it.
 
 ## Scaffold a new app
 
@@ -29,12 +29,12 @@ npm run scaffold -- my-cli --interactive                   # Prompt even with a 
 
 ### Choices
 
-| Flag | Values | Default |
-| --- | --- | --- |
-| `--preset` | `minimal`, `standard`, `full` | `standard` |
-| `--package-manager` | `npm`, `pnpm`, `yarn`, `bun` | `npm` |
-| `--toolchain` | `vite-plus`, `tsdown` | `vite-plus` |
-| `--features` | Comma-separated feature IDs or `none` | Preset features |
+| Flag                | Values                                | Default         |
+| ------------------- | ------------------------------------- | --------------- |
+| `--preset`          | `minimal`, `standard`, `full`         | `standard`      |
+| `--package-manager` | `npm`, `pnpm`, `yarn`, `bun`          | `npm`           |
+| `--toolchain`       | `vite-plus`, `tsdown`                 | `vite-plus`     |
+| `--features`        | Comma-separated feature IDs or `none` | Preset features |
 
 Available features: `settings`, `doctor`, `gallery`, `tests`, `screenshots`, `ci`.
 The `minimal` preset includes tests only. Both `standard` and `full` currently
@@ -65,6 +65,7 @@ includes Home, Settings, Help, the hidden Gallery, doctor, tests, screenshots
 and CI. See the generated README for exact commands.
 
 After scaffolding:
+
 ```bash
 npm install
 npm run dev                 # interactive app
@@ -245,7 +246,6 @@ For complete examples and focus-management conventions, read
 [the UI framework guide](docs/ui-framework.md). The following is the
 short registration path.
 
-
 Create `src/screens/Foo.tsx`, add one line to the `screens` array in `src/screens/index.ts`.
 It gets a tab, a number shortcut, a `--screen foo` flag value, and test coverage.
 
@@ -294,6 +294,7 @@ node dist/cli.js --demo
 
 Pipes, CI, and `--plain` print a static preview and exit without waiting for input.
 Theme flags, `NO_COLOR`, config, and ASCII glyph handling work as in the main app.
+
 ## Component gallery
 
 Run `npm run gallery` or `npm run dev -- --screen gallery`. The gallery displays

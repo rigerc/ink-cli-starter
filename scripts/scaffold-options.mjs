@@ -22,9 +22,15 @@ export function parseFeatureList(value) {
   return [...new Set(names)];
 }
 
-export function resolveChoices({preset = 'standard', packageManager = 'npm', toolchain = 'vite-plus', features} = {}) {
+export function resolveChoices({
+  preset = 'standard',
+  packageManager = 'npm',
+  toolchain = 'vite-plus',
+  features,
+} = {}) {
   if (!Object.hasOwn(presets, preset)) throw new Error('Unknown preset "' + preset + '".');
-  if (!packageManagers.includes(packageManager)) throw new Error('Unknown package manager "' + packageManager + '".');
+  if (!packageManagers.includes(packageManager))
+    throw new Error('Unknown package manager "' + packageManager + '".');
   if (!toolchains.includes(toolchain)) throw new Error('Unknown toolchain "' + toolchain + '".');
   return {
     preset,
@@ -47,76 +53,86 @@ const line = (value) => value + '\n';
 function screenRegistry(choices) {
   const settings = includes(choices, 'settings');
   const gallery = includes(choices, 'gallery');
-  return line([
-    "import type {ComponentType} from 'react';",
-    "import type {KeyHint} from '../keys';",
-    "import {HomeScreen} from './Home';",
-    "import {HelpScreen} from './Help';",
-    ...(settings ? ["import {SettingsScreen} from './Settings';"] : []),
-    ...(gallery ? ["import {GalleryScreen} from './Gallery';"] : []),
-    '',
-    'export interface ScreenDef {',
-    '  id: string;',
-    '  label: string;',
-    '  Component: ComponentType;',
-    '  showInNav?: boolean;',
-    '  hints?: readonly KeyHint[];',
-    '}',
-    '',
-    'export const screens: ScreenDef[] = [',
-    "  {id: 'home', label: 'Home', Component: HomeScreen},",
-    ...(settings ? [
-      "  {id: 'settings', label: 'Settings', Component: SettingsScreen, hints: [",
-      "    {key: '↑/↓', label: 'section'},",
-      "    {key: 'enter', label: 'edit'},",
-      "    {key: 's', label: 'save'},",
-      "    {key: 'd', label: 'discard'},",
-      "    {key: 'w', label: 'wizard'},",
-      '  ]},',
-    ] : []),
-    "  {id: 'help', label: 'Help', Component: HelpScreen},",
-    ...(gallery ? ["  {id: 'gallery', label: 'Gallery', Component: GalleryScreen, showInNav: false},"] : []),
-    '];',
-    '',
-    'export const navScreens = screens.filter((screen) => screen.showInNav !== false);',
-    'export const screenIds = screens.map((screen) => screen.id);',
-    'export const isScreenId = (id: string) => screenIds.includes(id);',
-  ].join('\n'));
+  return line(
+    [
+      "import type {ComponentType} from 'react';",
+      "import type {KeyHint} from '../keys';",
+      "import {HomeScreen} from './Home';",
+      "import {HelpScreen} from './Help';",
+      ...(settings ? ["import {SettingsScreen} from './Settings';"] : []),
+      ...(gallery ? ["import {GalleryScreen} from './Gallery';"] : []),
+      '',
+      'export interface ScreenDef {',
+      '  id: string;',
+      '  label: string;',
+      '  Component: ComponentType;',
+      '  showInNav?: boolean;',
+      '  hints?: readonly KeyHint[];',
+      '}',
+      '',
+      'export const screens: ScreenDef[] = [',
+      "  {id: 'home', label: 'Home', Component: HomeScreen},",
+      ...(settings
+        ? [
+            "  {id: 'settings', label: 'Settings', Component: SettingsScreen, hints: [",
+            "    {key: '↑/↓', label: 'section'},",
+            "    {key: 'enter', label: 'edit'},",
+            "    {key: 's', label: 'save'},",
+            "    {key: 'd', label: 'discard'},",
+            "    {key: 'w', label: 'wizard'},",
+            '  ]},',
+          ]
+        : []),
+      "  {id: 'help', label: 'Help', Component: HelpScreen},",
+      ...(gallery
+        ? ["  {id: 'gallery', label: 'Gallery', Component: GalleryScreen, showInNav: false},"]
+        : []),
+      '];',
+      '',
+      'export const navScreens = screens.filter((screen) => screen.showInNav !== false);',
+      'export const screenIds = screens.map((screen) => screen.id);',
+      'export const isScreenId = (id: string) => screenIds.includes(id);',
+    ].join('\n'),
+  );
 }
 
 function helpScreen(choices) {
   const settings = includes(choices, 'settings');
   const doctor = includes(choices, 'doctor');
-  return line([
-    "import {Box, Text} from 'ink';",
-    "import {ScreenLayout, Kbd, Panel, Stack} from '../components';",
-    "import {getGlobalKeys} from '../keys';",
-    "import {navScreens, screenIds} from './index';",
-    '',
-    'export function HelpScreen() {',
-    '  return (',
-    '    <ScreenLayout title="Help" description="Keyboard shortcuts and command-line options">',
-    '      <Stack gap={1}>',
-    '        <Panel title="Keyboard">',
-    '          {getGlobalKeys(navScreens.length).map((binding) => (',
-    '            <Box key={binding.key} gap={2}>',
-    '              <Box width={12}><Kbd>{binding.key}</Kbd></Box>',
-    '              <Text>{binding.label}</Text>',
-    '            </Box>',
-    '          ))}',
-    '        </Panel>',
-    '        <Panel title="Flags and commands">',
-    '          <Text>--theme dark|light|contrast|mono|auto</Text>',
-    '          <Text>{\`--screen \${screenIds.join("|")}\`}</Text>',
-    '          <Text>--config path --plain --ascii --debug</Text>',
-    ...(settings ? ['          <Text>--setup Open configuration wizard</Text>'] : []),
-    ...(doctor ? ['          <Text>doctor [--json] Environment and configuration checks</Text>'] : []),
-    '        </Panel>',
-    '      </Stack>',
-    '    </ScreenLayout>',
-    '  );',
-    '}',
-  ].join('\n'));
+  return line(
+    [
+      "import {Box, Text} from 'ink';",
+      "import {ScreenLayout, Kbd, Panel, Stack} from '../components';",
+      "import {getGlobalKeys} from '../keys';",
+      "import {navScreens, screenIds} from './index';",
+      '',
+      'export function HelpScreen() {',
+      '  return (',
+      '    <ScreenLayout title="Help" description="Keyboard shortcuts and command-line options">',
+      '      <Stack gap={1}>',
+      '        <Panel title="Keyboard">',
+      '          {getGlobalKeys(navScreens.length).map((binding) => (',
+      '            <Box key={binding.key} gap={2}>',
+      '              <Box width={12}><Kbd>{binding.key}</Kbd></Box>',
+      '              <Text>{binding.label}</Text>',
+      '            </Box>',
+      '          ))}',
+      '        </Panel>',
+      '        <Panel title="Flags and commands">',
+      '          <Text>--theme dark|light|contrast|mono|auto</Text>',
+      '          <Text>{`--screen ${screenIds.join("|")}`}</Text>',
+      '          <Text>--config path --plain --ascii --debug</Text>',
+      ...(settings ? ['          <Text>--setup Open configuration wizard</Text>'] : []),
+      ...(doctor
+        ? ['          <Text>doctor [--json] Environment and configuration checks</Text>']
+        : []),
+      '        </Panel>',
+      '      </Stack>',
+      '    </ScreenLayout>',
+      '  );',
+      '}',
+    ].join('\n'),
+  );
 }
 
 function pruneCli(cli, choices) {
@@ -126,7 +142,10 @@ function pruneCli(cli, choices) {
     cli = cli.replace(/^    --setup[^\n]*\n/m, '');
     cli = cli.replace("      setup: {type: 'boolean'},\n", '');
     cli = cli.replace('if (flags.setup || flags.plain)', 'if (flags.plain)');
-    cli = cli.replace('Subcommands cannot be combined with --setup or --plain', 'Subcommands cannot be combined with --plain');
+    cli = cli.replace(
+      'Subcommands cannot be combined with --setup or --plain',
+      'Subcommands cannot be combined with --plain',
+    );
     cli = cli.replace(
       "  if (flags.setup && error)\n    throw new AppError('Cannot edit invalid configuration', {hint: error, exitCode: 2});\n",
       '',
@@ -142,15 +161,22 @@ function pruneCli(cli, choices) {
   }
   if (!includes(choices, 'doctor')) {
     cli = cli.replace(/^    \$ \${APP_NAME} doctor[^\n]*\n/m, '');
-    cli = cli.replace('JSON output for headless commands (doctor)', 'JSON output for headless commands');
-    cli = cli.replace('--json requires a headless subcommand (e.g. doctor)', '--json requires a headless subcommand');
+    cli = cli.replace(
+      'JSON output for headless commands (doctor)',
+      'JSON output for headless commands',
+    );
+    cli = cli.replace(
+      '--json requires a headless subcommand (e.g. doctor)',
+      '--json requires a headless subcommand',
+    );
   }
   return cli;
 }
 
 function generatedReadme(name, choices) {
   const pm = choices.packageManager;
-  const cli = pm === 'npm' ? 'npm run' : pm === 'yarn' ? 'yarn' : pm === 'pnpm' ? 'pnpm run' : 'bun run';
+  const cli =
+    pm === 'npm' ? 'npm run' : pm === 'yarn' ? 'yarn' : pm === 'pnpm' ? 'pnpm run' : 'bun run';
   const text = [
     '# ' + name,
     '',
@@ -161,25 +187,25 @@ function generatedReadme(name, choices) {
     '',
     '## Getting started',
     '',
-    '\`\`\`bash',
+    '`\``bash',
     pm + ' install',
     cli + ' dev',
     cli + ' build',
     cli + ' start',
-    '\`\`\`',
+    '`\``',
     '',
     'Installation creates the package-manager lockfile if one was not included.',
     'Commit that generated lockfile and use frozen installs in deployed environments.',
     '',
     '## Commands and features',
     '',
-    '\`\`\`bash',
+    '`\``bash',
     name + ' --help',
     name + ' --plain',
     ...(includes(choices, 'settings') ? [name + ' --setup', name + ' --screen settings'] : []),
     ...(includes(choices, 'doctor') ? [name + ' doctor --json'] : []),
     ...(includes(choices, 'gallery') ? [name + ' --screen gallery'] : []),
-    '\`\`\`',
+    '`\``',
     '',
     'Included features: ' + (choices.features.join(', ') || 'none') + '.',
     '',
@@ -195,34 +221,44 @@ function generatedReadme(name, choices) {
     '',
     '## Extend your app',
     '',
-    '- Register screens in \`src/screens/index.ts\`.',
-    '- Register noninteractive commands in \`src/commands/index.ts\`.',
+    '- Register screens in `src/screens/index.ts`.',
+    '- Register noninteractive commands in `src/commands/index.ts`.',
     '- Keep domain features independent of React/Ink.',
-    '- Reuse \`src/components/\`, \`src/hooks/\`, and \`src/theme/\`.',
-    '- See [UI framework guide](docs/ui-framework.md), [Architecture](docs/architecture.md), and [Add a feature](docs/adding-a-feature.md).',
+    '- Reuse `src/components/`, `src/hooks/`, and `src/theme/`.',
+    '- See [UI framework guide](docs/framework/ui-framework.md), [Architecture](docs/framework/architecture.md), and [Add a feature](docs/framework/adding-a-feature.md).',
     '',
     '## Checks',
     '',
-    '\`\`\`bash',
+    '`\``bash',
     cli + ' typecheck',
     ...(includes(choices, 'tests') ? [cli + ' test'] : []),
     cli + ' build',
-    ...(includes(choices, 'screenshots') ? [cli + ' screenshot # First: npx playwright install chromium'] : []),
-    '\`\`\`',
+    ...(includes(choices, 'screenshots')
+      ? [cli + ' screenshot # First: npx playwright install chromium']
+      : []),
+    '`\``',
     '',
-    ...(includes(choices, 'ci') ? ['A GitHub Actions workflow is included in \`.github/workflows/ci.yml\`.', ''] : []),
+    ...(includes(choices, 'ci')
+      ? ['A GitHub Actions workflow is included in `.github/workflows/ci.yml`.', '']
+      : []),
   ];
   return line(text.join('\n'));
 }
 
 function ciWorkflow(choices, hasNpmLock) {
   const pm = choices.packageManager;
-  const run = pm === 'npm' ? 'npm run' : pm === 'pnpm' ? 'pnpm run' : pm === 'yarn' ? 'yarn' : 'bun run';
-  const install = pm === 'npm'
-    ? hasNpmLock ? 'npm ci' : 'npm install'
-    : pm === 'pnpm' ? 'pnpm install --no-frozen-lockfile'
-    : pm === 'yarn' ? 'yarn install'
-    : 'bun install';
+  const run =
+    pm === 'npm' ? 'npm run' : pm === 'pnpm' ? 'pnpm run' : pm === 'yarn' ? 'yarn' : 'bun run';
+  const install =
+    pm === 'npm'
+      ? hasNpmLock
+        ? 'npm ci'
+        : 'npm install'
+      : pm === 'pnpm'
+        ? 'pnpm install --no-frozen-lockfile'
+        : pm === 'yarn'
+          ? 'yarn install'
+          : 'bun install';
   const steps = [
     '      - uses: actions/checkout@v4',
     '        with:',
@@ -238,50 +274,65 @@ function ciWorkflow(choices, hasNpmLock) {
     ...(includes(choices, 'tests') ? ['      - run: ' + run + ' test'] : []),
     '      - run: ' + run + ' build',
     '      - run: node dist/cli.js --plain',
-    ...(includes(choices, 'gallery') ? ['      - run: node dist/cli.js --screen gallery --plain'] : []),
+    ...(includes(choices, 'gallery')
+      ? ['      - run: node dist/cli.js --screen gallery --plain']
+      : []),
     ...(includes(choices, 'doctor') ? ['      - run: node dist/cli.js doctor --json'] : []),
   ];
-  return line([
-    'name: CI', '',
-    'on:', '  push:', '  pull_request:', '',
-    'permissions:', '  contents: read', '',
-    'jobs:', '  verify:', '    runs-on: ubuntu-latest', '    steps:',
-    ...steps,
-  ].join('\n'));
+  return line(
+    [
+      'name: CI',
+      '',
+      'on:',
+      '  push:',
+      '  pull_request:',
+      '',
+      'permissions:',
+      '  contents: read',
+      '',
+      'jobs:',
+      '  verify:',
+      '    runs-on: ubuntu-latest',
+      '    steps:',
+      ...steps,
+    ].join('\n'),
+  );
 }
 
 function architecture(choices) {
-  return line([
-    '# Architecture',
-    '',
-    'The generated application is domain-agnostic and built with Ink 8.',
-    '',
-    '- \`src/cli.tsx\` parses CLI arguments and handles plain and interactive rendering.',
-    '- \`src/app.tsx\` composes providers, navigation, and shortcuts.',
-    '- \`src/screens/index.ts\` defines screens and visible navigation order.',
-    '- \`src/commands/index.ts\` registers headless commands.',
-    '- \`src/components/\`, \`src/hooks/\`, and \`src/theme/\` supply reusable UI primitives.',
-    '- \`docs/ui-framework.md\` explains composition, input ownership, themes and tests.',
-    '- \`src/config/\` and \`src/lib/config.ts\` provide versioned, validated config.',
-    '',
-    'Selected features: ' + (choices.features.join(', ') || 'none') + '.',
-    '',
-    'The generator removed unselected entry points, scripts, and dependencies.',
-    'Add feature modules under \`src/features/\` when needed.',
-    '',
-    '## UI framework',
-    '',
-    'Use [the UI framework guide](ui-framework.md) for shared shell ownership,',
-    'screen registration, keymap priority, text input capture, semantic theming,',
-    'async states and terminal-width-safe layouts.',
-    'The [feature walkthrough](adding-a-feature.md) shows the extension path.',
-    '',
-    'Run your package manager scripts for typecheck and build' +
-      (includes(choices, 'tests') ? ', plus tests' : '') + '.',
-    '',
-  ].join('\n'));
+  return line(
+    [
+      '# Architecture',
+      '',
+      'The generated application is domain-agnostic and built with Ink 8.',
+      '',
+      '- `src/cli.tsx` parses CLI arguments and handles plain and interactive rendering.',
+      '- `src/app.tsx` composes providers, navigation, and shortcuts.',
+      '- `src/screens/index.ts` defines screens and visible navigation order.',
+      '- `src/commands/index.ts` registers headless commands.',
+      '- `src/components/`, `src/hooks/`, and `src/theme/` supply reusable UI primitives.',
+      '- `docs/framework/ui-framework.md` explains composition, input ownership, themes and tests.',
+      '- `src/config/` and `src/lib/config.ts` provide versioned, validated config.',
+      '',
+      'Selected features: ' + (choices.features.join(', ') || 'none') + '.',
+      '',
+      'The generator removed unselected entry points, scripts, and dependencies.',
+      'Add feature modules under `src/features/` when needed.',
+      '',
+      '## UI framework',
+      '',
+      'Use [the UI framework guide](ui-framework.md) for shared shell ownership,',
+      'screen registration, keymap priority, text input capture, semantic theming,',
+      'async states and terminal-width-safe layouts.',
+      'The [feature walkthrough](adding-a-feature.md) shows the extension path.',
+      '',
+      'Run your package manager scripts for typecheck and build' +
+        (includes(choices, 'tests') ? ', plus tests' : '') +
+        '.',
+      '',
+    ].join('\n'),
+  );
 }
-
 
 function generatedAgentGuide(choices, template) {
   const marker = '<!-- SCAFFOLD_TOOLCHAIN_GUIDANCE -->';
@@ -289,8 +340,8 @@ function generatedAgentGuide(choices, template) {
     throw new Error('Generated AGENTS.md template is missing the toolchain marker.');
 
   const pm = choices.packageManager;
-  const runner = pm === 'npm' ? 'npm run' : pm === 'pnpm' ? 'pnpm run'
-    : pm === 'yarn' ? 'yarn' : 'bun run';
+  const runner =
+    pm === 'npm' ? 'npm run' : pm === 'pnpm' ? 'pnpm run' : pm === 'yarn' ? 'yarn' : 'bun run';
   const lines = [
     choices.toolchain === 'vite-plus'
       ? 'This application uses **Vite+** for building and running tests. Run package.json scripts with the chosen package manager. If using the global `vp` CLI, note that `vp <name>` invokes a built-in command whereas `vp run <name>` runs a project script; inspect the scripts first.'
@@ -300,9 +351,15 @@ function generatedAgentGuide(choices, template) {
     '- Run `' + runner + ' typecheck` and `' + runner + ' build`.',
     ...(includes(choices, 'tests')
       ? ['- Run `' + runner + ' test`; keep interactive and plain-rendering coverage.']
-      : ['- No test script is installed for this feature selection; do not assume test tooling is present.']),
+      : [
+          '- No test script is installed for this feature selection; do not assume test tooling is present.',
+        ]),
     ...(includes(choices, 'screenshots')
-      ? ['- For screenshot review, install Playwright Chromium and run `' + runner + ' screenshot`.']
+      ? [
+          '- For screenshot review, install Playwright Chromium and run `' +
+            runner +
+            ' screenshot`.',
+        ]
       : []),
     ...(includes(choices, 'ci')
       ? ['- The generated CI workflow lives in `.github/workflows/ci.yml`.']
@@ -323,20 +380,30 @@ export async function customizeGeneratedApp(destination, name, choices) {
 
   if (!settings) {
     for (const file of [
-      'src/screens/Settings.tsx', 'src/demos/ConfigSetup.tsx',
-      'src/components/config', 'src/hooks/useConfigDraft.ts', 'tests/config-ui.test.tsx',
-    ]) await remove(destination, file);
+      'src/screens/Settings.tsx',
+      'src/demos/ConfigSetup.tsx',
+      'src/components/config',
+      'src/hooks/useConfigDraft.ts',
+      'tests/config-ui.test.tsx',
+    ])
+      await remove(destination, file);
   }
   if (!doctor) {
     await remove(destination, 'src/commands/doctor.ts');
     await remove(destination, 'tests/commands.test.ts');
-    await put(destination, 'src/commands/index.ts', line([
-      '/** Register headless commands here without importing React or Ink. */',
-      'export interface CommandOptions {configFile?: string; json?: boolean}',
-      'export function runCommand(_name: string, _args: string[], _options: CommandOptions): boolean {',
-      '  return false;',
-      '}',
-    ].join('\n')));
+    await put(
+      destination,
+      'src/commands/index.ts',
+      line(
+        [
+          '/** Register headless commands here without importing React or Ink. */',
+          'export interface CommandOptions {configFile?: string; json?: boolean}',
+          'export function runCommand(_name: string, _args: string[], _options: CommandOptions): boolean {',
+          '  return false;',
+          '}',
+        ].join('\n'),
+      ),
+    );
   }
   if (!gallery) {
     await remove(destination, 'src/screens/Gallery.tsx');
@@ -347,13 +414,23 @@ export async function customizeGeneratedApp(destination, name, choices) {
     const start = collections.indexOf("describe('gallery input ownership',");
     const end = collections.indexOf("describe('collection rendering',");
     if (start < 0 || end < start) throw new Error('Unable to remove gallery-specific tests.');
-    await put(destination, 'tests/collections.test.tsx', collections.slice(0, start) + collections.slice(end));
+    await put(
+      destination,
+      'tests/collections.test.tsx',
+      collections.slice(0, start) + collections.slice(end),
+    );
   }
   if (!settings) {
     let consistent = await get(destination, 'tests/consistent-ui.test.tsx');
     consistent = consistent.replace("await press(app, 'settings');", "await press(app, 'help');");
-    consistent = consistent.replaceAll('Review and configure application preferences', 'Keyboard shortcuts and command-line options');
-    consistent = consistent.replace("expect(app.lastFrame()).toContain('Settings');", "expect(app.lastFrame()).toContain('Help');");
+    consistent = consistent.replaceAll(
+      'Review and configure application preferences',
+      'Keyboard shortcuts and command-line options',
+    );
+    consistent = consistent.replace(
+      "expect(app.lastFrame()).toContain('Settings');",
+      "expect(app.lastFrame()).toContain('Help');",
+    );
     await put(destination, 'tests/consistent-ui.test.tsx', consistent);
   }
   await put(destination, 'src/screens/index.ts', screenRegistry(choices));
@@ -385,25 +462,37 @@ export async function customizeGeneratedApp(destination, name, choices) {
     pkg.devDependencies.tsdown = '^0.23.1';
     delete pkg.overrides;
     await remove(destination, 'vite.config.ts');
-    await put(destination, 'tsdown.config.ts', line([
-      "import {defineConfig} from 'tsdown';",
-      'export default defineConfig({',
-      "  entry: ['src/cli.tsx'],",
-      "  format: ['esm'],",
-      "  platform: 'node',",
-      "  target: 'node22',",
-      '  dts: false,',
-      '  sourcemap: true,',
-      '  clean: true,',
-      '});',
-    ].join('\n')));
+    await put(
+      destination,
+      'tsdown.config.ts',
+      line(
+        [
+          "import {defineConfig} from 'tsdown';",
+          'export default defineConfig({',
+          "  entry: ['src/cli.tsx'],",
+          "  format: ['esm'],",
+          "  platform: 'node',",
+          "  target: 'node22',",
+          '  dts: false,',
+          '  sourcemap: true,',
+          '  clean: true,',
+          '});',
+        ].join('\n'),
+      ),
+    );
     if (tests) {
-      await put(destination, 'vitest.config.ts', line([
-        "import {defineConfig} from 'vitest/config';",
-        'export default defineConfig({',
-        "  test: {include: ['tests/**/*.test.{ts,tsx}']},",
-        '});',
-      ].join('\n')));
+      await put(
+        destination,
+        'vitest.config.ts',
+        line(
+          [
+            "import {defineConfig} from 'vitest/config';",
+            'export default defineConfig({',
+            "  test: {include: ['tests/**/*.test.{ts,tsx}']},",
+            '});',
+          ].join('\n'),
+        ),
+      );
       for (const entry of await readdir(join(destination, 'tests'), {recursive: true})) {
         if (!entry.endsWith('.test.ts') && !entry.endsWith('.test.tsx')) continue;
         const path = join('tests', entry);
@@ -419,8 +508,12 @@ export async function customizeGeneratedApp(destination, name, choices) {
   if (hasNpmLock) {
     const lock = JSON.parse(await get(destination, 'package-lock.json'));
     const root = lock.packages[''];
-    const equal = (a, b) => JSON.stringify(Object.entries(a ?? {}).sort()) === JSON.stringify(Object.entries(b ?? {}).sort());
-    hasNpmLock = equal(pkg.dependencies, root.dependencies) && equal(pkg.devDependencies, root.devDependencies);
+    const equal = (a, b) =>
+      JSON.stringify(Object.entries(a ?? {}).sort()) ===
+      JSON.stringify(Object.entries(b ?? {}).sort());
+    hasNpmLock =
+      equal(pkg.dependencies, root.dependencies) &&
+      equal(pkg.devDependencies, root.devDependencies);
   }
   if (!hasNpmLock) await rm(lockPath, {force: true});
   if (choices.packageManager !== 'npm') {
@@ -429,7 +522,11 @@ export async function customizeGeneratedApp(destination, name, choices) {
   }
   await put(destination, 'package.json', line(JSON.stringify(pkg, null, 2)));
   await put(destination, 'README.md', generatedReadme(name, choices));
-  await put(destination, 'docs/architecture.md', architecture(choices));
-  await put(destination, 'AGENTS.md', generatedAgentGuide(choices, await get(destination, 'AGENTS.md')));
+  await put(destination, 'docs/framework/architecture.md', architecture(choices));
+  await put(
+    destination,
+    'AGENTS.md',
+    generatedAgentGuide(choices, await get(destination, 'AGENTS.md')),
+  );
   if (ci) await put(destination, '.github/workflows/ci.yml', ciWorkflow(choices, hasNpmLock));
 }

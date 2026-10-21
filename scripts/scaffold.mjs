@@ -5,7 +5,13 @@ import {copyFile, lstat, mkdir, readFile, rm, writeFile} from 'node:fs/promises'
 import {dirname, join, resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {parseArgs} from 'node:util';
-import {customizeGeneratedApp, packageManagers, presets, resolveChoices, toolchains} from './scaffold-options.mjs';
+import {
+  customizeGeneratedApp,
+  packageManagers,
+  presets,
+  resolveChoices,
+  toolchains,
+} from './scaffold-options.mjs';
 
 const sourceRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const excluded = new Set([
@@ -19,6 +25,8 @@ const excluded = new Set([
   'src/demos/InlineDemo.tsx',
 ]);
 const templatePrefix = 'templates/app/';
+const generatedPath = (file) =>
+  file.startsWith('docs/') ? 'docs/framework/' + file.slice('docs/'.length) : file;
 
 function usage() {
   console.log(`Usage: npm run scaffold -- <app-name> [options]
@@ -155,7 +163,7 @@ only when no flag, environment override, or user config specifies a theme.
 - Add feature modules under \`src/features/\` only when needed.
 - Extend \`src/config/schema.ts\` for validated application settings.
 - Reuse \`src/components/\`, \`src/hooks/\`, and \`src/theme/\`.
-- See \`docs/architecture.md\` and \`docs/adding-a-feature.md\`.
+- See \`docs/framework/architecture.md\` and \`docs/framework/adding-a-feature.md\`.
 
 Home, Settings, and Help are the only navigation tabs. The component gallery is
 accessible by flag but is not part of your app's product functionality. No
@@ -187,7 +195,9 @@ async function askName(rl) {
 
 async function askOption(rl, label, options, defaultValue) {
   while (true) {
-    const response = (await rl.question(label + ' [' + defaultValue + '] (' + options.join('/') + '): ')).trim();
+    const response = (
+      await rl.question(label + ' [' + defaultValue + '] (' + options.join('/') + '): ')
+    ).trim();
     const value = response || defaultValue;
     if (options.includes(value)) return value;
     console.log('Choose one of: ' + options.join(', '));
@@ -242,25 +252,39 @@ async function main() {
     }
     destination = resolve(process.cwd(), targetPath ?? defaultPath);
 
-    const preset = values.preset ?? (interactive
-      ? await askOption(rl, 'Preset', Object.keys(presets), 'standard') : 'standard');
-    const packageManager = values['package-manager'] ?? (interactive
-      ? await askOption(rl, 'Package manager', packageManagers, 'npm') : 'npm');
-    const toolchain = values.toolchain ?? (interactive
-      ? await askOption(rl, 'Toolchain', toolchains, 'vite-plus') : 'vite-plus');
+    const preset =
+      values.preset ??
+      (interactive ? await askOption(rl, 'Preset', Object.keys(presets), 'standard') : 'standard');
+    const packageManager =
+      values['package-manager'] ??
+      (interactive ? await askOption(rl, 'Package manager', packageManagers, 'npm') : 'npm');
+    const toolchain =
+      values.toolchain ??
+      (interactive ? await askOption(rl, 'Toolchain', toolchains, 'vite-plus') : 'vite-plus');
     let features = values.features;
     if (interactive && features === undefined) {
       const suggested = presets[preset];
       if (!suggested) throw new Error('Unknown preset "' + preset + '".');
-      const response = (await rl.question(
-        'Features [' + (suggested.join(',') || 'none') + '] (comma-separated or none): ',
-      )).trim();
+      const response = (
+        await rl.question(
+          'Features [' + (suggested.join(',') || 'none') + '] (comma-separated or none): ',
+        )
+      ).trim();
       if (response) features = response;
     }
     choices = resolveChoices({preset, packageManager, toolchain, features});
 
     if (interactive) {
-      console.log('Selected: ' + choices.preset + ', ' + choices.packageManager + ', ' + choices.toolchain + '; features: ' + (choices.features.join(', ') || 'none'));
+      console.log(
+        'Selected: ' +
+          choices.preset +
+          ', ' +
+          choices.packageManager +
+          ', ' +
+          choices.toolchain +
+          '; features: ' +
+          (choices.features.join(', ') || 'none'),
+      );
       const answer = (await rl.question(`Create "${name}" at "${destination}"? [Y/n]: `))
         .trim()
         .toLowerCase();
@@ -283,7 +307,7 @@ async function main() {
       if (!(await lstat(source)).isFile()) {
         throw new Error(`Tracked path is not a regular file: ${file}`);
       }
-      const target = join(destination, file);
+      const target = join(destination, generatedPath(file));
       await mkdir(dirname(target), {recursive: true});
       await copyFile(source, target);
     }
@@ -293,7 +317,7 @@ async function main() {
       if (!(await lstat(source)).isFile()) {
         throw new Error(`Tracked path is not a regular file: ${file}`);
       }
-      const target = join(destination, file.slice(templatePrefix.length));
+      const target = join(destination, generatedPath(file.slice(templatePrefix.length)));
       await mkdir(dirname(target), {recursive: true});
       await copyFile(source, target);
     }
@@ -305,8 +329,11 @@ async function main() {
   }
 
   const pm = choices.packageManager;
-  const runner = pm === 'npm' ? 'npm run' : pm === 'pnpm' ? 'pnpm run' : pm === 'yarn' ? 'yarn' : 'bun run';
-  console.log(`Created ${destination}\n\nNext steps:\n  cd "${destination}"\n  ${pm} install\n  ${runner} dev`);
+  const runner =
+    pm === 'npm' ? 'npm run' : pm === 'pnpm' ? 'pnpm run' : pm === 'yarn' ? 'yarn' : 'bun run';
+  console.log(
+    `Created ${destination}\n\nNext steps:\n  cd "${destination}"\n  ${pm} install\n  ${runner} dev`,
+  );
 }
 
 main().catch((error) => {

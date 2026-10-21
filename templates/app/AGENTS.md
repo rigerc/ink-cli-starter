@@ -1,6 +1,6 @@
 # Agent instructions for this CLI
 
-These instructions apply to the **generated application**, not the ink-kit starter repository. Start with `README.md`, [UI framework guide](docs/ui-framework.md), [Architecture](docs/architecture.md) and [Add a feature](docs/adding-a-feature.md). The source in `src/` is the authoritative API reference.
+These instructions apply to the **generated application**, not the ink-kit starter repository. Start with `README.md`, [UI framework guide](docs/framework/ui-framework.md), [Architecture](docs/framework/architecture.md) and [Add a feature](docs/framework/adding-a-feature.md). The source in `src/` is the authoritative API reference.
 
 ## Architecture and implementation
 

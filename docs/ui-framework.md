@@ -2,8 +2,8 @@
 
 This guide explains how to build terminal interfaces with the local **Ink 8 / React 19** UI framework. It applies to both this starter and generated applications. The framework lives in `src/`; it is **not** a separately installed package.
 
-For feature walkthroughs, generated projects include `docs/adding-a-feature.md` and
-`docs/architecture.md`; in this starter their source templates are under
+For feature walkthroughs, generated projects include `docs/framework/adding-a-feature.md` and
+`docs/framework/architecture.md`; in this starter their source templates are under
 `templates/app/docs/`. The generated app's `README.md` links to both. The starter's `npm run demo:ui` and `npm run demo:inline` are showcases **only in this repository**. Generated apps include the component gallery only when the `gallery` feature is selected.
 
 ## Start here
@@ -15,16 +15,16 @@ For feature walkthroughs, generated projects include `docs/adding-a-feature.md` 
 
 ## Architecture and ownership
 
-| Location | Responsibility |
-| --- | --- |
-| `src/cli.tsx` | Parse flags and select interactive or plain rendering |
-| `src/app.tsx` | Install providers, shared shell, navigation and global shortcuts |
-| `src/screens/index.ts` | Register screen IDs, labels, tab order and contextual hints |
-| `src/screens/*.tsx` | Compose reusable UI into screens |
-| `src/components/` | Themed layout, presentation and input controls |
-| `src/hooks/` | Router, keys, input capture, async work, toast and terminal helpers |
-| `src/theme/` | Semantic colors, symbols and ASCII compatibility |
-| `src/features/` (optional) | Domain models and operations independent of Ink |
+| Location                   | Responsibility                                                      |
+| -------------------------- | ------------------------------------------------------------------- |
+| `src/cli.tsx`              | Parse flags and select interactive or plain rendering               |
+| `src/app.tsx`              | Install providers, shared shell, navigation and global shortcuts    |
+| `src/screens/index.ts`     | Register screen IDs, labels, tab order and contextual hints         |
+| `src/screens/*.tsx`        | Compose reusable UI into screens                                    |
+| `src/components/`          | Themed layout, presentation and input controls                      |
+| `src/hooks/`               | Router, keys, input capture, async work, toast and terminal helpers |
+| `src/theme/`               | Semantic colors, symbols and ASCII compatibility                    |
+| `src/features/` (optional) | Domain models and operations independent of Ink                     |
 
 `AppProviders` installs configuration, theme, input capture, keymap, toast, router and error-boundary providers. The regular `App` already renders `AppShell`, which owns the application header, tabs, command menu, toast area and status footer. **Do not nest a second shell, header, tab bar or footer in your screen.** Instead, use `ScreenLayout` for title, description, actions and consistent content padding. Use `InlineLayout` for an independent compact wizard.
 
@@ -43,10 +43,15 @@ export function JobsScreen() {
   const toast = useToast();
 
   useKeymap(
-    [{key: 'r', run: () => {
-      setRefreshes((count) => count + 1);
-      toast.push('View refreshed', 'success');
-    }}],
+    [
+      {
+        key: 'r',
+        run: () => {
+          setRefreshes((count) => count + 1);
+          toast.push('View refreshed', 'success');
+        },
+      },
+    ],
     {scope: 'screen'},
   );
 
@@ -75,17 +80,17 @@ A visible screen gets a tab, a numeric shortcut and a `--screen jobs` flag. `sho
 
 ## Which components to use
 
-| Goal | Components |
-| --- | --- |
-| Layout and spacing | `Stack`, `Row`, Ink `Box` |
-| Screen structure | `ScreenLayout`, `ScreenHeader` |
-| Grouping | `Panel`, `Card`, `Divider` |
-| Text and key hints | `Heading`, `Label`, `Muted`, `Code`, `Kbd`, `Icon` |
-| Status | `Badge`, `StatusMessage`, `Alert`, `Spinner`, `ProgressBar`, `EmptyState`, `ErrorPanel` |
-| Data | `KeyValue`, `Table`, `TaskList`, `PaginatedList` |
-| Result states | `ScreenState` |
-| Input | `Select`, `MultiSelect`, `SearchSelect`, `Toggle`, `Confirm` |
-| Wizards | `Stepper`, `Step`, `StepperProgress`, `StepperNavigation`, `InlineLayout` |
+| Goal               | Components                                                                              |
+| ------------------ | --------------------------------------------------------------------------------------- |
+| Layout and spacing | `Stack`, `Row`, Ink `Box`                                                               |
+| Screen structure   | `ScreenLayout`, `ScreenHeader`                                                          |
+| Grouping           | `Panel`, `Card`, `Divider`                                                              |
+| Text and key hints | `Heading`, `Label`, `Muted`, `Code`, `Kbd`, `Icon`                                      |
+| Status             | `Badge`, `StatusMessage`, `Alert`, `Spinner`, `ProgressBar`, `EmptyState`, `ErrorPanel` |
+| Data               | `KeyValue`, `Table`, `TaskList`, `PaginatedList`                                        |
+| Result states      | `ScreenState`                                                                           |
+| Input              | `Select`, `MultiSelect`, `SearchSelect`, `Toggle`, `Confirm`                            |
+| Wizards            | `Stepper`, `Step`, `StepperProgress`, `StepperNavigation`, `InlineLayout`               |
 
 Import components through `../components` and hooks through `../hooks` from a screen. Review the local TypeScript props to select the right abstraction. Give selection options unique `value` fields and paginated items stable keys. Use `isActive={false}` to disable a control while another owns keyboard input. Prefer shared panels, controls and indicators over custom ad-hoc renderers.
 
@@ -105,15 +110,18 @@ export function PackagePicker() {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState('none');
 
-  useKeymap(
-    [{key: '/', run: () => setOpen(true)}],
-    {scope: 'screen', isActive: !open},
-  );
+  useKeymap([{key: '/', run: () => setOpen(true)}], {scope: 'screen', isActive: !open});
 
   return open ? (
     <SearchSelect
-      items={[{value: 'ink', label: 'Ink'}, {value: 'react', label: 'React'}]}
-      onSelect={(value) => {setSelected(value); setOpen(false);}}
+      items={[
+        {value: 'ink', label: 'Ink'},
+        {value: 'react', label: 'React'},
+      ]}
+      onSelect={(value) => {
+        setSelected(value);
+        setOpen(false);
+      }}
       onCancel={() => setOpen(false)}
     />
   ) : (
@@ -132,11 +140,16 @@ For another text editor, call `useInputCapture(isEditing)` while it owns input a
 // Inside a screen with useEffect, Text, useAsync, ScreenState imported.
 // loadJobs is a domain operation returning records with id and name.
 const jobs = useAsync(loadJobs);
-useEffect(() => {void jobs.run();}, [jobs.run]);
+useEffect(() => {
+  void jobs.run();
+}, [jobs.run]);
 
-const status = jobs.status === 'idle' ? 'loading'
-  : jobs.status === 'success' && jobs.data.length === 0 ? 'empty'
-  : jobs.status;
+const status =
+  jobs.status === 'idle'
+    ? 'loading'
+    : jobs.status === 'success' && jobs.data.length === 0
+      ? 'empty'
+      : jobs.status;
 
 return (
   <ScreenState
@@ -144,8 +157,7 @@ return (
     error={jobs.status === 'error' ? jobs.error : undefined}
     title={status === 'empty' ? 'No jobs yet' : undefined}
   >
-    {jobs.status === 'success' &&
-      jobs.data.map((job) => <Text key={job.id}>{job.name}</Text>)}
+    {jobs.status === 'success' && jobs.data.map((job) => <Text key={job.id}>{job.name}</Text>)}
   </ScreenState>
 );
 ```
@@ -168,5 +180,5 @@ Semantic palettes live in `src/theme/palettes.json` and the project fallback in 
 - Never call `console.log` while Ink is rendering; use the logger for diagnostics and keep headless output separate.
 - When changing a framework convention, update this guide, relevant scaffold documentation, and regression tests.
 
-For the next implementation step, consult `docs/adding-a-feature.md` in a
+For the next implementation step, consult `docs/framework/adding-a-feature.md` in a
 generated app or `templates/app/docs/adding-a-feature.md` in the starter.
