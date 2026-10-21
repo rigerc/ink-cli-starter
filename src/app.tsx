@@ -6,6 +6,7 @@ import type {Config} from './config';
 import {
   useExit,
   useKeymap,
+  KeymapProvider,
   useRouter,
   RouterProvider,
   ToastProvider,
@@ -31,11 +32,13 @@ export function AppProviders({options, children}: {options: AppOptions; children
     <ConfigRuntimeProvider path={options.configFile} flags={options.configFlags}>
       <ThemeProvider name={options.theme} ascii={options.ascii}>
         <InputCaptureProvider>
-          <ToastProvider>
+          <KeymapProvider>
+            <ToastProvider>
             <RouterProvider initial={options.screen}>
               <ErrorBoundary debug={options.debug}>{children}</ErrorBoundary>
             </RouterProvider>
-          </ToastProvider>
+            </ToastProvider>
+          </KeymapProvider>
         </InputCaptureProvider>
       </ThemeProvider>
     </ConfigRuntimeProvider>
@@ -76,7 +79,7 @@ function Shell() {
       },
       go,
     ),
-    {isActive: !inputCaptured && !commandOpen},
+    {isActive: !inputCaptured && !commandOpen, scope: 'global'},
   );
 
   const screen = screens.find((s) => s.id === router.current) ?? navScreens[0]!;
