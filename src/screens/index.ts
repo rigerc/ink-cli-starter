@@ -24,7 +24,16 @@ export const screens: ScreenDef[] = [
     {key: 'r', label: 'retry'},
     {key: 'x', label: 'simulate failure'},
   ]},
-  {id: 'gallery', label: 'Gallery', Component: GalleryScreen},
+  {
+    id: 'gallery',
+    label: 'Gallery',
+    Component: GalleryScreen,
+    hints: [
+      {key: '[', label: 'previous'},
+      {key: ']', label: 'next'},
+      {key: '/', label: 'find'},
+    ],
+  },
   {id: 'settings', label: 'Settings', Component: SettingsScreen, hints: [
     {key: '↑/↓', label: 'section'},
     {key: 'enter', label: 'edit'},
