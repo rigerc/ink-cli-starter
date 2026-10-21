@@ -87,8 +87,8 @@ describe('shared keyboard routing', () => {
   it('lets explicitly owned controls operate inside an input-capturing editor', async () => {
     const selected = vi.fn();
     const app = await mount(withProviders(<CapturedSelect onSelect={selected} />));
-    await press(app, '\\u001b[B');
-    await press(app, '\\r');
+    await press(app, '\u001b[B');
+    await press(app, '\r');
     expect(selected).toHaveBeenCalledWith('two');
   });
 
