@@ -326,7 +326,7 @@ describe('app scaffolding', () => {
       expect(readFileSync(join(target, 'tests/screens.test.tsx'), 'utf8')).not.toContain("render('gallery'");
       expect(existsSync(join(target, 'docs/ui-framework.md'))).toBe(true);
       expect(readFileSync(join(target, 'AGENTS.md'), 'utf8')).toContain('npm run test');
-      expect(readFileSync(join(target, 'AGENTS.md'), 'utf8')).not.toContain('screenshot\`');
+      expect(readFileSync(join(target, 'AGENTS.md'), 'utf8')).not.toContain('screenshot`');
     });
   });
 
