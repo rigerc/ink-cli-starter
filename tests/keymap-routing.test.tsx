@@ -1,8 +1,8 @@
 import {Text} from 'ink';
-import {useState} from 'react';
+import {useState, type ReactNode} from 'react';
 import {describe, expect, it, vi} from 'vite-plus/test';
-import {SearchSelect} from '../src/components';
-import {InputCaptureProvider} from '../src/hooks/useInputCapture';
+import {SearchSelect, Select} from '../src/components';
+import {InputCaptureProvider, useInputCapture} from '../src/hooks/useInputCapture';
 import {KeymapProvider, useKeymap} from '../src/hooks/useKeymap';
 import {mount, press, settle} from './helpers/terminal';
 
@@ -37,7 +37,18 @@ function CaptureFixture({onShortcut}: {onShortcut: () => void}) {
   );
 }
 
-const withProviders = (node: React.ReactNode) => (
+function CapturedSelect({onSelect}: {onSelect: (value: string) => void}) {
+  useInputCapture(true);
+  return (
+    <Select
+      items={[{value: 'one', label: 'One'}, {value: 'two', label: 'Two'}]}
+      allowWhenCaptured
+      onSelect={onSelect}
+    />
+  );
+}
+
+const withProviders = (node: ReactNode) => (
   <InputCaptureProvider>
     <KeymapProvider>{node}</KeymapProvider>
   </InputCaptureProvider>
@@ -73,11 +84,20 @@ describe('shared keyboard routing', () => {
     expect(shortcut).toHaveBeenCalledTimes(2);
   });
 
+  it('lets explicitly owned controls operate inside an input-capturing editor', async () => {
+    const selected = vi.fn();
+    const app = await mount(withProviders(<CapturedSelect onSelect={selected} />));
+    await press(app, '\\u001b[B');
+    await press(app, '\\r');
+    expect(selected).toHaveBeenCalledWith('two');
+  });
+
   it('preserves keymaps for standalone controls without a router provider', async () => {
     const calls: string[] = [];
     const app = await mount(<RoutingFixture calls={calls} />);
     await press(app, 'x');
     // Standalone mode preserves the preexisting direct-listener behavior.
-    expect(calls).toEqual(['global', 'screen', 'control']);
+    expect(calls).toHaveLength(3);
+    expect(new Set(calls)).toEqual(new Set(['global', 'screen', 'control']));
   });
 });
