@@ -17,6 +17,7 @@ export function Select<T extends string>({
   current,
   onSelect,
   isActive = true,
+  allowWhenCaptured = false,
 }: {
   items: SelectItem<T>[];
   initialValue?: T;
@@ -24,6 +25,7 @@ export function Select<T extends string>({
   current?: T;
   onSelect: (value: T) => void;
   isActive?: boolean;
+  allowWhenCaptured?: boolean;
 }) {
   const t = useTheme();
   const primary = useTone('primary');
@@ -43,7 +45,7 @@ export function Select<T extends string>({
       {key: 'j', run: () => move(1)},
       {key: 'enter', run: () => onSelect(items[index]!.value)},
     ],
-    {isActive},
+    {isActive, allowWhenCaptured},
   );
 
   return (
