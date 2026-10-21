@@ -34,9 +34,9 @@ export function AppProviders({options, children}: {options: AppOptions; children
         <InputCaptureProvider>
           <KeymapProvider>
             <ToastProvider>
-            <RouterProvider initial={options.screen}>
-              <ErrorBoundary debug={options.debug}>{children}</ErrorBoundary>
-            </RouterProvider>
+              <RouterProvider initial={options.screen}>
+                <ErrorBoundary debug={options.debug}>{children}</ErrorBoundary>
+              </RouterProvider>
             </ToastProvider>
           </KeymapProvider>
         </InputCaptureProvider>
