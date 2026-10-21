@@ -7,7 +7,7 @@ import {describe, expect, it} from 'vite-plus/test';
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
-function withProject(fn: (fixture: {root: string; run: (...args: string[]) => ReturnType<typeof spawnSync>}) => void) {
+function withProject(fn: (fixture: {root: string; run: (...args: string[]) => {status: number | null; stdout: string; stderr: string}}) => void) {
   const root = mkdtempSync(join(tmpdir(), 'ink-theme-edit-'));
   try {
     mkdirSync(join(root, 'scripts'), {recursive: true});
