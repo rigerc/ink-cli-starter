@@ -1,5 +1,5 @@
-import {readFile, writeFile, rm} from 'node:fs/promises';
-import {join} from 'node:path';
+import {readFile, writeFile, rm, mkdir, readdir} from 'node:fs/promises';
+import {join, dirname} from 'node:path';
 
 export const featureNames = ['settings', 'doctor', 'gallery', 'tests', 'screenshots', 'ci'];
 export const presets = {
@@ -36,7 +36,11 @@ export function resolveChoices({preset = 'standard', packageManager = 'npm', too
 
 const includes = (choices, feature) => choices.features.includes(feature);
 const remove = async (directory, path) => rm(join(directory, path), {recursive: true, force: true});
-const put = async (directory, path, content) => writeFile(join(directory, path), content);
+const put = async (directory, path, content) => {
+  const target = join(directory, path);
+  await mkdir(dirname(target), {recursive: true});
+  await writeFile(target, content);
+};
 const get = async (directory, path) => readFile(join(directory, path), 'utf8');
 const line = (value) => value + '\n';
 
@@ -353,11 +357,9 @@ export async function customizeGeneratedApp(destination, name, choices) {
         "  test: {include: ['tests/**/*.test.{ts,tsx}']},",
         '});',
       ].join('\n')));
-      const {readdir} = await import('node:fs/promises');
-      const {join: pathJoin} = await import('node:path');
-      for (const entry of await readdir(pathJoin(destination, 'tests'), {recursive: true})) {
+      for (const entry of await readdir(join(destination, 'tests'), {recursive: true})) {
         if (!entry.endsWith('.test.ts') && !entry.endsWith('.test.tsx')) continue;
-        const path = pathJoin('tests', entry);
+        const path = join('tests', entry);
         const value = await get(destination, path);
         await put(destination, path, value.replaceAll("from 'vite-plus/test'", "from 'vitest'"));
       }
