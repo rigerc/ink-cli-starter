@@ -1,6 +1,6 @@
-import type {ReactNode} from 'react';
+import {useState, type ReactNode} from 'react';
 import pkg from '../package.json';
-import {AppShell, Badge, ErrorBoundary, Header, StatusBar, Tabs} from './components';
+import {AppShell, Badge, CommandMenu, ErrorBoundary, Header, StatusBar, Tabs} from './components';
 import {ConfigRuntimeProvider} from './config/context';
 import type {Config} from './config';
 import {
@@ -12,7 +12,7 @@ import {
   InputCaptureProvider,
   useHasInputCapture,
 } from './hooks';
-import {globalKeys} from './keys';
+import {getGlobalBindings, getGlobalKeys, type KeyHint} from './keys';
 import {navScreens, screens} from './screens';
 import {ThemeProvider, useThemeControls} from './theme/context';
 import type {ThemeName} from './theme/tokens';
@@ -42,32 +42,51 @@ export function AppProviders({options, children}: {options: AppOptions; children
   );
 }
 
+const menuHints: KeyHint[] = [
+  {key: '↑/↓', label: 'navigate'},
+  {key: 'enter', label: 'select'},
+  {key: 'esc', label: 'close'},
+];
+const inputHints: KeyHint[] = [
+  {key: 'esc', label: 'back'},
+  {key: 'enter', label: 'edit/select'},
+];
+
 function Shell() {
   const router = useRouter();
   const exit = useExit();
   const {theme, cycleTheme} = useThemeControls();
   const inputCaptured = useHasInputCapture();
+  const [commandOpen, setCommandOpen] = useState(false);
 
-  const index = Math.max(
-    0,
-    navScreens.findIndex((s) => s.id === router.current),
-  );
+  const index = Math.max(0, navScreens.findIndex((s) => s.id === router.current));
   const go = (i: number) =>
     router.replace(navScreens[(i + navScreens.length) % navScreens.length]!.id);
 
   useKeymap(
-    [
-      {key: 'q', run: () => exit()},
-      {key: 'tab', run: () => go(index + 1)},
-      {key: 'shift+tab', run: () => go(index - 1)},
-      {key: 't', run: cycleTheme},
-      {key: '?', run: () => router.replace('help')},
-      ...navScreens.map((s, i) => ({key: String(i + 1), run: () => go(i)})),
-    ],
-    {isActive: !inputCaptured},
+    getGlobalBindings(
+      navScreens.length,
+      {
+        next: () => go(index + 1),
+        previous: () => go(index - 1),
+        commands: () => setCommandOpen(true),
+        theme: cycleTheme,
+        help: () => router.replace('help'),
+        quit: exit,
+      },
+      go,
+    ),
+    {isActive: !inputCaptured && !commandOpen},
   );
 
-  const Screen = (screens.find((s) => s.id === router.current) ?? navScreens[0]!).Component;
+  const screen = screens.find((s) => s.id === router.current) ?? navScreens[0]!;
+  const Screen = screen.Component;
+  const hints = commandOpen
+    ? menuHints
+    : inputCaptured
+      ? inputHints
+      : [...(screen.hints ?? []), ...getGlobalKeys(navScreens.length)];
+
   return (
     <AppShell
       header={
@@ -78,20 +97,20 @@ function Shell() {
         />
       }
       nav={<Tabs items={navScreens} activeId={router.current} />}
-      footer={
-        <StatusBar
-          hints={
-            inputCaptured
-              ? [
-                  {key: 'esc', label: 'back'},
-                  {key: 'enter', label: 'edit/select'},
-                ]
-              : [...globalKeys]
-          }
-        />
-      }
+      footer={<StatusBar hints={hints} />}
     >
-      <Screen />
+      {commandOpen ? (
+        <CommandMenu
+          items={navScreens.map((item) => ({id: item.id, label: item.label, hint: 'Go to screen'}))}
+          onSelect={(id) => {
+            router.replace(id);
+            setCommandOpen(false);
+          }}
+          onCancel={() => setCommandOpen(false)}
+        />
+      ) : (
+        <Screen />
+      )}
     </AppShell>
   );
 }
