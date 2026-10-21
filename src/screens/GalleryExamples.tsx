@@ -82,7 +82,7 @@ export function GalleryExample({
 
   useKeymap(
     [{key: 's', run: () => setStateIndex((value) => (value + 1) % states.length)}],
-    {isActive: id === 'state'},
+    {isActive: id === 'state', scope: 'control'},
   );
 
   switch (id) {
