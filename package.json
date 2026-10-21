@@ -20,7 +20,11 @@
     "screenshot": "node --import tsx scripts/screenshot.tsx",
     "start": "node dist/cli.js",
     "prepare": "vp config",
-    "scaffold": "node scripts/scaffold.mjs"
+    "scaffold": "node scripts/scaffold.mjs",
+    "theme": "node scripts/theme.mjs",
+    "theme:list": "node scripts/theme.mjs list",
+    "theme:token": "node scripts/theme.mjs token",
+    "theme:default": "node scripts/theme.mjs default"
   },
   "dependencies": {
     "ink": "^8.0.0",
