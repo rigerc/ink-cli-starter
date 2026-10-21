@@ -119,6 +119,24 @@ describe('app scaffolding', () => {
       expect(readFileSync(join(target, 'scripts/screenshot.tsx'), 'utf8')).toContain('pkg.name');
       expect(readFileSync(join(target, 'README.md'), 'utf8')).toMatch(/^# sample-cli\n/);
       expect(readFileSync(join(target, 'README.md'), 'utf8')).toContain('npm run dev');
+      expect(pkg.scripts['theme:token']).toBe('node scripts/theme.mjs token');
+      expect(pkg.scripts['theme:default']).toBe('node scripts/theme.mjs default');
+      expect(existsSync(join(target, 'scripts/theme.mjs'))).toBe(true);
+      expect(existsSync(join(target, 'src/theme/palettes.json'))).toBe(true);
+      expect(existsSync(join(target, 'src/theme/defaults.json'))).toBe(true);
+      const changeDefault = spawnSync(process.execPath, [
+        join(target, 'scripts/theme.mjs'), 'default', 'contrast',
+      ], {cwd: dir, encoding: 'utf8'});
+      expect(changeDefault.status, changeDefault.stderr).toBe(0);
+      expect(JSON.parse(readFileSync(join(target, 'src/theme/defaults.json'), 'utf8')).defaultTheme)
+        .toBe('contrast');
+      const changeToken = spawnSync(process.execPath, [
+        join(target, 'scripts/theme.mjs'), 'token', 'dark', 'primary', '#112233',
+      ], {cwd: dir, encoding: 'utf8'});
+      expect(changeToken.status, changeToken.stderr).toBe(0);
+      expect(JSON.parse(readFileSync(join(target, 'src/theme/palettes.json'), 'utf8')).dark.primary)
+        .toBe('#112233');
+      expect(readFileSync(join(target, 'README.md'), 'utf8')).toContain('theme:default');
       expect(readFileSync(join(target, 'README.md'), 'utf8')).toContain('docs/adding-a-feature.md');
       expect(existsSync(join(target, 'docs/architecture.md'))).toBe(true);
       expect(existsSync(join(target, 'docs/adding-a-feature.md'))).toBe(true);
