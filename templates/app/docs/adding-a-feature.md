@@ -14,13 +14,15 @@ your application.
 ```tsx
 // src/screens/Example.tsx
 import {Text} from 'ink';
-import {Panel} from '../components';
+import {Panel, ScreenLayout} from '../components';
 
 export function ExampleScreen() {
   return (
-    <Panel title="Example">
-      <Text>Your content goes here.</Text>
-    </Panel>
+    <ScreenLayout title="Example" description="An example feature">
+      <Panel title="Overview">
+        <Text>Your content goes here.</Text>
+      </Panel>
+    </ScreenLayout>
   );
 }
 ```
@@ -34,9 +36,10 @@ import {ExampleScreen} from './Example';
 {id: 'example', label: 'Example', Component: ExampleScreen},
 ```
 
-The screen now has a tab, numeric shortcut, and `--screen example`. Update
-`src/keys.ts` to keep the shortcut range displayed in the footer and Help
-accurate.
+The screen now has a tab, numeric shortcut, and `--screen example`. The
+footer and Help derive the numeric shortcut range from the screen registry;
+no edits to `src/keys.ts` are needed. Add optional `hints` to the `ScreenDef`
+when a screen has local actions, and use `ScreenState` for async states.
 
 ## Minimal headless command
 
