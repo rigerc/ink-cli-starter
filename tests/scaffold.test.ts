@@ -119,6 +119,13 @@ describe('app scaffolding', () => {
       expect(readFileSync(join(target, 'scripts/screenshot.tsx'), 'utf8')).toContain('pkg.name');
       expect(readFileSync(join(target, 'README.md'), 'utf8')).toMatch(/^# sample-cli\n/);
       expect(readFileSync(join(target, 'README.md'), 'utf8')).toContain('npm run dev');
+      expect(pkg.scripts.record).toContain('--video');
+      expect(pkg.devDependencies.playwright).toBeUndefined();
+      expect(pkg.devDependencies['ansi-to-html']).toBeUndefined();
+      expect(existsSync(join(target, 'scripts/tapes/workflow.tape'))).toBe(true);
+      expect(readFileSync(join(target, 'README.md'), 'utf8')).toContain(
+        'docs/framework/recording.md',
+      );
       expect(pkg.scripts['theme:token']).toBe('node scripts/theme.mjs token');
       expect(pkg.scripts['theme:default']).toBe('node scripts/theme.mjs default');
       expect(existsSync(join(target, 'scripts/theme.mjs'))).toBe(true);
@@ -242,7 +249,7 @@ describe('app scaffolding', () => {
         "APP_NAME = 'new-app'",
       );
       expect(existsSync(join(target, 'src/untracked.ts'))).toBe(false);
-      expect(existsSync(join(target, '.github'))).toBe(false);
+      expect(existsSync(join(target, '.github/workflows/screenshots.yml'))).toBe(false);
       expect(readFileSync(join(target, 'docs/framework/ui-framework.md'), 'utf8')).toBe(
         'fixture UI guide',
       );
@@ -341,6 +348,10 @@ describe('app scaffolding', () => {
       expect(existsSync(join(target, '.github/workflows/ci.yml'))).toBe(false);
       expect(pkg.scripts.gallery).toBeUndefined();
       expect(pkg.scripts.screenshot).toBeUndefined();
+      expect(pkg.scripts.record).toBeUndefined();
+      expect(existsSync(join(target, 'scripts/tapes'))).toBe(false);
+      expect(existsSync(join(target, 'docs/framework/recording.md'))).toBe(false);
+      expect(existsSync(join(target, 'tests/capture.test.ts'))).toBe(false);
       expect(pkg.scripts.test).toBeDefined();
       expect(readFileSync(join(target, 'src/cli.tsx'), 'utf8')).not.toContain('ConfigSetup');
       expect(readFileSync(join(target, 'src/screens/index.ts'), 'utf8')).not.toContain(

@@ -187,25 +187,25 @@ function generatedReadme(name, choices) {
     '',
     '## Getting started',
     '',
-    '`\``bash',
+    '```bash',
     pm + ' install',
     cli + ' dev',
     cli + ' build',
     cli + ' start',
-    '`\``',
+    '```',
     '',
     'Installation creates the package-manager lockfile if one was not included.',
     'Commit that generated lockfile and use frozen installs in deployed environments.',
     '',
     '## Commands and features',
     '',
-    '`\``bash',
+    '```bash',
     name + ' --help',
     name + ' --plain',
     ...(includes(choices, 'settings') ? [name + ' --setup', name + ' --screen settings'] : []),
     ...(includes(choices, 'doctor') ? [name + ' doctor --json'] : []),
     ...(includes(choices, 'gallery') ? [name + ' --screen gallery'] : []),
-    '`\``',
+    '```',
     '',
     'Included features: ' + (choices.features.join(', ') || 'none') + '.',
     '',
@@ -229,15 +229,24 @@ function generatedReadme(name, choices) {
     '',
     '## Checks',
     '',
-    '`\``bash',
+    '```bash',
     cli + ' typecheck',
     ...(includes(choices, 'tests') ? [cli + ' test'] : []),
     cli + ' build',
     ...(includes(choices, 'screenshots')
-      ? [cli + ' screenshot # First: npx playwright install chromium']
+      ? [
+          cli + ' screenshot # Requires VHS, ttyd, FFmpeg and Chromium',
+          cli + ' record     # GIF + MP4; customize scripts/tapes/workflow.tape',
+        ]
       : []),
-    '`\``',
+    '```',
     '',
+    ...(includes(choices, 'screenshots')
+      ? [
+          'See [Recording guide](docs/framework/recording.md) for setup, custom tapes and CI artifacts.',
+          '',
+        ]
+      : []),
     ...(includes(choices, 'ci')
       ? ['A GitHub Actions workflow is included in `.github/workflows/ci.yml`.', '']
       : []),
@@ -356,7 +365,7 @@ function generatedAgentGuide(choices, template) {
         ]),
     ...(includes(choices, 'screenshots')
       ? [
-          '- For screenshot review, install Playwright Chromium and run `' +
+          '- For screenshot review, install VHS, ttyd, FFmpeg and Chromium and run `' +
             runner +
             ' screenshot`.',
         ]
@@ -411,7 +420,7 @@ export async function customizeGeneratedApp(destination, name, choices) {
     screens = screens.replaceAll("render('gallery',", "render('home',");
     await put(destination, 'tests/screens.test.tsx', screens);
     let collections = await get(destination, 'tests/collections.test.tsx');
-    const start = collections.indexOf("describe('gallery input ownership',");
+    const start = collections.indexOf("describe('gallery selection and input ownership',");
     const end = collections.indexOf("describe('collection rendering',");
     if (start < 0 || end < start) throw new Error('Unable to remove gallery-specific tests.');
     await put(
@@ -443,8 +452,10 @@ export async function customizeGeneratedApp(destination, name, choices) {
   if (!tests) delete pkg.scripts.test;
   if (!screenshots) {
     delete pkg.scripts.screenshot;
-    delete pkg.devDependencies.playwright;
-    delete pkg.devDependencies['ansi-to-html'];
+    delete pkg.scripts.record;
+    await remove(destination, 'scripts/tapes');
+    await remove(destination, 'docs/framework/recording.md');
+    await remove(destination, 'tests/capture.test.ts');
     await remove(destination, 'scripts/screenshot.tsx');
   }
   if (!tests) {

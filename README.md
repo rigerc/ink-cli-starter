@@ -84,38 +84,33 @@ terminal-column checks.
 Starter keys: `tab` / `shift+tab` / `1-6` switch screens, `ctrl+k` opens the command menu, `t` cycles themes, `?` help, `q` quit.
 Generated apps start with three visible tabs (Home, Settings, Help).
 
-## Automated screenshots
+## Screenshots and video capture
 
-Install Chromium once, then generate PNGs without an interactive terminal:
+[VHS](https://github.com/charmbracelet/vhs) captures terminal PNGs and interactive
+GIF/MP4/WebM recordings. Install VHS 0.12.1+, ttyd, FFmpeg and Chromium using the
+[recording guide](docs/recording.md), then:
 
 ```bash
-npx playwright install chromium
-npm run screenshot
-# Capture just one view (filters can be repeated):
+npm run screenshot                           # All screens/themes at 80 and 120 columns
 npm run screenshot -- --screen gallery --theme dark --columns 100
 npm run screenshot -- --screen inline --theme mono --ascii
+npm run record                               # Home, dark, 100 columns; PNG + GIF + MP4
+npm run record -- --screen ui-demo --format webm
+npm run record -- --tape scripts/tapes/workflow.tape
+npm run screenshot -- --dry-run               # Generate replayable VHS tapes only
 npm run screenshot -- --help
 ```
 
-On Linux, use `npx playwright install --with-deps chromium` if browser system
-dependencies are missing. By default, the script captures all registered screens
-and the inline demo, in all four themes at 80 and 120 columns (56 PNGs today).
-Files go to the ignored `screenshots/` directory, named like
-`gallery-dark-80.png`. Use `--output-dir <dir>` to choose another destination.
+Outputs go to ignored `screenshots/`, with replayable tapes and ANSI fixtures under
+`screenshots/tapes/`. Screenshots retain deterministic initial-state Ink renders;
+videos run the real interactive CLI in a PTY. Edit `scripts/tapes/workflow.tape` to
+adapt the keyboard journey, or pass `--tape` for another scenario. The `screenshots`
+scaffold feature includes both commands and the recording guide.
 
-These are deterministic initial-state previews rendered by Ink's `renderToString`,
-including the app header, tabs, and footer. ANSI colors become escaped HTML, which
-Playwright captures with headless Chromium. Screenshots preserve Unicode by default;
-`--ascii` uses ASCII glyphs. Animations and subsequent keyboard interactions are
-not captured. The screenshot process fixes terminal diagnostics and the displayed
-config path, and forces color independently of `NO_COLOR` or host configuration.
-For consistent pixels across machines, use the same OS and installed fonts as CI.
-
-The **Screenshots** GitHub Actions workflow runs on pushes to `main`, pull requests,
-and manual dispatch. It installs dependencies and Chromium, runs type checks and
-tests, then uploads the images as a `screenshots` artifact retained for 14 days.
-Download it from the workflow run's **Artifacts** section. Generated images are
-review artifacts; the workflow does not compare them against a visual baseline.
+The **Screenshots and recordings** GitHub Actions workflow validates the app,
+captures PNGs and a demo recording, and uploads the images, videos and tapes for
+14 days. Manual dispatch can choose the video screen, theme, width and interaction
+tape. Artifacts are for review; there is no visual baseline comparison.
 
 ## Layout
 

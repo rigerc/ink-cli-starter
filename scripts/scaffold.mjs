@@ -175,7 +175,7 @@ business domain, fake task runner, or data backend is included.
 npm run typecheck
 npm test
 npm run build
-npm run screenshot  # Requires Playwright Chromium
+npm run screenshot  # Requires VHS, ttyd, FFmpeg and Chromium
 \`\`\`
 
 GitHub Actions CI is included in \`.github/workflows/ci.yml\`.
