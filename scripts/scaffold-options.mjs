@@ -284,7 +284,7 @@ function generatedAgentGuide(choices, template) {
   const lines = [
     choices.toolchain === 'vite-plus'
       ? 'This application uses **Vite+** for building and running tests. Run package.json scripts with the chosen package manager. If using the global `vp` CLI, note that `vp <name>` invokes a built-in command whereas `vp run <name>` runs a project script; inspect the scripts first.'
-      : 'This application uses **tsdown** for builds and standalone **Vitest** when tests are enabled. It does not use the Vite+ CLI or Vite+ configuration.',
+      : 'This application uses **tsdown** for builds and standalone **Vitest** when tests are enabled. Use the package.json scripts and tsdown.config.ts; there is no vite.config.ts.',
     '',
     '- Install dependencies with `' + pm + ' install`.',
     '- Run `' + runner + ' typecheck` and `' + runner + ' build`.',
