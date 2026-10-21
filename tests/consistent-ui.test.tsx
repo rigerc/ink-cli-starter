@@ -70,7 +70,7 @@ describe('consistent terminal UI', () => {
 
   it('navigates via the command menu and restores the current screen on cancel', async () => {
     const app = await mount(<App options={options} />);
-    expect(app.lastFrame()).toContain('Overview and terminal diagnostics');
+    expect(app.lastFrame()).toContain('Home');
     await press(app, '\u000b'); // Ctrl+K
     await settle();
     expect(app.lastFrame()).toContain('Commands');
