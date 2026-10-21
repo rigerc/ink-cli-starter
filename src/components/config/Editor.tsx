@@ -149,6 +149,7 @@ export function ConfigSectionEditor({
       {active && field && mode === 'select' && (
         <Box flexDirection="column">
           <Select
+            allowWhenCaptured
             key={field.path}
             items={[...(field.options ?? [])]}
             initialValue={formatValue(value)}
@@ -163,6 +164,7 @@ export function ConfigSectionEditor({
       )}
       {active && field && mode === 'multi' && (
         <MultiSelect
+          allowWhenCaptured
           key={field.path}
           items={[...(field.options ?? [])]}
           defaultValue={Array.isArray(value) ? (value as string[]) : []}
