@@ -10,6 +10,18 @@ permissions:
 jobs:
   generated-app:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {id: default, args: '', pm: npm, tests: true, gallery: true, doctor: true}
+          - {id: minimal, args: '--preset minimal', pm: npm, tests: true, gallery: false, doctor: false}
+          - {id: custom, args: '--features doctor,ci', pm: npm, tests: false, gallery: false, doctor: true}
+          - {id: tsdown, args: '--toolchain tsdown', pm: npm, tests: true, gallery: true, doctor: true}
+          - {id: pnpm, args: '--preset minimal --toolchain tsdown --package-manager pnpm', pm: pnpm, tests: true, gallery: false, doctor: false}
+          - {id: yarn, args: '--package-manager yarn --features tests', pm: yarn, tests: true, gallery: false, doctor: false}
+          - {id: bun, args: '--package-manager bun --toolchain tsdown --features none', pm: bun, tests: false, gallery: false, doctor: false}
+    name: ${{ matrix.id }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -19,16 +31,34 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
-      - run: npm run scaffold -- smoke-cli --path /tmp/ink-skeleton-smoke
-      - run: npm ci
+      - name: Scaffold selected project
+        run: node scripts/scaffold.mjs smoke-cli --path /tmp/ink-skeleton-smoke ${{ matrix.args }}
+      - if: matrix.pm == 'bun'
+        uses: oven-sh/setup-bun@v2
+      - if: matrix.pm == 'pnpm' || matrix.pm == 'yarn'
+        run: corepack enable
+      - name: Install selected dependencies
         working-directory: /tmp/ink-skeleton-smoke
-      - run: npm run typecheck
+        run: |
+          case "${{ matrix.pm }}" in
+            npm) if [ -f package-lock.json ]; then npm ci; else npm install; fi ;;
+            pnpm) pnpm install --no-frozen-lockfile ;;
+            yarn) yarn install ;;
+            bun) bun install ;;
+          esac
+      - name: Typecheck generated app
         working-directory: /tmp/ink-skeleton-smoke
-      - run: npm test
+        run: ${{ matrix.pm }} run typecheck
+      - name: Test generated app
+        if: matrix.tests
         working-directory: /tmp/ink-skeleton-smoke
-      - run: npm run build
+        run: ${{ matrix.pm }} run test
+      - name: Build generated app
         working-directory: /tmp/ink-skeleton-smoke
-      - run: node dist/cli.js --plain
+        run: ${{ matrix.pm }} run build
+      - name: Smoke-test generated CLI
         working-directory: /tmp/ink-skeleton-smoke
-      - run: node dist/cli.js doctor --json
-        working-directory: /tmp/ink-skeleton-smoke
+        run: |
+          node dist/cli.js --plain
+          if [ "${{ matrix.gallery }}" = "true" ]; then node dist/cli.js --screen gallery --plain; fi
+          if [ "${{ matrix.doctor }}" = "true" ]; then node dist/cli.js doctor --json; fi
