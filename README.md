@@ -110,7 +110,7 @@ src/
                      Header StatusBar ToastHost AppShell ScreenHeader ScreenLayout ScreenState
                      CommandMenu + typography (Heading, Label,
                      Muted, Code, Kbd, Icon, Divider)
-  hooks/             useKeymap useRouter useAsync useToast useElapsed useInterval
+  hooks/             KeymapProvider/useKeymap useRouter useAsync useToast useElapsed useInterval
                      useExit useTerminalSize InputCaptureProvider/useInputCapture
   lib/               format, gradient, terminal, config (zod), logger, errors
   screens/           Home Tasks Gallery Settings Help UiDemo  (+ registry in index.ts)
@@ -302,8 +302,18 @@ Controlled values only update when their parent supplies a new prop.
 `AppProviders` includes `InputCaptureProvider`. Active SearchSelect instances capture input,
 and the shell pauses global shortcuts (including q/t/number keys) until they deactivate.
 For another host, wrap it with `InputCaptureProvider`, use `useHasInputCapture()` to pause
-its keymap, and deactivate SearchSelect from `onSelect`/`onCancel`. Other text inputs can
-call `useInputCapture(isActive)` to participate. Keep only one control active at a time.
+all shared keymaps, and deactivate SearchSelect from `onSelect`/`onCancel`. Other text inputs
+can call `useInputCapture(isActive)` to participate. Keep only one control active at a time.
+
+`KeymapProvider` is installed once in `AppProviders`, so **the same precedence applies
+across every screen**: control shortcuts override screen shortcuts, which override global
+shortcuts. Only the highest-priority matching `useKeymap` binding runs per keypress.
+Set `scope: 'screen'` on screen-level bindings and `scope: 'global'` for shell bindings;
+controls use the default `'control'` scope. Input capture suppresses all regular
+shortcuts until focus is released. The configuration editor explicitly marks its
+nested Select/MultiSelect controls with `allowWhenCaptured` so they remain usable
+while the editor has input capture. Standalone controls retain their previous
+`useKeymap` behavior without the provider.
 
 ## Wizard components
 
