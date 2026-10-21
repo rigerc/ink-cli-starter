@@ -50,6 +50,16 @@ Precedence is defaults, saved file, environment, then CLI flags. Edits in
 Settings or the wizard are drafts until Save and are written atomically.
 Add new fields in both the schema and the fields registry.
 
+## Theme customization
+
+Semantic colors live in `src/theme/palettes.json` and the project fallback in
+`src/theme/defaults.json`. Use `npm run theme:token -- <theme> <token> <color>`
+to edit a palette value or `npm run theme:default -- <theme|auto>` to change
+the built-in default. Inspect the palette with `npm run theme:list`.
+The standalone scripts modify project source, not user preferences.
+Resolution follows NO_COLOR, CLI flag, environment, saved configuration,
+project default, then terminal autodetection for `auto`.
+
 ## Quality gates
 
 Run `npm run typecheck`, `npm test`, and `npm run build`. CI in
