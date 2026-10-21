@@ -27,9 +27,16 @@ See [adding-a-feature.md](adding-a-feature.md) for minimal examples.
 ## Navigation and input
 
 Home, Settings, and Help are visible tabs. The gallery is accessible with
-`--screen gallery` but hidden from the tab bar. Tab and numeric keys traverse
-visible screens only. When a control captures input, global bindings are
-paused via `src/hooks/useInputCapture.tsx`.
+`--screen gallery` but hidden from the tab bar. Tab, shift+tab, and numeric keys
+traverse visible screens. Ctrl+K opens a searchable command menu. The global
+action registry in `src/keys.ts` drives keyboard handling, Help, and footer hints;
+per-screen hints belong on `ScreenDef` in `src/screens/index.ts`.
+
+`AppShell` owns the persistent application header, tabs, toast area, and adaptive
+status footer. Use `ScreenLayout` for page titles and content spacing and
+`ScreenState` for async loading/empty/error/success states. The normal rendering
+mode remains inline, preserving shell scrollback. When a control captures input,
+global bindings are paused via `src/hooks/useInputCapture.tsx`.
 
 ## Configuration
 
