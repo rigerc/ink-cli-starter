@@ -13,6 +13,7 @@ const excluded = new Set([
   'tests/scaffold.test.ts',
   'src/screens/Tasks.tsx',
   'src/screens/UiDemo.tsx',
+  'tests/ui-demo.test.tsx',
   'src/demos/InlineDemo.tsx',
 ]);
 const templatePrefix = 'templates/app/';
