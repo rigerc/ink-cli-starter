@@ -13,6 +13,7 @@ export interface MultiSelectProps<T extends string> {
   onChange?: (value: T[]) => void;
   onSubmit?: (value: T[]) => void;
   isActive?: boolean;
+  allowWhenCaptured?: boolean;
   maxVisible?: number;
   emptyMessage?: string;
 }
@@ -25,6 +26,7 @@ export function MultiSelect<T extends string>({
   onChange,
   onSubmit,
   isActive = true,
+  allowWhenCaptured = false,
   maxVisible = 6,
   emptyMessage = 'No options available.',
 }: MultiSelectProps<T>) {
@@ -64,7 +66,7 @@ export function MultiSelect<T extends string>({
         },
       },
     ],
-    {isActive},
+    {isActive, allowWhenCaptured},
   );
   const {start, end} = listWindow(index, items.length, listSize(maxVisible, 6));
   return (

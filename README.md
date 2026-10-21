@@ -110,7 +110,7 @@ src/
                      Header StatusBar ToastHost AppShell ScreenHeader ScreenLayout ScreenState
                      CommandMenu + typography (Heading, Label,
                      Muted, Code, Kbd, Icon, Divider)
-  hooks/             useKeymap useRouter useAsync useToast useElapsed useInterval
+  hooks/             KeymapProvider/useKeymap useRouter useAsync useToast useElapsed useInterval
                      useExit useTerminalSize InputCaptureProvider/useInputCapture
   lib/               format, gradient, terminal, config (zod), logger, errors
   screens/           Home Tasks Gallery Settings Help UiDemo  (+ registry in index.ts)
@@ -236,10 +236,24 @@ node dist/cli.js --demo
 
 Pipes, CI, and `--plain` print a static preview and exit without waiting for input.
 Theme flags, `NO_COLOR`, config, and ASCII glyph handling work as in the main app.
-The gallery includes progress variants, a confirmation preview, and an interactive panel.
-Press `m` for MultiSelect, `/` to edit SearchSelect, `o` for Toggle, `p` for PaginatedList,
-or `w` for the inline wizard (`r` restarts it). Search owns keyboard input until Enter
-selects a result or Escape releases it; app shortcuts resume afterward.
+## Component gallery
+
+Run `npm run gallery` or `npm run dev -- --screen gallery`. The gallery displays
+**one component family at a time**; no off-screen demo is mounted or receives
+keyboard events.
+
+- `[` / `]` steps through components; `/` explicitly opens a searchable
+  component picker. Enter selects, Escape cancels.
+- On the **SearchSelect** example, press Enter to focus its input. Only then
+  does typing edit the query. Escape releases focus and restores shortcuts.
+- Interactive examples keep their own documented keys (Space/Enter for Toggle,
+  arrows/Space for MultiSelect, left/right for PaginatedList, and so on).
+- Global navigation (`Tab`, numbers, `Ctrl+K`, `?`, `q`) is suspended
+  while a search field owns input. Theme and ASCII modes work as usual.
+
+The previous gallery-wide letter shortcuts (`m`, `o`, `p`, `w`, `r`)
+were removed to prevent competing input handlers and accidental example
+switching.
 
 ## Selection and collection components
 
@@ -288,8 +302,18 @@ Controlled values only update when their parent supplies a new prop.
 `AppProviders` includes `InputCaptureProvider`. Active SearchSelect instances capture input,
 and the shell pauses global shortcuts (including q/t/number keys) until they deactivate.
 For another host, wrap it with `InputCaptureProvider`, use `useHasInputCapture()` to pause
-its keymap, and deactivate SearchSelect from `onSelect`/`onCancel`. Other text inputs can
-call `useInputCapture(isActive)` to participate. Keep only one control active at a time.
+all shared keymaps, and deactivate SearchSelect from `onSelect`/`onCancel`. Other text inputs
+can call `useInputCapture(isActive)` to participate. Keep only one control active at a time.
+
+`KeymapProvider` is installed once in `AppProviders`, so **the same precedence applies
+across every screen**: control shortcuts override screen shortcuts, which override global
+shortcuts. Only the highest-priority matching `useKeymap` binding runs per keypress.
+Set `scope: 'screen'` on screen-level bindings and `scope: 'global'` for shell bindings;
+controls use the default `'control'` scope. Input capture suppresses all regular
+shortcuts until focus is released. The configuration editor explicitly marks its
+nested Select/MultiSelect controls with `allowWhenCaptured` so they remain usable
+while the editor has input capture. Standalone controls retain their previous
+`useKeymap` behavior without the provider.
 
 ## Wizard components
 

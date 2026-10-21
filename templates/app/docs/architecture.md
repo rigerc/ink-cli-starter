@@ -36,7 +36,12 @@ per-screen hints belong on `ScreenDef` in `src/screens/index.ts`.
 status footer. Use `ScreenLayout` for page titles and content spacing and
 `ScreenState` for async loading/empty/error/success states. The normal rendering
 mode remains inline, preserving shell scrollback. When a control captures input,
-global bindings are paused via `src/hooks/useInputCapture.tsx`.
+all regular `useKeymap` bindings are paused via `src/hooks/useInputCapture.tsx`.
+The shared `KeymapProvider` dispatches at most one matching shortcut: controls
+have priority over screen bindings, which have priority over global bindings.
+The configuration editor explicitly opts its nested Select/MultiSelect controls
+into captured input; other screen handlers remain suspended. Screen shortcuts
+should pass `{scope: 'screen'}` to `useKeymap`.
 
 ## Configuration
 
