@@ -8,6 +8,7 @@ import {
   Panel,
   ProgressBar,
   ScreenLayout,
+  ScreenState,
   Spinner,
   Stack,
   StatusMessage,
@@ -48,6 +49,8 @@ export function GalleryScreen() {
           <Divider label="progress" />
           <Spinner label="Installing dependencies" />
           <ProgressBar value={0.65} />
+          <Divider label="empty state" />
+          <ScreenState status="empty" title="No queued jobs" message="Nothing to run." />
         </Panel>
 
         <Panel title="Data" tone="info">
