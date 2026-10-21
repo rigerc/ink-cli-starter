@@ -3,6 +3,15 @@
 A skeleton for polished terminal apps on **Ink 8** (React 19, Node 22+): theme system,
 hooks, helpers and a component library, with a gallery and tests.
 
+## Using the UI framework
+
+Start with the [UI framework guide](docs/ui-framework.md) for provider composition,
+screen/layout patterns, component choices, keyboard routing and input ownership,
+semantic theming, async states, responsive terminals and tests. Then follow the
+[feature walkthrough](templates/app/docs/adding-a-feature.md) for a minimal
+screen and headless command. The guide is copied into generated projects as
+`docs/ui-framework.md`; generated READMEs link to it.
+
 ## Scaffold a new app
 
 From a Git checkout of this repository (Node.js 22+ and Git required):
@@ -231,6 +240,11 @@ future schema changes. No automatic prompts appear in pipes or CI; `--setup`
 instead reports that a TTY is required.
 
 ## Add a screen
+
+For complete examples and focus-management conventions, read
+[the UI framework guide](docs/ui-framework.md). The following is the
+short registration path.
+
 
 Create `src/screens/Foo.tsx`, add one line to the `screens` array in `src/screens/index.ts`.
 It gets a tab, a number shortcut, a `--screen foo` flag value, and test coverage.
