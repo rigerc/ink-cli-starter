@@ -1,7 +1,7 @@
 # Architecture
 
 This project is intentionally **domain-agnostic**. It includes terminal
-infrastructure and a functioning configuration flow, but no product domain.
+infrastructure and a configurable set of optional screens and commands, but no product domain.
 
 ## Entry points
 
@@ -9,7 +9,7 @@ infrastructure and a functioning configuration flow, but no product domain.
 - `src/commands/index.ts` registers commands. Commands never need a TTY.
 - `src/app.tsx` composes providers, navigation, and global keys.
 - `src/screens/index.ts` declares screen IDs, visible tab order, and shortcuts.
-- `src/screens/Gallery.tsx` is a development-only UI component reference.
+- `src/screens/Gallery.tsx`, when included, is a development-only UI component reference.
 - `src/components/`, `src/hooks/`, and `src/theme/` supply reusable UI building blocks.
 - `src/config/schema.ts` defines Zod configuration and editor metadata.
 - `src/lib/config.ts` defines the app name and versioned configuration store.
@@ -22,12 +22,14 @@ CLI command can share them. Add `src/services/` or `src/integrations/` if
 your application develops a need for cross-feature logic or external adapters.
 The skeleton does not impose a database, HTTP client, or state framework.
 
-See [adding-a-feature.md](adding-a-feature.md) for minimal examples.
+See [adding-a-feature.md](adding-a-feature.md) for minimal examples and
+[ui-framework.md](ui-framework.md) for UI components, state, focus and layout.
 
 ## Navigation and input
 
-Home, Settings, and Help are visible tabs. The gallery is accessible with
-`--screen gallery` but hidden from the tab bar. Tab, shift+tab, and numeric keys
+The default standard scaffold has Home, Settings, and Help as visible tabs.
+Settings and the hidden gallery are optional features; the gallery is accessible
+with `--screen gallery` when included. Tab, shift+tab, and numeric keys
 traverse visible screens. Ctrl+K opens a searchable command menu. The global
 action registry in `src/keys.ts` drives keyboard handling, Help, and footer hints;
 per-screen hints belong on `ScreenDef` in `src/screens/index.ts`.
@@ -62,5 +64,6 @@ project default, then terminal autodetection for `auto`.
 
 ## Quality gates
 
-Run `npm run typecheck`, `npm test`, and `npm run build`. CI in
-`.github/workflows/ci.yml` runs these checks plus headless CLI smoke tests.
+Run the package manager's `typecheck` and `build` scripts; run `test` if the
+tests feature was selected. The optional GitHub Actions CI workflow runs checks
+and headless CLI smoke tests.
