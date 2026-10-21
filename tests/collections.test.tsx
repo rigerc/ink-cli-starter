@@ -275,35 +275,75 @@ describe('PaginatedList', () => {
   });
 });
 
-describe('gallery input ownership', () => {
-  it('pauses global letter shortcuts during search and restores them on Escape', async () => {
+describe('gallery selection and input ownership', () => {
+  it('renders one component at a time and browses with brackets', async () => {
+    const app = await mount(
+      <App options={{theme: 'mono', ascii: true, debug: false, screen: 'gallery'}} />,
+    );
+    expect(app.lastFrame()).toContain('Panel example');
+    expect(app.lastFrame()).not.toContain('Build completed');
+    await press(app, ']');
+    expect(app.lastFrame()).toContain('Cards use a colored left edge');
+    expect(app.lastFrame()).not.toContain('Panel example');
+    await press(app, '[');
+    expect(app.lastFrame()).toContain('Panel example');
+  });
+
+  it('opens search only explicitly, and a cancelled picker never activates a demo', async () => {
+    const app = await mount(
+      <App options={{theme: 'mono', ascii: true, debug: false, screen: 'gallery'}} />,
+    );
+    await press(app, 'o');
+    await press(app, 'm');
+    await press(app, 'p');
+    expect(app.lastFrame()).toContain('Panel example');
+    expect(app.lastFrame()).not.toContain('Search:');
+    await press(app, '/');
+    expect(app.lastFrame()).toContain('Choose component');
+    await press(app, 'q');
+    expect(app.lastFrame()).toContain('Search: q');
+    expect(app.lastFrame()).toContain('Choose component');
+    await press(app, '\u001b');
+    expect(app.lastFrame()).toContain('Panel example');
+    expect(app.lastFrame()).not.toContain('Search:');
+  });
+
+  it('searches for a component without navigating, and only focuses its own search on Enter', async () => {
     const app = await mount(
       <App options={{theme: 'mono', ascii: true, debug: false, screen: 'gallery'}} />,
     );
     await press(app, '/');
-    await expect.poll(() => app.lastFrame()).toContain('SearchSelect');
-    await expect.poll(() => app.lastFrame()).toContain('leave search');
+    await press(app, 'searchselect');
+    expect(app.lastFrame()).toContain('Search: searchselect');
+    await press(app, '\r');
+    expect(app.lastFrame()).toContain('Press Enter to focus search');
+    expect(app.lastFrame()).toContain('Selected: None');
+    await press(app, '\r');
+    expect(app.lastFrame()).toContain('Type to filter');
     await press(app, 'q');
     await press(app, 't');
     await press(app, 'r');
     await press(app, '1');
     await press(app, '?');
     expect(app.lastFrame()).toContain('Search: qtr1?');
-    expect(app.lastFrame()).toContain('SearchSelect');
-    expect(app.lastFrame()).toContain('leave search');
+    expect(app.lastFrame()).toContain('Selected: None');
     await press(app, '\u001b');
-    await expect.poll(() => app.lastFrame()).toContain('shortcuts restored');
-    await press(app, 'o');
+    expect(app.lastFrame()).toContain('Press Enter to focus search');
+    await press(app, ']');
+    expect(app.lastFrame()).toContain('Enable caching');
+    expect(app.lastFrame()).not.toContain('Search:');
     await press(app, ' ');
     expect(app.lastFrame()).toContain('Enable caching: Off');
-    await press(app, 'p');
-    await press(app, '\u001b[C');
-    expect(app.lastFrame()).toContain('Page 2/3');
-    await press(app, 'w');
-    expect(app.lastFrame()).toContain('Setup wizard');
-    await press(app, '1');
-    expect(app.lastFrame()).toContain('Welcome');
-    expect(app.lastFrame()).not.toContain('Interactive components');
+  });
+
+  it('keeps the global command menu accessible when no input is focused', async () => {
+    const app = await mount(
+      <App options={{theme: 'mono', ascii: true, debug: false, screen: 'gallery'}} />,
+    );
+    await press(app, '\u000b');
+    expect(app.lastFrame()).toContain('Commands');
+    await press(app, '\u001b');
+    expect(app.lastFrame()).toContain('Panel example');
   });
 });
 
