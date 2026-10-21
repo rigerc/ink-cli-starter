@@ -49,6 +49,7 @@ npm install
 npm run dev                 # interactive app
 npm run gallery             # jump straight to the component gallery
 npm run demo:inline         # compact setup wizard in normal terminal scrollback
+npm run demo:ui             # shared header, menu, footer and dashboard example
 npm run dev -- --plain      # one-shot static render (what pipes/CI get)
 npm test                    # interactive Ink tests + screen/theme/width overflow checks
 npm run build && npm start
@@ -58,7 +59,7 @@ Interactive tests use `ink-testing-library` to send keyboard input and assert re
 frames. Width-specific tests retain Ink's `renderToString()` for deterministic
 terminal-column checks.
 
-Starter keys: `tab` / `shift+tab` / `1-5` switch screens, `ctrl+k` opens the command menu, `t` cycles themes, `?` help, `q` quit.
+Starter keys: `tab` / `shift+tab` / `1-6` switch screens, `ctrl+k` opens the command menu, `t` cycles themes, `?` help, `q` quit.
 Generated apps start with three visible tabs (Home, Settings, Help).
 
 ## Automated screenshots
@@ -76,7 +77,7 @@ npm run screenshot -- --help
 
 On Linux, use `npx playwright install --with-deps chromium` if browser system
 dependencies are missing. By default, the script captures all registered screens
-and the inline demo, in all four themes at 80 and 120 columns (48 PNGs today).
+and the inline demo, in all four themes at 80 and 120 columns (56 PNGs today).
 Files go to the ignored `screenshots/` directory, named like
 `gallery-dark-80.png`. Use `--output-dir <dir>` to choose another destination.
 
@@ -112,7 +113,7 @@ src/
   hooks/             useKeymap useRouter useAsync useToast useElapsed useInterval
                      useExit useTerminalSize InputCaptureProvider/useInputCapture
   lib/               format, gradient, terminal, config (zod), logger, errors
-  screens/           Home Tasks Gallery Settings Help  (+ registry in index.ts)
+  screens/           Home Tasks Gallery Settings Help UiDemo  (+ registry in index.ts)
 tests/
 ```
 
@@ -198,6 +199,24 @@ used by key handling, Help, and footer hints; the numeric range adjusts when scr
 are added or removed. `ctrl+k` opens a searchable command menu of visible screens.
 The footer reduces visible hints on narrow terminals without switching to alternate
 screen mode. Use `ScreenState` for loading, empty, error, and success views.
+
+## UI demo
+
+`npm run demo:ui` (or `npm run dev -- --screen ui-demo`) launches a sample dashboard
+built using the **same shared shell** as the rest of the starter. Unlike the
+component gallery, it shows the components working together in a complete screen:
+app header/version, tabs, responsive panels, screen title, status states, table,
+notifications and contextual footer shortcuts.
+
+- `s` cycles success, loading, empty, and error states; `r` resets.
+- `m` shows a toast; `ctrl+k` opens the global command menu.
+- `tab` / `shift+tab` / number keys navigate; `t` switches themes.
+- `npm run demo:ui -- --plain` prints a static preview for pipes and CI.
+- `npm run screenshot -- --screen ui-demo --theme dark --columns 100` captures it.
+
+All UI demo data is illustrative and does not run jobs or write configuration.
+The screen is specific to this starter and is intentionally excluded from
+scaffolded applications.
 
 ## Inline demo
 
