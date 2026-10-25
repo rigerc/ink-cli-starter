@@ -20,7 +20,7 @@ export function Panel({
   tone = 'primary',
   focused = false,
   children,
-  ...boxProps,
+  ...boxProps
 }: PanelProps) {
   const t = useTheme();
   const titleStyle = useTone(tone);
