@@ -11,6 +11,7 @@ import {
   type ReactElement,
   type ReactNode,
 } from 'react';
+import {toErrorMessage} from '../lib/errors';
 import {useTheme} from '../theme/context';
 import {StatusMessage} from './Status';
 import {Kbd, Muted} from './typography';
@@ -48,7 +49,7 @@ export interface StepperProps {
   onStepChange?: (index: number) => void;
   onExitStep?: (index: number) => void | boolean | Promise<void | boolean>;
   onEnterStep?: (index: number) => void;
-  onError?: (error: unknown) => void;
+  onError?: (cause: unknown) => void;
   step?: number;
   initialStep?: number;
   keyboardNav?: boolean;
@@ -257,7 +258,7 @@ export function Stepper({
       }
     } catch (cause) {
       if (stillCurrent()) {
-        setError(cause instanceof Error ? cause.message : String(cause));
+        setError(toErrorMessage(cause));
         onError?.(cause);
       }
     } finally {
