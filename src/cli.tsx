@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import {render, renderToString} from 'ink';
-import meow from 'meow';
+import {Command} from '@commander-js/extra-typings';
+import packageJson from '../package.json' with {type: 'json'};
 import {App, PlainView, type AppOptions} from './app';
 import {runCommand} from './commands';
 import {appConfig, resolveConfig, type Config} from './config';
@@ -12,57 +13,29 @@ import {isInteractive, noColor, supportsUnicode} from './lib/terminal';
 import {isScreenId, screenIds} from './screens';
 import {isThemeName, resolveThemeName} from './theme/resolve';
 
-const cli = meow(
-  `
-  Usage
-    $ ${APP_NAME} [options]
-    $ ${APP_NAME} doctor [--json] [--config path]
-    $ ${APP_NAME} --setup [--config path]
+const program = new Command()
+  .name(APP_NAME)
+  .allowExcessArguments()
+  .description('Interactive terminal application with headless diagnostics')
+  .version(packageJson.version)
+  .option('--theme <name>', 'Theme: dark, light, contrast, mono, or auto')
+  .option('--screen <id>', `Initial screen: ${screenIds.join(', ')}`, 'home')
+  .option('--ascii', 'Use ASCII symbols and borders')
+  .option('--config <path>', 'Read/write a specific JSON configuration file')
+  .option('--setup', 'Open the interactive configuration wizard')
+  .option('--plain', 'Print once and exit (default when piped or in CI)')
+  .option('--json', 'JSON output for headless commands (doctor)')
+  .option('--debug', 'Write logs to a file and show stack traces')
+  .addHelpText(
+    'after',
+    `\nEnvironment:
+  NO_COLOR=1       Force the mono theme
+  ${APP_THEME_ENV}=...  Default theme
+  CLI_ASCII=1      Force ASCII symbols\n`,
+  );
 
-  Options
-    --theme <name>   dark | light | contrast | mono | auto
-    --screen <id>    ${screenIds.join(' | ')}
-    --ascii          Use ASCII symbols and borders
-    --config <path>  Read/write a specific JSON configuration file
-    --setup          Open the interactive configuration wizard
-    --plain          Print once and exit (also the default when piped or in CI)
-    --json           JSON output for headless commands (doctor)
-    --debug          Write logs to a file and show stack traces
-
-  Environment
-    NO_COLOR=1       Force the mono theme
-    ${APP_THEME_ENV}    Default theme
-    CLI_ASCII=1      Force ASCII symbols
-`,
-  {
-    importMeta: import.meta,
-    flags: {
-      theme: {type: 'string'},
-      screen: {type: 'string', default: 'home'},
-      ascii: {type: 'boolean'},
-      config: {type: 'string'},
-      setup: {type: 'boolean'},
-      plain: {type: 'boolean'},
-      json: {type: 'boolean'},
-      debug: {type: 'boolean'},
-    },
-  },
-);
-
-async function main() {
-  const {flags, input} = cli;
+async function runApp(flags: ReturnType<typeof program.opts>) {
   logger.setDebug(Boolean(flags.debug));
-
-  if (input.length > 0) {
-    if (flags.setup || flags.plain)
-      throw new AppError('Subcommands cannot be combined with --setup or --plain', {exitCode: 2});
-
-    if (runCommand(input[0]!, input.slice(1), {configFile: flags.config, json: flags.json})) return;
-    throw new AppError(`Unknown command "${input[0]}"`, {
-      exitCode: 2,
-      hint: `Run ${APP_NAME} --help for available commands.`,
-    });
-  }
 
   if (flags.json)
     throw new AppError('--json requires a headless subcommand (e.g. doctor)', {exitCode: 2});
@@ -124,7 +97,36 @@ async function main() {
   ).waitUntilExit();
 }
 
-main().catch((cause: unknown) => {
+program
+  .command('doctor')
+  .allowExcessArguments(false)
+  .description('Inspect the runtime environment and configuration')
+  .option('--json', 'Print the diagnostic report as JSON')
+  .option('--config <path>', 'Use a specific JSON configuration file')
+  .action((options) => {
+    const flags = program.opts();
+    logger.setDebug(Boolean(flags.debug));
+
+    if (flags.setup || flags.plain)
+      throw new AppError('Subcommands cannot be combined with --setup or --plain', {exitCode: 2});
+
+    runCommand('doctor', [], {
+      configFile: options.config ?? flags.config,
+      json: Boolean(options.json || flags.json),
+    });
+  });
+
+program.action(async () => {
+  if (program.args.length > 0)
+    throw new AppError(`Unknown command "${program.args[0]}"`, {
+      exitCode: 2,
+      hint: `Run ${APP_NAME} --help for available commands.`,
+    });
+
+  await runApp(program.opts());
+});
+
+program.parseAsync(process.argv).catch((cause: unknown) => {
   const err = toAppError(cause);
   console.error(`${err.message}${err.hint ? `\n${err.hint}` : ''}`);
   process.exitCode = err.exitCode;

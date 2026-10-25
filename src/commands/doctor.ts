@@ -16,13 +16,14 @@ export interface DoctorReport {
 export function inspectEnvironment(configFile?: string): DoctorReport {
   const path = configPath(configFile);
   const {error} = loadConfig(configFile);
-  const nodeMajor = Number(process.versions.node.split('.')[0]);
+  const [nodeMajor, nodeMinor] = process.versions.node.split('.').map(Number);
+  const supportedNode = (nodeMajor ?? 0) > 22 || (nodeMajor === 22 && (nodeMinor ?? 0) >= 12);
 
   const checks: DoctorCheck[] = [
     {
       name: 'node',
-      ok: nodeMajor >= 22,
-      detail: `Node.js ${process.versions.node} (requires 22+)`,
+      ok: supportedNode,
+      detail: `Node.js ${process.versions.node} (requires 22.12+)`,
     },
     {
       name: 'configuration',
