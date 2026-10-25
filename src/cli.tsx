@@ -96,7 +96,6 @@ async function runApp(flags: ReturnType<typeof program.opts>) {
   ).waitUntilExit();
 }
 
-
 program
   .command('doctor')
   .description('Inspect the runtime environment and configuration')
@@ -116,7 +115,6 @@ program
   });
 
 program.action(async () => runApp(program.opts()));
-
 
 program.parseAsync(process.argv).catch((cause: unknown) => {
   const err = toAppError(cause);
