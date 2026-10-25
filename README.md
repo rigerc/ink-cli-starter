@@ -85,6 +85,8 @@ The template vendors [anti-slop](https://github.com/dmmulroy/anti-slop) under [`
 
 Run `npm run lint && npm run check && npm run typecheck && npm test && npm run build` to verify code before opening a PR. Anti-slop lint and formatting checks are blocking CI steps. CI also verifies tests, builds, plain output, headless diagnostics, and the packaged binary. `npm pack` creates an installable CLI tarball; update package metadata and licensing before publishing to npm.
 
+Release automation uses Changesets and is disabled by default. The package ships with `"private": true`. Downstream repositories can opt into version PRs, git tags and GitHub Releases with `RELEASE_ENABLED=true`, and enable npm publishing separately with `NPM_PUBLISH=true`. See the [release guide](docs/releasing.md) for setup, authentication and the publishing checklist. Once enabled, include a changeset with user-facing changes using `npm run changeset`.
+
 Screenshots and recordings are optional and require [VHS](https://github.com/charmbracelet/vhs), ttyd, FFmpeg and Chromium. Use `npm run screenshot -- --dry-run` to inspect generated capture tapes without external tooling.
 
 ## License
