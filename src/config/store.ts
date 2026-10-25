@@ -28,8 +28,21 @@ export type DeepPartial<T> = {
       : T[K];
 };
 
-const isRawConfig = (value: unknown): value is RawConfig =>
-  value !== null && value instanceof Object && !Array.isArray(value);
+/** Validate the complete JSON tree, including preserved extension keys. */
+const configValueSchema: z.ZodType<ConfigValue> = z.lazy(() =>
+  z.union([
+    z.string(),
+    z.number().finite(),
+    z.boolean(),
+    z.null(),
+    z.array(configValueSchema),
+    z.record(z.string(), configValueSchema),
+  ]),
+);
+const rawConfigSchema: z.ZodType<RawConfig> = z.record(z.string(), configValueSchema);
+
+const isObjectConfigValue = (value: ConfigValue | undefined): value is RawConfig =>
+  value !== undefined && value !== null && value instanceof Object && !Array.isArray(value);
 
 export function mergeConfig<T extends object>(base: T, patch: DeepPartial<T>): T {
   // SAFETY: T extends object; spreading an object type yields a string-keyed record with the same keys.
@@ -42,7 +55,7 @@ export function mergeConfig<T extends object>(base: T, patch: DeepPartial<T>): T
     // SAFETY: stored entries were written by this store from schema-validated JSON data.
     const current = merged[key] as ConfigValue | undefined;
     merged[key] =
-      isRawConfig(patchValue) && isRawConfig(current)
+      isObjectConfigValue(patchValue) && isObjectConfigValue(current)
         ? mergeConfig(current, patchValue)
         : patchValue;
   }
@@ -88,10 +101,16 @@ export function createConfigStore<T extends object>(
     }
 
     try {
-      if (!isRawConfig(raw)) throw new Error('Configuration must be a JSON object');
+      const decoded = rawConfigSchema.safeParse(raw);
 
+      if (!decoded.success)
+        throw new Error('Configuration must be a JSON object containing valid JSON values');
+
+      const document = decoded.data;
       const versionResult =
-        raw.version === undefined ? {success: true, data: 0} : versionSchema.safeParse(raw.version);
+        document.version === undefined
+          ? {success: true, data: 0}
+          : versionSchema.safeParse(document.version);
 
       if (!versionResult.success) throw new Error('Invalid configuration version');
       const version = versionResult.data;
@@ -100,13 +119,14 @@ export function createConfigStore<T extends object>(
         throw new Error(
           `Configuration version ${version} is newer than supported version ${definition.version}`,
         );
-      let migrated: RawConfig = raw;
+      let migrated: RawConfig = document;
 
       for (let current = version; current < definition.version; current++) {
         migrated = definition.migrations?.[current]?.(migrated) ?? migrated;
       }
 
-      return {config: validate(migrated), path};
+      // Migrations are application code; verify their output before accepting extension keys.
+      return {config: validate(rawConfigSchema.parse(migrated)), path};
     } catch (error) {
       // SAFETY: placeholder config is never used by callers when `error` is set.
       return {config: {} as T, path, error: toErrorMessage(error)};
