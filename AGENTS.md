@@ -11,3 +11,4 @@ This repository is a **GitHub template that directly contains the application**.
 - The gallery is a developer-only reference available with `npm run gallery`. It is not a visible product tab.
 - This project uses **Vite+**, not plain Vite. Prefer the declared npm scripts: `npm run typecheck`, `npm test`, `npm run build`. Run `npm ci` after pulling dependency changes.
 - Update documentation and interaction/width regression tests when changing shared framework conventions.
+- `npm run lint` runs the Vite+ and vendored anti-slop rules; `npm run check` additionally checks formatting and types. The vendored plugin is under `tools/oxlint/anti-slop/`, excluded from application lint/format checks, and should be updated with its `UPSTREAM.md` provenance in mind.

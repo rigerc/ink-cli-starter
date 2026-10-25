@@ -14,6 +14,8 @@
     "gallery": "tsx src/cli.tsx --screen gallery",
     "build": "vp pack",
     "typecheck": "tsc --noEmit",
+    "lint": "vp lint",
+    "check": "vp check",
     "test": "vp test run",
     "screenshot": "node --import tsx scripts/screenshot.tsx",
     "start": "node dist/cli.js",
@@ -32,13 +34,15 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@oxlint/plugins": "1.88.0",
     "@types/node": "^22.20.5",
     "@types/react": "^19.3.0",
     "ink-testing-library": "^4.0.0",
     "tsx": "^4.23.15",
     "typescript": "^5.9.3",
     "vite-plus": "1.3.0",
-    "vitest": "5.0.5"
+    "vitest": "5.0.5",
+    "oxlint": "1.88.0"
   },
   "overrides": {
     "vite": "npm:@voidzero-dev/vite-plus-core@1.3.0",
