@@ -1,4 +1,5 @@
 import stringWidth from 'string-width';
+import type {ConfigValue} from '../config/definition';
 
 export const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
@@ -58,24 +59,13 @@ export function pad(text: string, width: number, align: 'left' | 'right' = 'left
 
 export const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
-/** Render an unknown value for display; objects never degrade to `[object Object]`. */
-export function formatValue(value: unknown): string {
+/** Format decoded JSON configuration values without interpreting arbitrary runtime input. */
+export function formatValue(value: ConfigValue | undefined): string {
   if (value === undefined || value === null) return '';
 
   if (Array.isArray(value)) return value.map((item) => formatValue(item)).join(', ');
 
-  switch (typeof value) {
-    case 'string':
-      return value;
-    case 'number':
-    case 'boolean':
-    case 'bigint':
-      return String(value);
-    case 'symbol':
-      return value.toString();
-    case 'function':
-      return value.name || 'function';
-    default:
-      return JSON.stringify(value) ?? '';
-  }
+  if (value instanceof Object) return JSON.stringify(value) ?? '';
+
+  return String(value);
 }
