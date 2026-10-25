@@ -50,6 +50,34 @@ describe('configuration persistence', () => {
     });
   });
 
+  it('refuses non-finite nested JSON numbers and invalid stored versions', () => {
+    const path = fixture();
+
+    for (const invalid of [
+      '{"plugin":{"values":[1e400]}}',
+      '{"plugin":{"nested":{"value":-1e400}}}',
+      '{"version":-1}',
+      '{"version":1.5}',
+      '{"version":"1"}',
+    ]) {
+      writeFileSync(path, invalid);
+      expect(loadConfig(path).error).toBeTruthy();
+      expect(() => saveConfig({ascii: true}, path)).toThrow();
+      expect(readFileSync(path, 'utf8')).toBe(invalid);
+    }
+  });
+
+  it('preserves JSON-compatible arrays in extension values', () => {
+    const path = fixture();
+    const extension = {items: [{enabled: true}, null, 3, 'text']};
+    writeFileSync(path, JSON.stringify({plugin: extension}));
+    saveConfig({ascii: true}, path);
+    expect(JSON.parse(readFileSync(path, 'utf8'))).toMatchObject({
+      plugin: extension,
+      ascii: true,
+    });
+  });
+
   it('refuses to overwrite malformed or schema-invalid files', () => {
     const path = fixture();
 
