@@ -31,12 +31,12 @@ function TemplateStep({
   );
   return (
     <Box flexDirection="column">
-      <Text>Choose a starter template</Text>
+      <Text>Choose an example layout</Text>
       <Select
         isActive={isActive}
         items={[
-          {value: 'minimal', label: 'Minimal command'},
-          {value: 'dashboard', label: 'Dashboard'},
+          {value: 'compact', label: 'Compact'},
+          {value: 'detailed', label: 'Detailed'},
         ]}
         onSelect={(value) => {
           onSelect(value);
@@ -60,16 +60,16 @@ function ReviewStep({template, isActive}: {template: string; isActive: boolean})
     <Box flexDirection="column" gap={1}>
       <KeyValue
         items={[
-          {label: 'Project', value: 'my-cli'},
-          {label: 'Template', value: template},
+          {label: 'Preview', value: 'Component gallery'},
+          {label: 'Layout', value: template},
         ]}
       />
       {isValidating ? (
-        <Spinner label="Validating setup" />
+        <Spinner label="Validating example" />
       ) : (
         <Confirm
           isActive={isActive}
-          message="Finish the demo setup?"
+          message="Finish the sample wizard?"
           defaultValue
           onConfirm={(yes) => {
             if (yes) void goNext();
@@ -77,7 +77,7 @@ function ReviewStep({template, isActive}: {template: string; isActive: boolean})
           }}
         />
       )}
-      <Muted>esc back / no cancels / no files are created</Muted>
+      <Muted>esc back / no cancels / preview only</Muted>
     </Box>
   );
 }
@@ -91,7 +91,7 @@ export function SetupWizard({
   isActive?: boolean;
 }) {
   const [current, setCurrent] = useState(0);
-  const [template, setTemplate] = useState('minimal');
+  const [template, setTemplate] = useState('compact');
   const [result, setResult] = useState<WizardResult>();
   const finish = (next: WizardResult) => {
     setResult(next);
@@ -101,8 +101,8 @@ export function SetupWizard({
     return (
       <StatusMessage tone={result === 'completed' ? 'success' : 'warn'}>
         {result === 'completed'
-          ? `Setup complete: my-cli (${template}). No files were created.`
-          : 'Setup cancelled. No files were created.'}
+          ? `Example complete: ${template}. No files were changed.`
+          : 'Example cancelled. No files were changed.'}
       </StatusMessage>
     );
   return (
@@ -114,12 +114,12 @@ export function SetupWizard({
     >
       <Step name="Welcome">
         <Box flexDirection="column" gap={1}>
-          <Text>Set up a CLI in three short steps.</Text>
+          <Text>Explore a three-step wizard.</Text>
           <Muted>This wizard stays in normal terminal scrollback.</Muted>
           <StepperNavigation />
         </Box>
       </Step>
-      <Step name="Template">
+      <Step name="Layout">
         <TemplateStep isActive={isActive} onSelect={setTemplate} />
       </Step>
       <Step

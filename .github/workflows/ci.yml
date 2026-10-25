@@ -27,7 +27,9 @@ jobs:
       - run: node dist/cli.js doctor --json
       - name: Check packed command
         run: |
-          npm pack --pack-destination "$RUNNER_TEMP"
+          npm pack --json --pack-destination "$RUNNER_TEMP" > "$RUNNER_TEMP/pack.json"
+          PACKAGE_TGZ=$(node -p "require(process.env.RUNNER_TEMP + '/pack.json')[0].filename")
+          COMMAND_NAME=$(node -p "Object.keys(require('./package.json').bin)[0]")
           mkdir -p "$RUNNER_TEMP/cli-smoke"
-          npm install --prefix "$RUNNER_TEMP/cli-smoke" "$RUNNER_TEMP/ink-kit-0.1.0.tgz"
-          "$RUNNER_TEMP/cli-smoke/node_modules/.bin/ink-kit" --help
+          npm install --prefix "$RUNNER_TEMP/cli-smoke" "$RUNNER_TEMP/$PACKAGE_TGZ"
+          "$RUNNER_TEMP/cli-smoke/node_modules/.bin/$COMMAND_NAME" --help

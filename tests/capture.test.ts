@@ -83,12 +83,12 @@ describe('VHS capture workflow', () => {
     }
   });
 
-  it('covers every registered screen plus the inline demo by default', () => {
+  it('covers every registered screen by default', () => {
     const dir = mkdtempSync(path.join(tmpdir(), 'capture all screens '));
     try {
       const result = run('--dry-run', '--theme', 'dark', '--columns', '100', '--output-dir', dir);
       expect(result.status, result.stderr).toBe(0);
-      const expected = [...screenIds, 'inline'].map((id) => `${id}-dark-100.tape`).sort();
+      const expected = screenIds.map((id) => `${id}-dark-100.tape`).sort();
       const actual = readdirSync(path.join(dir, 'tapes')).filter((file) => file.endsWith('.tape')).sort();
       expect(actual).toEqual(expected);
     } finally {
