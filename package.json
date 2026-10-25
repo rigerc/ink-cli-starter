@@ -1,7 +1,7 @@
 {
   "name": "ink-kit",
   "version": "0.1.0",
-  "description": "Ink 8 CLI skeleton with a theme system, hooks, helpers and a component library",
+  "description": "GitHub template for an Ink 8, React 19 and TypeScript terminal application",
   "bin": {
     "ink-kit": "./dist/cli.js"
   },
@@ -12,15 +12,12 @@
   "scripts": {
     "dev": "tsx src/cli.tsx",
     "gallery": "tsx src/cli.tsx --screen gallery",
-    "demo:inline": "node --import tsx src/cli.tsx --demo",
-    "demo:ui": "tsx src/cli.tsx --screen ui-demo",
     "build": "vp pack",
     "typecheck": "tsc --noEmit",
     "test": "vp test run",
     "screenshot": "node --import tsx scripts/screenshot.tsx",
     "start": "node dist/cli.js",
     "prepare": "vp config",
-    "scaffold": "node scripts/scaffold.mjs",
     "theme": "node scripts/theme.mjs",
     "theme:list": "node scripts/theme.mjs list",
     "theme:token": "node scripts/theme.mjs token",

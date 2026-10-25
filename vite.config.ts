@@ -41,9 +41,6 @@ export default defineConfig({
     jsPlugins: [{name: 'vite-plus', specifier: 'vite-plus/oxlint-plugin'}],
     rules: {'vite-plus/prefer-vite-plus-imports': 'error'},
     options: {typeAware: true, typeCheck: true},
-    // templates/app holds overlay files for generated apps: their relative
-    // imports only resolve after scaffolding. Generated apps are typechecked
-    // and tested in .github/workflows/scaffold.yml instead.
-    ignorePatterns: ['build/**', 'dist/**', 'screenshots/**', 'tttt/**', 'templates/app/**'],
+    ignorePatterns: ['build/**', 'dist/**', 'screenshots/**', 'tttt/**'],
   },
 });

@@ -1,16 +1,14 @@
 # UI framework guide
 
-This guide explains how to build terminal interfaces with the local **Ink 8 / React 19** UI framework. It applies to both this starter and generated applications. The framework lives in `src/`; it is **not** a separately installed package.
+This guide explains the local **Ink 8 / React 19** component framework. The UI framework lives in `src/` and is part of this template, not a separately published dependency.
 
-For feature walkthroughs, generated projects include `docs/framework/adding-a-feature.md` and
-`docs/framework/architecture.md`; in this starter their source templates are under
-`templates/app/docs/`. The generated app's `README.md` links to both. The starter's `npm run demo:ui` and `npm run demo:inline` are showcases **only in this repository**. Generated apps include the component gallery only when the `gallery` feature is selected.
+See [architecture](architecture.md) for entry points and [adding a feature](adding-a-feature.md) for a screen and headless command walkthrough. Run `npm run gallery` to explore the reusable components.
 
 ## Start here
 
-1. Run the project's `dev` script in an interactive terminal (in the starter: `npm run dev`); use `--plain` for one-shot output in pipes and CI.
+1. Run `npm run dev` in an interactive terminal; use `--plain` for one-shot output in pipes and CI.
 2. Read `src/app.tsx`, `src/screens/Home.tsx` and `src/screens/index.ts` to see the application shell, screen composition and registration.
-3. Discover reusable exports in `src/components/index.ts` and `src/hooks/index.ts`. The starter's `npm run gallery` demonstrates interactive components.
+3. Discover reusable exports in `src/components/index.ts` and `src/hooks/index.ts`. `npm run gallery` demonstrates interactive components.
 4. Add domain logic outside the React/Ink layer so noninteractive commands can reuse it.
 
 ## Architecture and ownership
@@ -174,11 +172,10 @@ Semantic palettes live in `src/theme/palettes.json` and the project fallback in 
 
 ## Testing and quality
 
-- Run the `typecheck` and `build` scripts, plus `test` when the generated project's `tests` feature is installed. Check `package.json` before assuming optional scripts are available.
-- Where installed, use `ink-testing-library` for keyboard/focus assertions, and Ink `renderToString()` for deterministic width-specific frames.
+- Run `npm run typecheck`, `npm test`, and `npm run build`.
+- Use `ink-testing-library` for keyboard/focus assertions, and Ink `renderToString()` for deterministic width-specific frames.
 - Exercise TTY interactions, `--plain` output, loading/error/empty states, long text, narrow widths, mono/ASCII and multiple themes.
 - Never call `console.log` while Ink is rendering; use the logger for diagnostics and keep headless output separate.
-- When changing a framework convention, update this guide, relevant scaffold documentation, and regression tests.
+- When changing a framework convention, update this guide, the feature documentation, and regression tests.
 
-For the next implementation step, consult `docs/framework/adding-a-feature.md` in a
-generated app or `templates/app/docs/adding-a-feature.md` in the starter.
+For the next implementation step, consult [adding a feature](adding-a-feature.md).
