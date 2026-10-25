@@ -5,6 +5,7 @@ import path from 'node:path';
 import {fileURLToPath, pathToFileURL} from 'node:url';
 import {parseArgs} from 'node:util';
 import pkg from '../package.json';
+import {toErrorMessage} from '../src/lib/errors';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const formats = ['gif', 'mp4', 'webm'];
@@ -109,11 +110,12 @@ Requires VHS 0.12.1+, ttyd, FFmpeg and Chromium. See docs/recording.md.`);
   process.env.CI = '1';
   process.env.XDG_CONFIG_HOME = path.join(tmpdir(), `${pkg.name}-screenshots`);
 
-  const [{renderToString}, {App}, {screenIds}, {themeNames}] = await Promise.all([
+  const [{renderToString}, {App}, {screenIds}, {themeNames}, {isThemeName}] = await Promise.all([
     import('ink'),
     import('../src/app'),
     import('../src/screens'),
     import('../src/theme/tokens'),
+    import('../src/theme/resolve'),
   ]);
 
   const availableScreens = screenIds;
@@ -130,10 +132,12 @@ Requires VHS 0.12.1+, ttyd, FFmpeg and Chromium. See docs/recording.md.`);
       throw new Error(`Unknown screen "${screen}". Choose: ${availableScreens.join(', ')}`);
   }
 
-  for (const theme of selectedThemes) {
-    if (!themeNames.some((name) => name === theme))
+  const validThemes = selectedThemes.map((theme) => {
+    if (!isThemeName(theme))
       throw new Error(`Unknown theme "${theme}". Choose: ${themeNames.join(', ')}`);
-  }
+
+    return theme;
+  });
 
   for (const width of widths) {
     if (!/^\d+$/.test(width) || Number(width) < 40 || Number(width) > 240)
@@ -157,7 +161,7 @@ Requires VHS 0.12.1+, ttyd, FFmpeg and Chromium. See docs/recording.md.`);
 
   try {
     for (const screen of selectedScreens)
-      for (const theme of selectedThemes)
+      for (const theme of validThemes)
         for (const width of widths) {
           const columns = Number(width);
           const rows = Number(values.rows);
@@ -195,7 +199,7 @@ Requires VHS 0.12.1+, ttyd, FFmpeg and Chromium. See docs/recording.md.`);
             Object.defineProperty(process.stdout, 'rows', {value: rows, configurable: true});
 
             const options = {
-              theme: theme as (typeof themeNames)[number],
+              theme,
               ascii: values.ascii,
               debug: false,
               screen,
@@ -251,8 +255,8 @@ Requires VHS 0.12.1+, ttyd, FFmpeg and Chromium. See docs/recording.md.`);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
-  main().catch((error: unknown) => {
-    console.error(error instanceof Error ? error.message : error);
+  main().catch((cause: unknown) => {
+    console.error(toErrorMessage(cause));
     process.exitCode = 1;
   });
 }
