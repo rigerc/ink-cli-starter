@@ -68,10 +68,10 @@ export function PaginatedList<T>({
 
         return (
           <Box key={getKey(item, start + offset)} flexDirection="column">
-            {typeof content === 'string' || typeof content === 'number' ? (
-              <Text>{content}</Text>
-            ) : (
+            {content === null || content === undefined || content instanceof Object ? (
               content
+            ) : (
+              <Text>{content}</Text>
             )}
           </Box>
         );
