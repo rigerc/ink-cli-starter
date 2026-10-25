@@ -2,7 +2,6 @@ import {setTimeout as tick} from 'node:timers/promises';
 import {renderToString, Text} from 'ink';
 import {describe, expect, it, vi} from 'vite-plus/test';
 import {Step, Stepper, type StepContext} from '../src/components';
-import {InlineDemo} from '../src/demos/InlineDemo';
 import {SetupWizard} from '../src/demos/SetupWizard';
 import {mount, output, press, settle} from './helpers/terminal';
 
@@ -279,35 +278,23 @@ describe('Stepper', () => {
   });
 });
 
-describe('inline demo', () => {
-  it('renders a static ASCII preview without terminal control sequences', () => {
-    const out = renderToString(
-      <InlineDemo options={{theme: 'mono', ascii: true, debug: false, screen: 'home'}} />,
-      {columns: 40},
-    );
-    expect(out).toContain('inline setup demo');
-    expect(out).toContain('Preview only');
-    // Assert the plain-text render carries no ANSI escapes or theme glyphs.
-    // oxlint-disable-next-line no-control-regex
-    expect(out).not.toMatch(/\u001b|[✔✖⚠ℹ❯█░─╭╮╰╯│○]/);
-  });
-
+describe('gallery wizard example', () => {
   it('coordinates Enter with Select and Confirm, then completes after async validation', async () => {
     const finish = vi.fn();
     const app = await mount(<SetupWizard onFinish={finish} />);
     await press(app, '\r');
-    expect(output(app)).toContain('Choose a starter template');
+    expect(output(app)).toContain('Choose an example layout');
     await press(app, '\u001b[B');
     await press(app, '\r');
-    expect(output(app)).toContain('Finish the demo setup?');
+    expect(output(app)).toContain('Finish the sample wizard?');
     expect(finish).not.toHaveBeenCalled();
     await press(app, '\r');
-    expect(output(app)).toContain('Validating setup');
+    expect(output(app)).toContain('Validating example');
     await press(app, '\r');
     await expect.poll(() => finish.mock.calls.length, {timeout: 3000}).toBe(1);
     await settle();
     expect(finish).toHaveBeenCalledWith('completed');
-    expect(output(app)).toContain('my-cli (dashboard)');
+    expect(output(app)).toContain('Example complete: detailed');
   });
 
   it('cancels when No is confirmed', async () => {
@@ -318,6 +305,6 @@ describe('inline demo', () => {
     await press(app, 'n');
     await press(app, '\r');
     expect(finish).toHaveBeenCalledWith('cancelled');
-    expect(output(app)).toContain('Setup cancelled');
+    expect(output(app)).toContain('Example cancelled');
   });
 });

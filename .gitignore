@@ -5,7 +5,7 @@ build
 screenshots/
 .vitest/
 
-# Tool state and scaffold scratch output
+# Local tool state
 tttt/
 .serena/
 .pi/

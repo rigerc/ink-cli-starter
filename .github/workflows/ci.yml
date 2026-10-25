@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: node dist/cli.js --help
+      - run: node dist/cli.js --plain
+      - run: node dist/cli.js doctor --json
+      - name: Check packed command
+        run: |
+          npm pack --json --pack-destination "$RUNNER_TEMP" > "$RUNNER_TEMP/pack.json"
+          PACKAGE_TGZ=$(node -p "require(process.env.RUNNER_TEMP + '/pack.json')[0].filename")
+          COMMAND_NAME=$(node -p "Object.keys(require('./package.json').bin)[0]")
+          mkdir -p "$RUNNER_TEMP/cli-smoke"
+          npm install --prefix "$RUNNER_TEMP/cli-smoke" "$RUNNER_TEMP/$PACKAGE_TGZ"
+          "$RUNNER_TEMP/cli-smoke/node_modules/.bin/$COMMAND_NAME" --help

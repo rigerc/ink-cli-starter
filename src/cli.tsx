@@ -2,9 +2,9 @@
 import {render, renderToString} from 'ink';
 import meow from 'meow';
 import {App, PlainView, type AppOptions} from './app';
+import {runCommand} from './commands';
 import {appConfig, resolveConfig, type Config} from './config';
 import {ConfigSetup} from './demos/ConfigSetup';
-import {InlineDemo} from './demos/InlineDemo';
 import {APP_NAME, APP_THEME_ENV, loadConfig} from './lib/config';
 import {AppError, toAppError} from './lib/errors';
 import {logger} from './lib/logger';
@@ -16,6 +16,7 @@ const cli = meow(
   `
   Usage
     $ ${APP_NAME} [options]
+    $ ${APP_NAME} doctor [--json] [--config path]
     $ ${APP_NAME} --setup [--config path]
 
   Options
@@ -25,7 +26,7 @@ const cli = meow(
     --config <path>  Read/write a specific JSON configuration file
     --setup          Open the interactive configuration wizard
     --plain          Print once and exit (also the default when piped or in CI)
-    --demo           Run the compact inline setup demo
+    --json           JSON output for headless commands (doctor)
     --debug          Write logs to a file and show stack traces
 
   Environment
@@ -42,18 +43,27 @@ const cli = meow(
       config: {type: 'string'},
       setup: {type: 'boolean'},
       plain: {type: 'boolean'},
-      demo: {type: 'boolean'},
+      json: {type: 'boolean'},
       debug: {type: 'boolean'},
     },
   },
 );
 
 async function main() {
-  const {flags} = cli;
+  const {flags, input} = cli;
   logger.setDebug(Boolean(flags.debug));
 
-  if (flags.setup && flags.demo)
-    throw new AppError('--setup and --demo cannot be used together', {exitCode: 2});
+  if (input.length > 0) {
+    if (flags.setup || flags.plain)
+      throw new AppError('Subcommands cannot be combined with --setup or --plain', {exitCode: 2});
+    if (runCommand(input[0]!, input.slice(1), {configFile: flags.config, json: flags.json})) return;
+    throw new AppError(`Unknown command "${input[0]}"`, {
+      exitCode: 2,
+      hint: `Run ${APP_NAME} --help for available commands.`,
+    });
+  }
+  if (flags.json)
+    throw new AppError('--json requires a headless subcommand (e.g. doctor)', {exitCode: 2});
   if (!isScreenId(flags.screen))
     throw new AppError(`Unknown screen "${flags.screen}"`, {
       exitCode: 2,
@@ -96,27 +106,20 @@ async function main() {
 
   if (flags.plain || !isInteractive()) {
     console.log(
-      renderToString(
-        flags.demo ? <InlineDemo options={options} /> : <PlainView options={options} />,
-        {columns: process.stdout.columns || 80},
-      ),
+      renderToString(<PlainView options={options} />, {
+        columns: process.stdout.columns || 80,
+      }),
     );
     return;
   }
 
   await render(
-    flags.setup ? (
-      <ConfigSetup options={options} />
-    ) : flags.demo ? (
-      <InlineDemo options={options} interactive />
-    ) : (
-      <App options={options} />
-    ),
+    flags.setup ? <ConfigSetup options={options} /> : <App options={options} />,
   ).waitUntilExit();
 }
 
 main().catch((error: unknown) => {
   const err = toAppError(error);
   console.error(`${err.message}${err.hint ? `\n${err.hint}` : ''}`);
-  process.exit(err.exitCode);
+  process.exitCode = err.exitCode;
 });

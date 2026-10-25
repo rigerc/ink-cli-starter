@@ -22,8 +22,7 @@ run. A sandboxed Linux container may also need
 
 ## Capture images
 
-Run the package.json `screenshot` script with your chosen package manager.
-The examples below use npm; pnpm/bun use `run`, while Yarn also accepts `yarn screenshot`.
+Run the package.json `screenshot` script. The examples below use npm.
 
 ```sh
 npm run screenshot
@@ -33,8 +32,7 @@ npm run screenshot -- --output-dir ./screenshots/review
 ```
 
 Screens, themes and columns can be repeated to select a matrix. Defaults are all
-registered screens, all four themes, and 80/120 columns. The starter additionally
-includes its inline demo. Terminal height defaults to 40 rows; increase `--rows`
+registered screens, all four themes, and 80/120 columns. Terminal height defaults to 40 rows; increase `--rows`
 for tall screens so the terminal viewport does not crop or scroll their content.
 
 Images use Ink's static `renderToString()` output, with fixed terminal diagnostics
@@ -64,8 +62,8 @@ snapshots. The runner stops the app after the interaction tape finishes.
 
 ## Keep a shareable `assets/` gallery
 
-The starter's GitHub Actions workflow saves one dark-theme, 100-column PNG for each
-registered screen plus the inline demo in `assets/screenshots/`. It also saves an MP4
+The template's GitHub Actions workflow saves one dark-theme, 100-column PNG for each
+registered screen in `assets/screenshots/`. It also saves an MP4
 of the interactive Home-to-Help journey at `assets/demo.mp4`. Both are tracked in Git,
 so README links survive artifact expiration. New screens are included automatically
 through the screen registry; no list needs maintaining in the workflow.
@@ -98,10 +96,9 @@ Prefer `Wait+Screen@10s /expected text/` for asynchronous transitions, then a sh
 checkpoints. Paths in interactions resolve from the project root. Keep launch,
 Output and Set commands in the runner; interaction snippets run after launch.
 
-For the starter's inline wizard, supply a custom tape with Enter, arrow keys and
-confirmation steps (`--screen inline --tape path/to/wizard.tape`). That screen is
-not shipped in generated apps. Scenarios can save isolated temporary settings,
-but commands that call external services still need suitable demo fixtures.
+Screens can use custom tapes with Enter, arrow keys and confirmation steps.
+Scenarios can save isolated temporary settings, but commands that call external
+services still need suitable demo fixtures.
 
 ```sh
 # Write tapes/fixtures without VHS. Useful for review and debugging.
@@ -121,10 +118,9 @@ workflow, commit the source interaction tape and regenerate on each machine.
 
 ## Continuous integration
 
-The starter's `.github/workflows/screenshots.yml` installs pinned VHS, ttyd,
+The template's `.github/workflows/screenshots.yml` installs pinned VHS, ttyd,
 FFmpeg and fonts through the official VHS action, then typechecks, tests and runs
-the captures. It refreshes `assets/screenshots/*.png` for all screens (including
-hidden screens and the inline demo) and `assets/demo.mp4` for the interactive
+the captures. It refreshes `assets/screenshots/*.png` for all registered screens (including hidden development screens) and `assets/demo.mp4` for the interactive
 journey. It uploads the PNGs, MP4 and replayable tapes as a 14-day artifact.
 
 On pushes to `main` or manual dispatch from `main`, GitHub Actions commits changed
@@ -135,10 +131,9 @@ retrigger the workflow. On pull requests and manual runs on other branches, the
 workflow only uploads an artifact; it does not push to contributors' branches.
 Unlike the temporary artifact, the committed `assets/` files persist in Git.
 
-Generated apps include the capture commands when `screenshots` is selected; they
-do not inherit the starter's publishing workflow. To create review artifacts
-in a generated app, add steps like these to its CI after installing dependencies
-(adapt the package manager and paths as needed):
+To keep capture workflows in a copied template repository, use the existing
+scripts and adapt the output paths for your own app. A minimal upload-only CI
+job can use these steps:
 
 ```yaml
 - uses: charmbracelet/vhs-action@v2
@@ -157,7 +152,7 @@ in a generated app, add steps like these to its CI after installing dependencies
     retention-days: 14
 ```
 
-To make a generated app publish assets persistently, add a separate, permissions-
-restricted commit step for trusted branches as in the starter workflow. The VHS
+To publish screenshot assets persistently, add a separate, permissions-
+restricted commit step for trusted branches as in this repository's workflow. The VHS
 action with no `path` installs dependencies without running a tape. Keep the capture
 font and VHS version aligned across development and CI.

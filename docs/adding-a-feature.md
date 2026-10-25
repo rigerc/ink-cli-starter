@@ -1,6 +1,6 @@
 # Add your first feature
 
-The skeleton has no predefined business domain. Add only the pieces needed by
+The template has no predefined business domain. Add only the pieces needed by
 your application. Read [the UI framework guide](ui-framework.md) before adding interactive
 controls; it explains provider ownership, component selection, input capture,
 semantic styling and async states.
@@ -9,8 +9,7 @@ semantic styling and async states.
 2. Add `src/screens/Example.tsx` and register the screen in `src/screens/index.ts`.
 3. If required, add a noninteractive subcommand to `src/commands/index.ts`.
 4. Add typed configuration in `src/config/schema.ts` only when necessary.
-5. When the `tests` feature is installed, write tests under `tests/`. Run the
-   project's typecheck and build scripts, plus its test script if present.
+5. Write tests under `tests/` and run `npm run typecheck`, `npm test`, and `npm run build`.
 
 ## Minimal screen
 

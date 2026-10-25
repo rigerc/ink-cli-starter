@@ -101,14 +101,13 @@ Requires VHS 0.12.1+, ttyd, FFmpeg and Chromium. See docs/recording.md.`);
   process.env.FORCE_COLOR = '3';
   process.env.CI = '1';
   process.env.XDG_CONFIG_HOME = path.join(tmpdir(), `${pkg.name}-screenshots`);
-  const [{renderToString}, {App}, {InlineDemo}, {screenIds}, {themeNames}] = await Promise.all([
+  const [{renderToString}, {App}, {screenIds}, {themeNames}] = await Promise.all([
     import('ink'),
     import('../src/app'),
-    import('../src/demos/InlineDemo'),
     import('../src/screens'),
     import('../src/theme/tokens'),
   ]);
-  const availableScreens = [...screenIds, 'inline'];
+  const availableScreens = screenIds;
   const selectedScreens = [
     ...new Set(values.screen ?? (values.video ? ['home'] : availableScreens)),
   ];
@@ -128,8 +127,6 @@ Requires VHS 0.12.1+, ttyd, FFmpeg and Chromium. See docs/recording.md.`);
   }
   if (!/^\d+$/.test(values.rows) || Number(values.rows) < 20 || Number(values.rows) > 200)
     throw new Error('--rows must be an integer between 20 and 200');
-  if (values.video && selectedScreens.includes('inline') && !values.tape)
-    throw new Error('Inline video requires --tape with wizard interactions');
   const workflow = values.video
     ? await readFile(
         path.resolve(values.tape ?? path.join(root, 'scripts/tapes/workflow.tape')),
@@ -162,7 +159,8 @@ Requires VHS 0.12.1+, ttyd, FFmpeg and Chromium. See docs/recording.md.`);
                 '--import',
                 'tsx',
                 'src/cli.tsx',
-                ...(screen === 'inline' ? ['--demo'] : ['--screen', screen]),
+                '--screen',
+                screen,
                 '--theme',
                 theme,
                 '--config',
@@ -181,7 +179,7 @@ Requires VHS 0.12.1+, ttyd, FFmpeg and Chromium. See docs/recording.md.`);
               screen,
             };
             const ansi = renderToString(
-              screen === 'inline' ? <InlineDemo options={options} /> : <App options={options} />,
+              <App options={options} />,
               {columns},
             );
             if (!ansi.trim()) throw new Error(`Empty render: ${screen}/${theme}/${columns}`);
@@ -200,7 +198,6 @@ Requires VHS 0.12.1+, ttyd, FFmpeg and Chromium. See docs/recording.md.`);
               screenshot,
               outputs,
               workflow,
-              ready: screen === 'inline' ? 'inline setup demo' : undefined,
             }),
           );
           if (values['dry-run']) {
