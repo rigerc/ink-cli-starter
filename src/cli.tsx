@@ -10,7 +10,7 @@ import {AppError, toAppError} from './lib/errors';
 import {logger} from './lib/logger';
 import {isInteractive, noColor, supportsUnicode} from './lib/terminal';
 import {isScreenId, screenIds} from './screens';
-import {resolveThemeName} from './theme/resolve';
+import {isThemeName, resolveThemeName} from './theme/resolve';
 
 const cli = meow(
   `
@@ -81,10 +81,7 @@ async function main() {
     throw new AppError('Cannot edit invalid configuration', {hint: error, exitCode: 2});
 
   const configFlags: Partial<Config> = {
-    theme:
-      flags.theme && appConfig.fields[0]?.options?.some((item) => item.value === flags.theme)
-        ? (flags.theme as Config['theme'])
-        : undefined,
+    theme: flags.theme === 'auto' || isThemeName(flags.theme) ? flags.theme : undefined,
     ascii: flags.ascii ? true : undefined,
   };
 
@@ -127,8 +124,8 @@ async function main() {
   ).waitUntilExit();
 }
 
-main().catch((error: unknown) => {
-  const err = toAppError(error);
+main().catch((cause: unknown) => {
+  const err = toAppError(cause);
   console.error(`${err.message}${err.hint ? `\n${err.hint}` : ''}`);
   process.exitCode = err.exitCode;
 });
