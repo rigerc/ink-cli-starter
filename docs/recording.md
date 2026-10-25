@@ -60,7 +60,7 @@ user's settings untouched. Normal capture removes that temporary config on exit.
 Video captures include live animation and state changes; they are not pixel-stable
 snapshots. The runner stops the app after the interaction tape finishes.
 
-## Keep a shareable `assets/` gallery
+## Keep shareable screen captures in `assets/`
 
 The manually triggered GitHub Actions workflow saves one dark-theme, 100-column PNG for each
 registered screen in `assets/screenshots/`. It also saves an MP4
@@ -83,7 +83,7 @@ Only the PNGs and `demo.mp4` should be committed. The workflow stages only
 in `assets/screenshots/tapes/` untracked (not ignored). The recording's working
 files in `screenshots/` remain ignored.
 Change the recording screen, theme, width or `--tape` in the workflow dispatch inputs
-to replace the demo; the gallery still captures every screen at the fixed defaults.
+to replace the demo; the screenshot step still captures every registered screen at the fixed defaults.
 The workflow checks the capture commands before committing, avoiding broken media.
 
 ## Adapt the workflow

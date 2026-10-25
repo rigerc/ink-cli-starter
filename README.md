@@ -13,7 +13,7 @@ npm ci
 npm run dev
 ```
 
-The default app provides **Home, Settings and Help** screens. A component gallery is available separately for development. The source includes a configurable theme system, keyboard/input handling, headless commands, and tests.
+The default app provides **Home, Settings and Help** screens. Reusable UI components, hooks, and themes are included for applications built from the template, alongside headless commands and tests.
 
 The UI layer is a **set of defaults, not a required design system**. Screens can opt out of the shared chrome and global shortcuts, and reusable layout components accept native Ink styling properties. You can also use Ink's `Box` and `Text` directly. See [UI flexibility](docs/ui-framework.md#using-only-what-you-need).
 
@@ -22,7 +22,6 @@ The UI layer is a **set of defaults, not a required design system**. Screens can
 ```bash
 npm run dev                     # Interactive app in a terminal
 npm run dev -- --plain          # Render one frame for pipes / CI
-npm run gallery                 # Browse UI components and examples
 npm run dev -- --setup          # Interactive configuration editor
 npm run dev -- doctor --json    # Headless environment diagnostics
 npm run lint                    # Vite+ lint, including anti-slop rules

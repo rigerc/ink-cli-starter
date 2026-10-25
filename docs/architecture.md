@@ -7,7 +7,7 @@ This repository is the actual CLI application copied by GitHub's **Use this temp
 - `src/cli.tsx` parses arguments, invokes noninteractive commands, and chooses interactive or one-frame Ink rendering.
 - `src/commands/index.ts` registers headless commands. Commands must not depend on a TTY or import Ink.
 - `src/app.tsx` composes the shared terminal shell, application providers, navigation, and global shortcuts.
-- `src/screens/index.ts` registers screens. Home, Settings, and Help are visible tabs. The gallery is accessible with `--screen gallery` but is hidden from navigation.
+- `src/screens/index.ts` registers the default Home, Settings and Help screens; this registry also determines valid `--screen` values.
 - `src/components/`, `src/hooks/`, and `src/theme/` contain reusable local UI primitives.
 - `src/config/` provides validated, versioned JSON configuration.
 

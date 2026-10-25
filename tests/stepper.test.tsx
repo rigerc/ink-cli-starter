@@ -309,7 +309,7 @@ describe('Stepper', () => {
   });
 });
 
-describe('gallery wizard example', () => {
+describe('standalone setup wizard example', () => {
   it('coordinates Enter with Select and Confirm, then completes after async validation', async () => {
     const finish = vi.fn();
     const app = await mount(<SetupWizard onFinish={finish} />);

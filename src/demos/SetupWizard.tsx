@@ -62,7 +62,7 @@ function ReviewStep({template, isActive}: {template: string; isActive: boolean})
     <Box flexDirection="column" gap={1}>
       <KeyValue
         items={[
-          {label: 'Preview', value: 'Component gallery'},
+          {label: 'Preview', value: 'Sample wizard'},
           {label: 'Layout', value: template},
         ]}
       />
@@ -84,7 +84,7 @@ function ReviewStep({template, isActive}: {template: string; isActive: boolean})
   );
 }
 
-/** Shared by the gallery and the standalone inline demo. */
+/** Standalone example of reusable wizard controls and step navigation. */
 export function SetupWizard({
   onFinish,
   isActive = true,

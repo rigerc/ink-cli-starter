@@ -45,7 +45,7 @@ jobs:
           install-fonts: true
       - run: npm run typecheck
       - run: npm test
-      - name: Capture all screens for the gallery
+      - name: Capture all registered screens
         run: |
           mkdir -p assets/screenshots
           rm -f assets/screenshots/*.png
