@@ -14,7 +14,7 @@ import {
   useHasInputCapture,
 } from './hooks';
 import {getGlobalBindings, getGlobalKeys, type KeyHint} from './keys';
-import {navScreens, screens} from './screens';
+import {navScreens, screens, type ScreenLayoutMode} from './screens';
 import {ThemeProvider, useThemeControls} from './theme/context';
 import type {ThemeName} from './theme/tokens';
 
@@ -55,12 +55,35 @@ const inputHints: KeyHint[] = [
   {key: 'enter', label: 'edit/select'},
 ];
 
+/** Built-in chrome is a default, not a requirement for every screen. */
+export function ScreenFrame({
+  layout = 'shell',
+  header,
+  nav,
+  footer,
+  children,
+}: {
+  layout?: ScreenLayoutMode;
+  header?: ReactNode;
+  nav?: ReactNode;
+  footer?: ReactNode;
+  children: ReactNode;
+}) {
+  if (layout === 'bare') return <>{children}</>;
+  return (
+    <AppShell header={header} nav={nav} footer={footer}>
+      {children}
+    </AppShell>
+  );
+}
+
 function Shell() {
   const router = useRouter();
   const exit = useExit();
   const {theme, cycleTheme} = useThemeControls();
   const inputCaptured = useHasInputCapture();
   const [commandOpen, setCommandOpen] = useState(false);
+  const screen = screens.find((s) => s.id === router.current) ?? navScreens[0]!;
 
   const index = Math.max(0, navScreens.findIndex((s) => s.id === router.current));
   const go = (i: number) =>
@@ -79,19 +102,22 @@ function Shell() {
       },
       go,
     ),
-    {isActive: !inputCaptured && !commandOpen, scope: 'global'},
+    {isActive: screen.globalKeys !== false && !inputCaptured && !commandOpen, scope: 'global'},
   );
 
-  const screen = screens.find((s) => s.id === router.current) ?? navScreens[0]!;
   const Screen = screen.Component;
   const hints = commandOpen
     ? menuHints
     : inputCaptured
       ? inputHints
-      : [...(screen.hints ?? []), ...getGlobalKeys(navScreens.length)];
+      : [
+          ...(screen.hints ?? []),
+          ...(screen.globalKeys === false ? [] : getGlobalKeys(navScreens.length)),
+        ];
 
   return (
-    <AppShell
+    <ScreenFrame
+      layout={screen.layout}
       header={
         <Header
           title={pkg.name}
@@ -114,7 +140,7 @@ function Shell() {
       ) : (
         <Screen />
       )}
-    </AppShell>
+    </ScreenFrame>
   );
 }
 
@@ -129,9 +155,12 @@ export function PlainView({options}: {options: AppOptions}) {
   const Screen = (screens.find((s) => s.id === options.screen) ?? screens[0]!).Component;
   return (
     <AppProviders options={options}>
-      <AppShell header={<Header title={pkg.name} version={pkg.version} />}>
+      <ScreenFrame
+        layout={screens.find((s) => s.id === options.screen)?.layout}
+        header={<Header title={pkg.name} version={pkg.version} />}
+      >
         <Screen />
-      </AppShell>
+      </ScreenFrame>
     </AppProviders>
   );
 }
