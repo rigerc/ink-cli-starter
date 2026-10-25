@@ -83,7 +83,7 @@ npm run theme:default -- auto
 
 The template vendors [anti-slop](https://github.com/dmmulroy/anti-slop) under [`tools/oxlint/anti-slop/`](tools/oxlint/anti-slop/). Its generic Oxlint rules run alongside the existing Vite+ lint rule. The plugin is a source copy (not an npm dependency); see its [`UPSTREAM.md`](tools/oxlint/anti-slop/UPSTREAM.md) for the exact upstream revision and update guidance. Effect-specific rules are not enabled because this starter does not depend on Effect.
 
-Run `npm run lint && npm run typecheck && npm test && npm run build`. For a combined Vite+ check, run `npm run check`. The CI workflow verifies these commands, plain output, headless diagnostics, and the packaged binary. `npm pack` creates an installable CLI tarball; update package metadata and licensing before publishing to npm.
+Run `npm run typecheck && npm test && npm run build` for the existing CI checks. `npm run lint` runs Vite+ with anti-slop, and `npm run check` additionally checks formatting and types. The initial anti-slop run identified pre-existing source violations; lint is intentionally not a blocking CI step until that codebase-wide migration is completed. CI verifies typechecking, tests, builds, plain output, headless diagnostics, and the packaged binary. `npm pack` creates an installable CLI tarball; update package metadata and licensing before publishing to npm.
 
 Screenshots and recordings are optional and require [VHS](https://github.com/charmbracelet/vhs), ttyd, FFmpeg and Chromium. Use `npm run screenshot -- --dry-run` to inspect generated capture tapes without external tooling.
 
