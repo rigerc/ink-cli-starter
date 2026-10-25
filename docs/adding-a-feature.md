@@ -65,12 +65,16 @@ if (name === 'example') {
 }
 ```
 
-Also register the subcommand in `src/cli.tsx` so Commander recognizes it and lists it in `--help`:
+Also register the subcommand in `src/cli.tsx` so Commander recognizes it and
+lists it in `--help`:
 
 ```ts
-program.command('example').description('Run the example').action(() => {
-  runCommand('example', [], {});
-});
+program
+  .command('example')
+  .description('Run the example')
+  .action(() => {
+    runCommand('example', [], {});
+  });
 ```
 
 A real command should call a pure feature operation. Import that same operation
