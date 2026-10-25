@@ -4,8 +4,6 @@ import {GalleryScreen} from './Gallery';
 import {HelpScreen} from './Help';
 import {HomeScreen} from './Home';
 import {SettingsScreen} from './Settings';
-import {TasksScreen} from './Tasks';
-import {UiDemoScreen} from './UiDemo';
 
 export interface ScreenDef {
   id: string;
@@ -17,23 +15,9 @@ export interface ScreenDef {
   hints?: readonly KeyHint[];
 }
 
-/** Order here controls tab order and numeric shortcuts. */
+/** Visible order controls tab order and numeric shortcuts. */
 export const screens: ScreenDef[] = [
   {id: 'home', label: 'Home', Component: HomeScreen},
-  {id: 'tasks', label: 'Tasks', Component: TasksScreen, hints: [
-    {key: 'r', label: 'retry'},
-    {key: 'x', label: 'simulate failure'},
-  ]},
-  {
-    id: 'gallery',
-    label: 'Gallery',
-    Component: GalleryScreen,
-    hints: [
-      {key: '[', label: 'previous'},
-      {key: ']', label: 'next'},
-      {key: '/', label: 'find'},
-    ],
-  },
   {id: 'settings', label: 'Settings', Component: SettingsScreen, hints: [
     {key: '↑/↓', label: 'section'},
     {key: 'enter', label: 'edit'},
@@ -42,18 +26,9 @@ export const screens: ScreenDef[] = [
     {key: 'w', label: 'wizard'},
   ]},
   {id: 'help', label: 'Help', Component: HelpScreen},
-  {
-    id: 'ui-demo',
-    label: 'UI Demo',
-    Component: UiDemoScreen,
-    hints: [
-      {key: 's', label: 'next state'},
-      {key: 'r', label: 'reset'},
-      {key: 'm', label: 'message'},
-    ],
-  },
+  {id: 'gallery', label: 'Gallery', Component: GalleryScreen, showInNav: false},
 ];
 
-export const navScreens = screens.filter((s) => s.showInNav !== false);
-export const screenIds = screens.map((s) => s.id);
+export const navScreens = screens.filter((screen) => screen.showInNav !== false);
+export const screenIds = screens.map((screen) => screen.id);
 export const isScreenId = (id: string) => screenIds.includes(id);
