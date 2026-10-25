@@ -22,11 +22,17 @@ export function ErrorPanel({error, debug = false}: {error: unknown; debug?: bool
   );
 }
 
-export class ErrorBoundary extends Component<
-  {debug?: boolean; children: ReactNode},
-  {error?: Error}
-> {
-  override state: {error?: Error} = {};
+interface ErrorBoundaryProps {
+  debug?: boolean;
+  children: ReactNode;
+}
+
+interface ErrorBoundaryState {
+  error?: Error;
+}
+
+export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  override state: ErrorBoundaryState = {};
 
   static getDerivedStateFromError(error: Error) {
     return {error};
