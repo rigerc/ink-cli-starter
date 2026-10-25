@@ -2,14 +2,19 @@ import {themeNames, type ThemeName} from './tokens';
 import defaults from './defaults.json';
 
 export const isThemeName = (value: unknown): value is ThemeName =>
-  typeof value === 'string' && (themeNames as readonly string[]).includes(value);
+  themeNames.some((name) => name === value);
 
 /** Project-level default; 'auto' retains the original terminal detection behavior. */
-if (defaults.defaultTheme !== 'auto' && !isThemeName(defaults.defaultTheme)) {
-  throw new Error('Invalid theme default in src/theme/defaults.json');
-}
+const requestedDefault = defaults.defaultTheme;
 
-export const defaultTheme = defaults.defaultTheme as ThemeName | 'auto';
+export const defaultTheme: ThemeName | 'auto' =
+  requestedDefault === 'auto'
+    ? 'auto'
+    : isThemeName(requestedDefault)
+      ? requestedDefault
+      : (() => {
+          throw new Error('Invalid theme default in src/theme/defaults.json');
+        })();
 
 /** Best-effort light/dark detection. COLORFGBG is "fg;bg" in many terminals. */
 function detectScheme(): ThemeName {
