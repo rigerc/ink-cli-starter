@@ -49,14 +49,12 @@ The default package and executable name is `ink-kit` until you change it. The `s
 
 Repositories created from this template include [the template sync workflow](.github/workflows/template-sync.yml). It checks `rigerc/ink-cli-starter` for updates on the first day of each month at 03:17 UTC, or when manually started, and opens a pull request with proposed changes. The workflow skips the upstream template repository itself.
 
-**Setup in your generated repository:** This upstream template is private, so the generated repository's default `GITHUB_TOKEN` cannot read it. Add the following secrets under **Settings → Secrets and variables → Actions**:
+**Setup in your generated repository:** The upstream `rigerc/ink-cli-starter` repository is public, so no source access token is needed. The workflow uses the built-in `GITHUB_TOKEN` by default to read the template and open sync pull requests.
 
-- `TEMPLATE_SYNC_SOURCE_TOKEN`: a token with **Contents: read** access to the private `rigerc/ink-cli-starter` repository (and **Metadata: read**, granted automatically for fine-grained PATs).
-- `TEMPLATE_SYNC_TARGET_TOKEN`: a token with **Contents: write** and **Pull requests: write** access to your generated repository. Also allow workflow-file updates (e.g. **Workflows: write** for a fine-grained token) so changes under `.github/workflows/` can be synced.
+1. Under **Settings → Actions → General → Workflow permissions**, enable **Allow GitHub Actions to create and approve pull requests**.
+2. **Optional for workflow-file updates:** Add a `TEMPLATE_SYNC_TARGET_TOKEN` secret under **Settings → Secrets and variables → Actions**, using a repository-scoped fine-grained personal access token with **Contents: write**, **Pull requests: write**, and **Workflows: write** permissions for your generated repository. The default `GITHUB_TOKEN` cannot push updates to `.github/workflows/`, so a sync that includes workflow-file changes may fail without this secret.
 
-Prefer separate, repository-scoped fine-grained personal access tokens; the account creating the source token must have access to the private upstream repository. For private-source sync using PATs, the action's documentation requires the target repository to be private as well.
-
-After adding the secrets, go to **Actions → Sync upstream template → Run workflow** in the generated repository. Review any automatically created PR before merging: upstream updates may touch files you have customized. See [actions-template-sync documentation](https://github.com/marketplace/actions/actions-template-sync) for additional authentication or file-exclusion options.
+The workflow automatically uses `TEMPLATE_SYNC_TARGET_TOKEN` when provided and falls back to `GITHUB_TOKEN` otherwise. Go to **Actions → Sync upstream template → Run workflow** to trigger a sync manually. Review any created PR before merging: upstream updates may touch files you have customized. See [actions-template-sync documentation](https://github.com/marketplace/actions/actions-template-sync) for additional authentication or file-exclusion options.
 
 ## Add functionality
 
