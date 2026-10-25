@@ -99,6 +99,7 @@ async function runApp(flags: ReturnType<typeof program.opts>) {
 
 program
   .command('doctor')
+  .allowExcessArguments(false)
   .description('Inspect the runtime environment and configuration')
   .option('--json', 'Print the diagnostic report as JSON')
   .option('--config <path>', 'Use a specific JSON configuration file')
