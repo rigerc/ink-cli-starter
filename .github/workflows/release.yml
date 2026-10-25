@@ -1,0 +1,81 @@
+name: Release
+
+# Opt-in release automation for repositories created from this template.
+#
+# Repository variables (Settings -> Secrets and variables -> Actions -> Variables):
+#   RELEASE_ENABLED=true  turn this workflow on (otherwise the job is skipped)
+#   NPM_PUBLISH=true      also publish to npm (otherwise: version PR, git tags, GitHub releases)
+#
+# npm auth: trusted publishing (OIDC) by default. Add an NPM_TOKEN secret to use a token instead.
+# See docs/releasing.md.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    # Never runs in the upstream template.
+    if: github.repository != 'rigerc/ink-cli-starter' && vars.RELEASE_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
+    env:
+      NPM_PUBLISH: ${{ vars.NPM_PUBLISH }}
+      # Provenance is only supported for public repositories.
+      NPM_CONFIG_PROVENANCE: ${{ github.event.repository.private == false }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Preflight
+        run: node scripts/release-preflight.mjs
+      - name: Verify
+        run: |
+          npm run typecheck
+          npm test
+      - name: Use a recent npm for trusted publishing
+        if: ${{ vars.NPM_PUBLISH == 'true' }}
+        run: npm install -g npm@^11.5.1
+      - name: Configure npm auth
+        if: ${{ vars.NPM_PUBLISH == 'true' }}
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          # Always use a dedicated userconfig so a stray ~/.npmrc cannot interfere with OIDC.
+          : > "$RUNNER_TEMP/npmrc"
+          if [ -n "$NPM_TOKEN" ]; then
+            echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> "$RUNNER_TEMP/npmrc"
+            echo "Publishing with NPM_TOKEN"
+          else
+            echo "No NPM_TOKEN set; publishing with npm trusted publishing (OIDC)"
+          fi
+          echo "NPM_CONFIG_USERCONFIG=$RUNNER_TEMP/npmrc" >> "$GITHUB_ENV"
+      # changesets/action@v1 pairs with @changesets/cli 2.x and uses camelCase inputs plus the
+      # GITHUB_TOKEN env var. The v2 action (for Changesets v3) renames the inputs (publish-script,
+      # version-script, ...) and takes a custom token via `github-token`. Migrate deliberately.
+      - uses: changesets/action@v1
+        with:
+          version: npm run version-packages
+          publish: ${{ vars.NPM_PUBLISH == 'true' && 'npm run release' || 'npm run release:tag' }}
+          commit: 'chore(release): version packages'
+          title: 'chore(release): version packages'
+          createGithubReleases: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
