@@ -17,26 +17,15 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-      - name: Check template sync credentials
-        env:
-          SOURCE_TOKEN: ${{ secrets.TEMPLATE_SYNC_SOURCE_TOKEN }}
-          TARGET_TOKEN: ${{ secrets.TEMPLATE_SYNC_TARGET_TOKEN }}
-        run: |
-          if [ -z "$SOURCE_TOKEN" ] || [ -z "$TARGET_TOKEN" ]; then
-            echo "::error::Set TEMPLATE_SYNC_SOURCE_TOKEN and TEMPLATE_SYNC_TARGET_TOKEN as Actions secrets."
-            exit 1
-          fi
-
       - name: Checkout target repository
         uses: actions/checkout@v6
         with:
-          token: ${{ secrets.TEMPLATE_SYNC_TARGET_TOKEN }}
+          token: ${{ secrets.TEMPLATE_SYNC_TARGET_TOKEN || github.token }}
           persist-credentials: false
 
       - name: Sync upstream template and open pull request
         uses: AndreasAugustin/actions-template-sync@v2
         with:
           source_repo_path: rigerc/ink-cli-starter
-          source_gh_token: ${{ secrets.TEMPLATE_SYNC_SOURCE_TOKEN }}
-          target_gh_token: ${{ secrets.TEMPLATE_SYNC_TARGET_TOKEN }}
+          target_gh_token: ${{ secrets.TEMPLATE_SYNC_TARGET_TOKEN || github.token }}
           pr_title: 'chore: sync changes from ink-cli-starter'
