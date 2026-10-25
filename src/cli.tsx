@@ -15,6 +15,7 @@ import {isThemeName, resolveThemeName} from './theme/resolve';
 
 const program = new Command()
   .name(APP_NAME)
+  .allowExcessArguments()
   .description('Interactive terminal application with headless diagnostics')
   .version(packageJson.version)
   .option('--theme <name>', 'Theme: dark, light, contrast, mono, or auto')
@@ -114,7 +115,15 @@ program
     });
   });
 
-program.action(async () => runApp(program.opts()));
+program.action(async () => {
+  if (program.args.length > 0)
+    throw new AppError(`Unknown command "${program.args[0]}"`, {
+      exitCode: 2,
+      hint: `Run ${APP_NAME} --help for available commands.`,
+    });
+
+  await runApp(program.opts());
+});
 
 program.parseAsync(process.argv).catch((cause: unknown) => {
   const err = toAppError(cause);
