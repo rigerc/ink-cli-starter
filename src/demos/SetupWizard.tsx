@@ -29,6 +29,7 @@ function TemplateStep({
     },
     {isActive},
   );
+
   return (
     <Box flexDirection="column">
       <Text>Choose an example layout</Text>
@@ -56,6 +57,7 @@ function ReviewStep({template, isActive}: {template: string; isActive: boolean})
     },
     {isActive},
   );
+
   return (
     <Box flexDirection="column" gap={1}>
       <KeyValue
@@ -93,10 +95,12 @@ export function SetupWizard({
   const [current, setCurrent] = useState(0);
   const [template, setTemplate] = useState('compact');
   const [result, setResult] = useState<WizardResult>();
+
   const finish = (next: WizardResult) => {
     setResult(next);
     onFinish?.(next);
   };
+
   if (result)
     return (
       <StatusMessage tone={result === 'completed' ? 'success' : 'warn'}>
@@ -105,6 +109,7 @@ export function SetupWizard({
           : 'Example cancelled. No files were changed.'}
       </StatusMessage>
     );
+
   return (
     <Stepper
       keyboardNav={isActive && current === 0}

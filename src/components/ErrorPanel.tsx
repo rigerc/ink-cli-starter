@@ -8,6 +8,7 @@ import {Muted} from './typography';
 /** Friendly error; stack trace only in debug mode. */
 export function ErrorPanel({error, debug = false}: {error: unknown; debug?: boolean}) {
   const err = toAppError(error);
+
   return (
     <Alert tone="danger" title={err.message}>
       {err.hint && <Text>{err.hint}</Text>}
@@ -38,6 +39,7 @@ export class ErrorBoundary extends Component<
   override render() {
     if (this.state.error)
       return <ErrorPanel error={this.state.error} debug={this.props.debug ?? false} />;
+
     return this.props.children;
   }
 }

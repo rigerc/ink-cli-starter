@@ -80,10 +80,10 @@ export function GalleryExample({
   const {columns} = useTerminalSize();
   const states = ['success', 'loading', 'empty', 'error'] as const;
 
-  useKeymap(
-    [{key: 's', run: () => setStateIndex((value) => (value + 1) % states.length)}],
-    {isActive: id === 'state', scope: 'control'},
-  );
+  useKeymap([{key: 's', run: () => setStateIndex((value) => (value + 1) % states.length)}], {
+    isActive: id === 'state',
+    scope: 'control',
+  });
 
   switch (id) {
     case 'panel':

@@ -27,6 +27,7 @@ const light = make('light', palettes.light);
 const contrast = make('contrast', palettes.contrast);
 
 const none = undefined;
+
 const mono = make(
   'mono',
   {
@@ -51,6 +52,7 @@ export const themes: Record<ThemeName, Theme> = {dark, light, contrast, mono};
 /** Swap unicode glyphs for ASCII ones (dumb terminals, legacy Windows consoles). */
 export function applyGlyphs(theme: Theme, ascii: boolean): Theme {
   if (!ascii) return theme;
+
   return {
     ...theme,
     border: {base: 'classic', focus: 'classic'},

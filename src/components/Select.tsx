@@ -29,12 +29,14 @@ export function Select<T extends string>({
 }) {
   const t = useTheme();
   const primary = useTone('primary');
+
   const [index, setIndex] = useState(
     Math.max(
       0,
       items.findIndex((i) => i.value === initialValue),
     ),
   );
+
   const move = (delta: number) => setIndex((i) => (i + delta + items.length) % items.length);
 
   useKeymap(
@@ -52,6 +54,7 @@ export function Select<T extends string>({
     <Box flexDirection="column">
       {items.map((item, i) => {
         const active = i === index;
+
         return (
           <Box key={item.value} gap={1}>
             <Text {...primary}>{active ? t.symbols.pointer : ' '}</Text>

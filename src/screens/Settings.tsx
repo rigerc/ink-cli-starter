@@ -29,6 +29,7 @@ function SettingsEditor({onWizard}: {onWizard: () => void}) {
       toast.push(`Could not save: ${toAppError(error).message}`, 'warn');
     }
   };
+
   useKeymap(
     [
       {key: 'up', run: () => setSectionIndex((i) => Math.max(i - 1, 0))},
@@ -84,6 +85,7 @@ export function SettingsScreen() {
   const {path} = useConfigRuntime();
   const [wizard, setWizard] = useState(false);
   const [revision, setRevision] = useState(0);
+
   return (
     <ScreenLayout title="Settings" description="Review and configure application preferences">
       {wizard ? (

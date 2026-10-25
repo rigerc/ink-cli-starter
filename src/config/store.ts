@@ -2,7 +2,9 @@ import {randomBytes} from 'node:crypto';
 import {existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync} from 'node:fs';
 import {homedir} from 'node:os';
 import {dirname, isAbsolute, join, resolve} from 'node:path';
-import type {ConfigDefinition} from './definition';
+import type {ConfigDefinition, ConfigValue, RawConfig} from './definition';
+import {toErrorMessage} from '../lib/errors';
+import {z} from 'zod';
 
 export interface ConfigRead<T extends object> {
   config: T;
@@ -13,6 +15,7 @@ export interface ConfigRead<T extends object> {
 export function configFilePath(override?: string, appName = 'ink-kit'): string {
   if (override) return resolve(override);
   const base = process.env.XDG_CONFIG_HOME || join(homedir(), '.config');
+
   return join(isAbsolute(base) ? base : resolve(base), appName, 'config.json');
 }
 
@@ -25,15 +28,26 @@ export type DeepPartial<T> = {
       : T[K];
 };
 
-const record = (value: unknown): value is Record<string, unknown> =>
-  value !== null && typeof value === 'object' && !Array.isArray(value);
+const isRawConfig = (value: unknown): value is RawConfig =>
+  value !== null && value instanceof Object && !Array.isArray(value);
 
 export function mergeConfig<T extends object>(base: T, patch: DeepPartial<T>): T {
-  const merged: Record<string, unknown> = {...(base as Record<string, unknown>)};
+  // SAFETY: T extends object; spreading an object type yields a string-keyed record with the same keys.
+  const merged: RawConfig = {...(base as RawConfig)};
+
   for (const [key, value] of Object.entries(patch)) {
     if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
-    merged[key] = record(value) && record(merged[key]) ? mergeConfig(merged[key], value) : value;
+    // SAFETY: patch values follow the DeepPartial contract over schema-validated JSON data.
+    const patchValue = value as ConfigValue;
+    // SAFETY: stored entries were written by this store from schema-validated JSON data.
+    const current = merged[key] as ConfigValue | undefined;
+    merged[key] =
+      isRawConfig(patchValue) && isRawConfig(current)
+        ? mergeConfig(current, patchValue)
+        : patchValue;
   }
+
+  // SAFETY: same keys as the base T, only patched entries replaced.
   return merged as T;
 }
 
@@ -42,9 +56,11 @@ export function createConfigStore<T extends object>(
   appName = 'ink-kit',
 ) {
   const pathFor = (override?: string) => configFilePath(override, appName);
+  const versionSchema = z.number().int().nonnegative();
 
-  function validate(value: unknown): T {
+  function validate(value: RawConfig): T {
     const result = definition.schema.safeParse(value);
+
     if (!result.success) {
       throw new Error(
         result.error.issues
@@ -52,48 +68,61 @@ export function createConfigStore<T extends object>(
           .join('; '),
       );
     }
+
     return result.data;
   }
 
   function read(override?: string): ConfigRead<T> {
     const path = pathFor(override);
     let raw: unknown;
+
     try {
       raw = JSON.parse(readFileSync(path, 'utf8'));
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
         return {config: validate({}), path};
       }
-      return {config: {} as T, path, error: `Could not read ${path}: ${(error as Error).message}`};
+
+      // SAFETY: placeholder config is never used by callers when `error` is set.
+      return {config: {} as T, path, error: `Could not read ${path}: ${toErrorMessage(error)}`};
     }
+
     try {
-      if (!record(raw)) throw new Error('Configuration must be a JSON object');
-      const rawVersion = raw.version === undefined ? 0 : raw.version;
-      if (!Number.isInteger(rawVersion) || (rawVersion as number) < 0)
-        throw new Error('Invalid configuration version');
-      const version = rawVersion as number;
+      if (!isRawConfig(raw)) throw new Error('Configuration must be a JSON object');
+
+      const versionResult =
+        raw.version === undefined ? {success: true, data: 0} : versionSchema.safeParse(raw.version);
+
+      if (!versionResult.success) throw new Error('Invalid configuration version');
+      const version = versionResult.data;
+
       if (version > definition.version)
         throw new Error(
           `Configuration version ${version} is newer than supported version ${definition.version}`,
         );
-      let migrated = raw;
+      let migrated: RawConfig = raw;
+
       for (let current = version; current < definition.version; current++) {
         migrated = definition.migrations?.[current]?.(migrated) ?? migrated;
       }
+
       return {config: validate(migrated), path};
     } catch (error) {
-      return {config: {} as T, path, error: (error as Error).message};
+      // SAFETY: placeholder config is never used by callers when `error` is set.
+      return {config: {} as T, path, error: toErrorMessage(error)};
     }
   }
 
   /** Refuses corrupt files; validates the merged document before an atomic replacement. */
   function write(patch: DeepPartial<T>, override?: string): T {
     const {config, error, path} = read(override);
+
     if (error) throw new Error(error);
     const next = validate({...mergeConfig(config, patch), version: definition.version});
     const directory = dirname(path);
     mkdirSync(directory, {recursive: true});
     const temporary = join(directory, `.${randomBytes(8).toString('hex')}.tmp`);
+
     try {
       writeFileSync(temporary, JSON.stringify(next, null, 2) + '\n', {
         encoding: 'utf8',
@@ -104,6 +133,7 @@ export function createConfigStore<T extends object>(
     } finally {
       if (existsSync(temporary)) unlinkSync(temporary);
     }
+
     return next;
   }
 

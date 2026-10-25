@@ -6,6 +6,7 @@ import type {Tone} from '../theme/tokens';
 import {Divider} from './typography';
 
 export type Cell = string | number | {text: string; tone?: Tone};
+
 export interface Column {
   key: string;
   header: string;
@@ -18,6 +19,7 @@ const textOf = (cell: Cell | undefined) =>
 
 function CellText({cell}: {cell: Cell | undefined}) {
   const style = useTone(typeof cell === 'object' ? (cell.tone ?? 'primary') : 'primary');
+
   return (
     <Text wrap="truncate-end" {...(typeof cell === 'object' ? style : {})}>
       {textOf(cell)}
@@ -48,6 +50,7 @@ export function Table({
       Math.max(stringWidth(c.header), ...rows.map((r) => stringWidth(textOf(r[c.key])))),
     ),
   );
+
   const shrinkable = widths.indexOf(Math.max(...widths));
 
   const renderRow = (key: string, cells: (c: Column) => ReactNode, isSelected = false) => (

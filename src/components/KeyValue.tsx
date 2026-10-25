@@ -5,6 +5,7 @@ import {Muted} from './typography';
 
 export function KeyValue({items}: {items: {label: string; value: ReactNode}[]}) {
   const labelWidth = Math.max(...items.map((i) => stringWidth(i.label)));
+
   return (
     <Box flexDirection="column">
       {items.map((item) => (

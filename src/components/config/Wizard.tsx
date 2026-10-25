@@ -1,6 +1,6 @@
 import {Box, Text, useInput} from 'ink';
 import {useState} from 'react';
-import {appConfig, configSections, getAtPath} from '../../config';
+import {appConfig, configSections, getAtPath, type RawConfig} from '../../config';
 import {useConfigDraft} from '../../hooks/useConfigDraft';
 import {useInputCapture} from '../../hooks/useInputCapture';
 import {formatValue} from '../../lib/format';
@@ -29,13 +29,15 @@ function Review({
   useInput((_input, key) => {
     if (key.escape) onBack();
   });
+
   return (
     <Box flexDirection="column" gap={1}>
       <Text bold>Review configuration</Text>
       <KeyValue
         items={appConfig.fields.map((field) => ({
           label: field.label,
-          value: formatValue(getAtPath(draft, field.path) ?? field.defaultValue) || '(unset)',
+          // SAFETY: the schema-validated draft is treated as a RawConfig document for path lookups.
+    value: formatValue(getAtPath(draft as RawConfig, field.path) ?? field.defaultValue) || '(unset)',
         }))}
       />
       <Muted>File: {path}</Muted>
@@ -59,6 +61,7 @@ export function ConfigWizard({
   const draft = useConfigDraft(path);
   const [result, setResult] = useState<ConfigWizardResult>();
   const sections = configSections(appConfig.fields);
+
   const finish = (value: ConfigWizardResult) => {
     setResult(value);
     onFinish?.(value);
@@ -103,6 +106,7 @@ export function ConfigWizard({
         name="Review"
         canProceed={() => {
           draft.save();
+
           return true;
         }}
       >

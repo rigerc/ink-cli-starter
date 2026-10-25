@@ -19,15 +19,13 @@ describe('single-component gallery', () => {
         it(`${item.label} / ${theme} / ${columns} columns fits the terminal`, () => {
           const output = renderToString(
             <AppProviders options={{theme, ascii: true, debug: false, screen: 'gallery'}}>
-              <GalleryExample
-                id={item.id}
-                searchActive={false}
-                onSearchActiveChange={() => {}}
-              />
+              <GalleryExample id={item.id} searchActive={false} onSearchActiveChange={() => {}} />
             </AppProviders>,
             {columns},
           );
+
           expect(output.length).toBeGreaterThan(0);
+
           for (const line of output.split('\n'))
             expect(stringWidth(line)).toBeLessThanOrEqual(columns);
         });

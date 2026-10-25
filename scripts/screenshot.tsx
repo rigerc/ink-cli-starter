@@ -12,10 +12,13 @@ const formats = ['gif', 'mp4', 'webm'];
 // VHS strings are delimited, without JavaScript-style backslash escaping.
 export function tapeQuote(value: string): string {
   const delimiter = ['"', "'", '`'].find((quote) => !value.includes(quote));
+
   if (!delimiter || /[\r\n]/.test(value))
     throw new Error('Path cannot be represented in a VHS tape');
+
   return delimiter + value + delimiter;
 }
+
 export const shellQuote = (value: string): string => "'" + value.replaceAll("'", "'\"'\"'") + "'";
 
 export function captureTape(options: {
@@ -74,6 +77,7 @@ export async function main(args = process.argv.slice(2)) {
       help: {type: 'boolean', short: 'h'},
     },
   });
+
   if (values.help) {
     console.log(`Usage: npm run screenshot -- [options]
   --screen <id>       Screen ID or inline (repeat; default: all; video: home)
@@ -89,11 +93,14 @@ export async function main(args = process.argv.slice(2)) {
   -h, --help         Show this help
 
 Requires VHS 0.12.1+, ttyd, FFmpeg and Chromium. See docs/recording.md.`);
+
     return;
   }
+
   if (!values.video && (values.format || values.tape))
     throw new Error('--format and --tape require --video');
   const selectedFormats = [...new Set(values.format ?? ['gif', 'mp4'])];
+
   if (selectedFormats.some((format) => !formats.includes(format)))
     throw new Error('Unknown format. Choose: ' + formats.join(', '));
 
@@ -101,42 +108,53 @@ Requires VHS 0.12.1+, ttyd, FFmpeg and Chromium. See docs/recording.md.`);
   process.env.FORCE_COLOR = '3';
   process.env.CI = '1';
   process.env.XDG_CONFIG_HOME = path.join(tmpdir(), `${pkg.name}-screenshots`);
+
   const [{renderToString}, {App}, {screenIds}, {themeNames}] = await Promise.all([
     import('ink'),
     import('../src/app'),
     import('../src/screens'),
     import('../src/theme/tokens'),
   ]);
+
   const availableScreens = screenIds;
+
   const selectedScreens = [
     ...new Set(values.screen ?? (values.video ? ['home'] : availableScreens)),
   ];
+
   const selectedThemes = [...new Set(values.theme ?? (values.video ? ['dark'] : themeNames))];
   const widths = [...new Set(values.columns ?? (values.video ? ['100'] : ['80', '120']))];
+
   for (const screen of selectedScreens) {
     if (!availableScreens.includes(screen))
       throw new Error(`Unknown screen "${screen}". Choose: ${availableScreens.join(', ')}`);
   }
+
   for (const theme of selectedThemes) {
     if (!themeNames.some((name) => name === theme))
       throw new Error(`Unknown theme "${theme}". Choose: ${themeNames.join(', ')}`);
   }
+
   for (const width of widths) {
     if (!/^\d+$/.test(width) || Number(width) < 40 || Number(width) > 240)
       throw new Error('--columns must be an integer between 40 and 240');
   }
+
   if (!/^\d+$/.test(values.rows) || Number(values.rows) < 20 || Number(values.rows) > 200)
     throw new Error('--rows must be an integer between 20 and 200');
+
   const workflow = values.video
     ? await readFile(
         path.resolve(values.tape ?? path.join(root, 'scripts/tapes/workflow.tape')),
         'utf8',
       )
     : undefined;
+
   const outputDir = path.resolve(values['output-dir']);
   const tapeDir = path.join(outputDir, 'tapes');
   await mkdir(tapeDir, {recursive: true});
   const configDir = await mkdtemp(path.join(tmpdir(), 'ink-capture-'));
+
   try {
     for (const screen of selectedScreens)
       for (const theme of selectedThemes)
@@ -145,10 +163,13 @@ Requires VHS 0.12.1+, ttyd, FFmpeg and Chromium. See docs/recording.md.`);
           const rows = Number(values.rows);
           const name = `${screen}-${theme}-${columns}${values.ascii ? '-ascii' : ''}${values.video ? '-video' : ''}`;
           const screenshot = path.join(outputDir, name + '.png');
+
           const outputs = values.video
             ? selectedFormats.map((format) => path.join(outputDir, name + '.' + format))
             : [];
+
           let command: string;
+
           if (values.video) {
             // Ink treats CI as noninteractive even in a PTY. Explicit flags and an
             // isolated config prevent the recording from reading/writing user settings.
@@ -172,21 +193,22 @@ Requires VHS 0.12.1+, ttyd, FFmpeg and Chromium. See docs/recording.md.`);
           } else {
             Object.defineProperty(process.stdout, 'columns', {value: columns, configurable: true});
             Object.defineProperty(process.stdout, 'rows', {value: rows, configurable: true});
+
             const options = {
               theme: theme as (typeof themeNames)[number],
               ascii: values.ascii,
               debug: false,
               screen,
             };
-            const ansi = renderToString(
-              <App options={options} />,
-              {columns},
-            );
+
+            const ansi = renderToString(<App options={options} />, {columns});
+
             if (!ansi.trim()) throw new Error(`Empty render: ${screen}/${theme}/${columns}`);
             const frame = path.join(tapeDir, name + '.ansi');
             await writeFile(frame, ansi);
             command = "printf '\\033[2J\\033[H\\033[?25l'; cat " + shellQuote(frame);
           }
+
           const tape = path.join(tapeDir, name + '.tape');
           await writeFile(
             tape,
@@ -200,19 +222,24 @@ Requires VHS 0.12.1+, ttyd, FFmpeg and Chromium. See docs/recording.md.`);
               workflow,
             }),
           );
+
           if (values['dry-run']) {
             console.log(tape);
             continue;
           }
+
           const result = spawnSync('vhs', [tape], {cwd: root, stdio: 'inherit', timeout: 180_000});
+
           if (result.error)
             throw new Error(
               `Unable to run VHS: ${result.error.message}. Install VHS, ttyd, FFmpeg and Chromium; see docs/recording.md.`,
             );
+
           if (result.status !== 0)
             throw new Error(
               `VHS failed for ${name} (exit ${result.status}, signal ${result.signal ?? 'none'})`,
             );
+
           for (const file of [screenshot, ...outputs]) {
             if (!(await stat(file)).size) throw new Error('Empty capture: ' + file);
             console.log(file);

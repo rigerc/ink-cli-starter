@@ -34,22 +34,29 @@ export function MultiSelect<T extends string>({
   const [internal, setInternal] = useState<readonly T[]>(defaultValue);
   const [cursor, setCursor] = useState(0);
   const index = listIndex(cursor, items.length);
+
   if (cursor !== index) setCursor(index);
   const selected = new Set(value ?? internal);
   const values = () => items.filter((item) => selected.has(item.value)).map((item) => item.value);
+
   const move = (delta: number) => {
     if (items.length) setCursor((index + delta + items.length) % items.length);
   };
+
   const toggle = () => {
     const item = items[index];
+
     if (!item) return;
     const next = new Set(selected);
+
     if (next.has(item.value)) next.delete(item.value);
     else next.add(item.value);
     const result = items.filter((item) => next.has(item.value)).map((item) => item.value);
+
     if (value === undefined) setInternal(result);
     onChange?.(result);
   };
+
   useKeymap(
     [
       {key: 'up', run: () => move(-1)},
@@ -69,11 +76,13 @@ export function MultiSelect<T extends string>({
     {isActive, allowWhenCaptured},
   );
   const {start, end} = listWindow(index, items.length, listSize(maxVisible, 6));
+
   return (
     <Box flexDirection="column">
       {items.length === 0 && <Muted>{emptyMessage}</Muted>}
       {items.slice(start, end).map((item, offset) => {
         const focused = isActive && start + offset === index;
+
         return (
           <Text
             key={item.value}

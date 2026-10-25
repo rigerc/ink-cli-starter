@@ -15,6 +15,7 @@ export const logPath = (): string =>
 
 function write(level: string, args: unknown[]) {
   if (!enabled) return;
+
   try {
     mkdirSync(dirname(logPath()), {recursive: true});
     const line = args.map((a) => (typeof a === 'string' ? a : inspect(a))).join(' ');

@@ -26,11 +26,14 @@ export function ThemeProvider({
 }) {
   const [current, setCurrent] = useState<ThemeName>(name);
   const theme = useMemo(() => applyGlyphs(themes[current], ascii), [current, ascii]);
+
   const cycleTheme = useCallback(
     () => setCurrent((c) => themeNames[(themeNames.indexOf(c) + 1) % themeNames.length]!),
     [],
   );
+
   const value = useMemo(() => ({theme, setTheme: setCurrent, cycleTheme}), [theme, cycleTheme]);
+
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
@@ -40,5 +43,6 @@ export const useThemeControls = () => useContext(ThemeContext);
 /** Text props for a tone. Muted falls back to dim in mono mode. */
 export function useTone(tone: Tone): {color: string | undefined; dimColor: boolean} {
   const t = useTheme();
+
   return {color: t.color[tone], dimColor: t.mono && tone === 'muted'};
 }

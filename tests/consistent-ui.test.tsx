@@ -19,13 +19,17 @@ describe('consistent terminal UI', () => {
     const help = vi.fn();
     const quit = vi.fn();
     const jump = vi.fn();
-    const bindings = getGlobalBindings(
-      3,
-      {next, previous, commands, theme, help, quit},
-      jump,
-    );
+    const bindings = getGlobalBindings(3, {next, previous, commands, theme, help, quit}, jump);
     expect(bindings.map((binding) => binding.key)).toEqual([
-      'tab', 'shift+tab', '1', '2', '3', 'ctrl+k', 't', '?', 'q',
+      'tab',
+      'shift+tab',
+      '1',
+      '2',
+      '3',
+      'ctrl+k',
+      't',
+      '?',
+      'q',
     ]);
     expect(getGlobalKeys(3).find((key) => key.label === 'jump to screen')?.key).toBe('1-3');
     bindings.find((binding) => binding.key === '2')?.run();
@@ -44,6 +48,7 @@ describe('consistent terminal UI', () => {
         </ThemeProvider>,
         {columns: 60},
       );
+
       expect(out).toContain('Packages');
       expect(out).toContain('Test state');
     }
@@ -55,6 +60,7 @@ describe('consistent terminal UI', () => {
       {key: 'x', label: 'simulate failure'},
       ...getGlobalKeys(5),
     ];
+
     for (const columns of [40, 60, 80, 120]) {
       const out = renderToString(
         <ThemeProvider name="mono" ascii>
@@ -62,13 +68,12 @@ describe('consistent terminal UI', () => {
         </ThemeProvider>,
         {columns},
       );
-      for (const line of out.split('\n'))
-        expect(stringWidth(line)).toBeLessThanOrEqual(columns);
+
+      for (const line of out.split('\n')) expect(stringWidth(line)).toBeLessThanOrEqual(columns);
       expect(out).toContain('[r]');
       expect(out).toContain('[q]');
     }
   });
-
 
   it('keeps the shared shell by default but allows a bare screen', () => {
     const shared = renderToString(
@@ -77,6 +82,7 @@ describe('consistent terminal UI', () => {
       </ScreenFrame>,
       {columns: 80},
     );
+
     expect(shared).toContain('App title');
     expect(shared).toContain('Footer');
 
@@ -86,6 +92,7 @@ describe('consistent terminal UI', () => {
       </ScreenFrame>,
       {columns: 80},
     );
+
     expect(bare).toContain('Custom content');
     expect(bare).not.toContain('App title');
     expect(bare).not.toContain('Footer');
@@ -100,12 +107,14 @@ describe('consistent terminal UI', () => {
       globalKeys: false,
       showInNav: false,
     };
+
     screens.push(testScreen);
+
     try {
-      const out = renderToString(
-        <PlainView options={{...options, screen: testScreen.id}} />,
-        {columns: 80},
-      );
+      const out = renderToString(<PlainView options={{...options, screen: testScreen.id}} />, {
+        columns: 80,
+      });
+
       expect(out).toContain('Standalone view');
       expect(out).not.toContain('ink-kit');
     } finally {
@@ -122,13 +131,17 @@ describe('consistent terminal UI', () => {
               <Panel title="Custom" borderStyle="double" paddingX={2}>
                 <Text>Flexible panel</Text>
               </Panel>
-              <Row gap={8}><Text>One</Text><Text>Two</Text></Row>
+              <Row gap={8}>
+                <Text>One</Text>
+                <Text>Two</Text>
+              </Row>
             </Stack>
           </ScreenLayout>
         </AppShell>
       </ThemeProvider>,
       {columns: 80},
     );
+
     expect(out).toContain('Flexible panel');
     expect(out).toContain('One');
     expect(out).toContain('Two');

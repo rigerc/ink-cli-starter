@@ -70,6 +70,7 @@ export function StepperProgress({
   orientation = 'horizontal',
 }: StepperProgressProps) {
   const t = useTheme();
+
   return (
     <Box
       flexDirection={orientation === 'vertical' ? 'column' : 'row'}
@@ -79,6 +80,7 @@ export function StepperProgress({
       {steps.map((item, index) => {
         const complete = index < currentStep;
         const current = index === currentStep;
+
         return (
           <Text
             key={item.id}
@@ -99,14 +101,18 @@ const Context = createContext<StepContext | null>(null);
 
 export function useStepper(): StepContext {
   const context = useContext(Context);
+
   if (!context) throw new Error('useStepper must be used inside Stepper');
+
   return context;
 }
 
 /** Optional hints; disable keyboardNav when a child input owns Enter/Escape. */
 export function StepperNavigation() {
   const {isFirst, isLast, isValidating} = useStepper();
+
   if (isValidating) return <Muted>Validating...</Muted>;
+
   return (
     <Box columnGap={2} flexWrap="wrap">
       <Text>
@@ -127,9 +133,12 @@ function collectSteps(
     if (!isValidElement(child))
       throw new Error('Stepper children must be Step elements or fragments');
     const id = `${prefix}/${child.key ?? index}`;
+
     if (child.type === Fragment)
       return collectSteps((child.props as {children: ReactNode}).children, id);
+
     if (child.type !== Step) throw new Error('Stepper children must be Step elements or fragments');
+
     return [{id, element: child as ReactElement<StepProps>}];
   });
 }
@@ -155,10 +164,12 @@ export function Stepper({
   const steps = collectSteps(children);
   const [position, setPosition] = useState({index: initialStep, id: null as string | null});
   const identityIndex = position.id === null ? -1 : steps.findIndex((s) => s.id === position.id);
+
   const currentStep = clamp(
     step ?? (identityIndex < 0 ? position.index : identityIndex),
     steps.length,
   );
+
   const active = steps[currentStep];
   const [isValidating, setValidating] = useState(false);
   const [error, setError] = useState<string>();
@@ -166,15 +177,18 @@ export function Stepper({
   const locked = useRef(false);
   const ended = useRef(false);
   const mounted = useRef(true);
+
   // Invalidate an in-flight transition if its source step changes or disappears.
   const source = useRef({
     id: active?.id,
     index: currentStep,
     steps: steps.map((s) => s.id).join('|'),
   });
+
   source.current = {id: active?.id, index: currentStep, steps: steps.map((s) => s.id).join('|')};
   useEffect(() => {
     mounted.current = true;
+
     return () => {
       mounted.current = false;
     };
@@ -195,34 +209,45 @@ export function Stepper({
 
   const navigate = async (direction: 'next' | 'back' | number) => {
     if (locked.current || ended.current || !active) return;
+
     const target =
       typeof direction === 'number'
         ? clamp(direction, steps.length)
         : direction === 'next'
           ? currentStep + 1
           : currentStep - 1;
+
     if (target === currentStep) return;
     locked.current = true;
     setValidating(true);
     setError(undefined);
     const origin = source.current;
+
     const stillCurrent = () =>
       mounted.current &&
       source.current.id === origin.id &&
       source.current.index === origin.index &&
       source.current.steps === origin.steps;
+
     try {
       // Yield once so repeated calls in the same event share the synchronous lock.
       await Promise.resolve();
+
       if (!stillCurrent()) return;
       const guard = active.element.props.canProceed ?? true;
+
       if (direction === 'next' && !(typeof guard === 'function' ? await guard() : guard)) return;
+
       if (!stillCurrent()) return;
+
       if (onExitStep && (await onExitStep(currentStep)) === false) return;
+
       if (!stillCurrent()) return;
+
       if (target < 0 || target >= steps.length) {
         ended.current = true;
         setFinished(true);
+
         if (target < 0) onCancel?.();
         else onComplete();
       } else {
@@ -252,9 +277,11 @@ export function Stepper({
     goTo: (i) => navigate(i),
     cancel,
   };
+
   useInput(
     (_input, key) => {
       if (key.return) void context.goNext();
+
       if (key.escape) void context.goBack();
     },
     {isActive: keyboardNav && !finished && steps.length > 0},
@@ -263,6 +290,7 @@ export function Stepper({
   if (!active) return null;
   const progress = {steps: steps.map((s) => ({id: s.id, name: s.element.props.name})), currentStep};
   const content = active.element.props.children;
+
   return (
     <Context.Provider value={context}>
       <Box flexDirection="column" gap={1}>

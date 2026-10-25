@@ -19,6 +19,7 @@ export function Header({
   const {primary, accent} = t.color;
   const chars = Array.from(title);
   const colors = isHex(primary) && isHex(accent) ? gradient(chars.length, primary, accent) : null;
+
   return (
     <Box justifyContent="space-between" paddingX={1}>
       <Box gap={1}>
@@ -51,6 +52,7 @@ export function StatusBar({
   const limit = columns < 60 ? 3 : columns < 90 ? 5 : 9;
   const visible = hints.slice(0, limit);
   const quit = hints.find((hint) => hint.key === 'q');
+
   if (quit && !visible.some((hint) => hint.key === 'q') && visible.length === limit)
     visible[visible.length - 1] = quit;
 
@@ -74,7 +76,9 @@ export function StatusBar({
 
 export function ToastHost() {
   const {toasts} = useToast();
+
   if (toasts.length === 0) return null;
+
   return (
     <Box flexDirection="column" paddingX={1}>
       {toasts.map((toast) => (

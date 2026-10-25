@@ -7,21 +7,30 @@ import {describe, expect, it} from 'vite-plus/test';
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
-function withProject(fn: (fixture: {root: string; run: (...args: string[]) => {status: number | null; stdout: string; stderr: string}}) => void) {
+function withProject(
+  fn: (fixture: {
+    root: string;
+    run: (...args: string[]) => {status: number | null; stdout: string; stderr: string};
+  }) => void,
+) {
   const root = mkdtempSync(join(tmpdir(), 'ink-theme-edit-'));
+
   try {
     mkdirSync(join(root, 'scripts'), {recursive: true});
     mkdirSync(join(root, 'src/theme'), {recursive: true});
     copyFileSync(join(projectRoot, 'scripts/theme.mjs'), join(root, 'scripts/theme.mjs'));
+
     for (const file of ['palettes.json', 'defaults.json']) {
       copyFileSync(join(projectRoot, 'src/theme', file), join(root, 'src/theme', file));
     }
+
     fn({
       root,
-      run: (...args) => spawnSync(process.execPath, [join(root, 'scripts/theme.mjs'), ...args], {
-        cwd: tmpdir(),
-        encoding: 'utf8',
-      }),
+      run: (...args) =>
+        spawnSync(process.execPath, [join(root, 'scripts/theme.mjs'), ...args], {
+          cwd: tmpdir(),
+          encoding: 'utf8',
+        }),
     });
   } finally {
     rmSync(root, {recursive: true, force: true});
@@ -65,6 +74,7 @@ describe('project theme customization scripts', () => {
       expect(run('token', 'contrast', 'focus', 'cyanBright').status).toBe(0);
       expect(json(root, 'palettes.json').contrast.focus).toBe('cyanBright');
       const before = readFileSync(join(root, 'src/theme/palettes.json'), 'utf8');
+
       for (const args of [
         ['token', 'contrast', 'focus', '#abcdef'],
         ['token', 'mono', 'primary', '#abcdef'],

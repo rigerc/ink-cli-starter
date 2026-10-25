@@ -32,9 +32,9 @@ describe('resolveThemeName', () => {
     expect(defaultTheme).toBe(defaults.defaultTheme);
     expect(appConfig.fields[0]?.defaultValue).toBe(defaultTheme);
     const result = resolveThemeName({noColor: false});
-    expect(result).toBe(defaultTheme === 'auto'
-      ? resolveThemeName({config: 'auto', noColor: false})
-      : defaultTheme);
+    expect(result).toBe(
+      defaultTheme === 'auto' ? resolveThemeName({config: 'auto', noColor: false}) : defaultTheme,
+    );
   });
 
   it('NO_COLOR beats everything', () => {

@@ -24,6 +24,7 @@ export function Panel({
 }: PanelProps) {
   const t = useTheme();
   const titleStyle = useTone(tone);
+
   return (
     <Box
       flexDirection="column"
@@ -50,6 +51,7 @@ export type CardProps = Omit<BoxProps, 'children'> & {tone?: Tone; children: Rea
 
 export function Card({tone = 'primary', children, ...boxProps}: CardProps) {
   const t = useTheme();
+
   return (
     <Box
       flexDirection="column"

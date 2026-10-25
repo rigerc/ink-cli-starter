@@ -50,6 +50,7 @@ const menuHints: KeyHint[] = [
   {key: 'enter', label: 'select'},
   {key: 'esc', label: 'close'},
 ];
+
 const inputHints: KeyHint[] = [
   {key: 'esc', label: 'back'},
   {key: 'enter', label: 'edit/select'},
@@ -70,6 +71,7 @@ export function ScreenFrame({
   children: ReactNode;
 }) {
   if (layout === 'bare') return <>{children}</>;
+
   return (
     <AppShell header={header} nav={nav} footer={footer}>
       {children}
@@ -85,7 +87,11 @@ function Shell() {
   const [commandOpen, setCommandOpen] = useState(false);
   const screen = screens.find((s) => s.id === router.current) ?? navScreens[0]!;
 
-  const index = Math.max(0, navScreens.findIndex((s) => s.id === router.current));
+  const index = Math.max(
+    0,
+    navScreens.findIndex((s) => s.id === router.current),
+  );
+
   const go = (i: number) =>
     router.replace(navScreens[(i + navScreens.length) % navScreens.length]!.id);
 
@@ -106,6 +112,7 @@ function Shell() {
   );
 
   const Screen = screen.Component;
+
   const hints = commandOpen
     ? menuHints
     : inputCaptured
@@ -153,6 +160,7 @@ export const App = ({options}: {options: AppOptions}) => (
 /** Static, non-interactive rendering of one screen (pipes, CI, --plain). */
 export function PlainView({options}: {options: AppOptions}) {
   const Screen = (screens.find((s) => s.id === options.screen) ?? screens[0]!).Component;
+
   return (
     <AppProviders options={options}>
       <ScreenFrame

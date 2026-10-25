@@ -28,6 +28,7 @@ export function Alert({
 }) {
   const t = useTheme();
   const color = t.color[tone];
+
   return (
     <Box flexDirection="column" borderStyle={t.border.base} borderColor={color} paddingX={1}>
       <Box gap={1}>

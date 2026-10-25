@@ -1,7 +1,6 @@
 import {Box, Text, useInput} from 'ink';
 import {useState} from 'react';
-import type {ConfigField} from '../../config';
-import {getAtPath} from '../../config';
+import {getAtPath, type ConfigField, type ConfigValue, type RawConfig} from '../../config';
 import {useInputCapture} from '../../hooks/useInputCapture';
 import {formatValue} from '../../lib/format';
 import {useTheme} from '../../theme/context';
@@ -10,6 +9,7 @@ import {Select} from '../Select';
 import {Muted} from '../typography';
 
 const segments = new Intl.Segmenter(undefined, {granularity: 'grapheme'});
+
 function trimLast(text: string) {
   return [...segments.segment(text)]
     .slice(0, -1)
@@ -23,7 +23,7 @@ function EditText({
   onSubmit,
   onCancel,
 }: {
-  value: unknown;
+  value: ConfigValue | undefined;
   isNumber: boolean;
   onSubmit: (value: string | number) => void;
   onCancel: () => void;
@@ -33,29 +33,39 @@ function EditText({
   useInput((input, key) => {
     if (key.escape) {
       onCancel();
+
       return;
     }
+
     if (key.return) {
       const parsed = isNumber ? Number(text) : text;
+
       if (isNumber && (!text.trim() || !Number.isFinite(Number(text)))) {
         setError('Enter a valid number');
       } else onSubmit(parsed);
+
       return;
     }
+
     if (key.ctrl || key.meta) return;
+
     if (key.backspace || key.delete) {
       setText((current) => trimLast(current));
       setError('');
+
       return;
     }
+
     // Strip control characters Ink delivers for special keys.
     // oxlint-disable-next-line no-control-regex
     const printable = input.replace(/[\u0000-\u001f\u007f-\u009f]/g, '');
+
     if (printable) {
       setText((current) => current + printable);
       setError('');
     }
   });
+
   return (
     <Box flexDirection="column">
       <Text>Edit value: {text || '(empty)'}_</Text>
@@ -68,7 +78,7 @@ function EditText({
 export interface ConfigSectionEditorProps {
   fields: readonly ConfigField[];
   values: object;
-  onChange: (path: string, value: unknown) => void;
+  onChange: (path: string, value: ConfigValue) => void;
   onBack: () => void;
   onDone?: () => void;
   sources?: Record<string, string>;
@@ -86,37 +96,53 @@ export function ConfigSectionEditor({
   active = true,
 }: ConfigSectionEditorProps) {
   const theme = useTheme();
+
+  // SAFETY: the schema-validated config object is treated as a RawConfig document for path lookups.
+  const config = values as RawConfig;
+
   const visible = fields.filter(
-    (field) => !field.visibleWhen || field.visibleWhen(values as Record<string, unknown>),
+    (field) => !field.visibleWhen || field.visibleWhen(config),
   );
+
   const [index, setIndex] = useState(0);
   const [mode, setMode] = useState<'list' | 'select' | 'text' | 'multi'>('list');
   const field = visible[Math.min(index, visible.length - 1)];
-  const value = field ? (getAtPath(values, field.path) ?? field.defaultValue) : undefined;
+  const value = field ? (getAtPath(config, field.path) ?? field.defaultValue) : undefined;
   useInputCapture(active);
   useInput(
     (input, key) => {
       if (mode !== 'list') {
         if (key.escape) setMode('list');
+
         return;
       }
+
       if (key.escape) {
         onBack();
+
         return;
       }
+
       if (key.upArrow) {
         setIndex((i) => Math.max(0, i - 1));
+
         return;
       }
+
       if (key.downArrow) {
         setIndex((i) => Math.min(visible.length - 1, i + 1));
+
         return;
       }
+
       if (input === 'n' && onDone) {
         onDone();
+
         return;
       }
+
       if (!key.return || !field) return;
+
       if (field.kind === 'toggle') onChange(field.path, !value);
       else if (field.kind === 'select') setMode('select');
       else if (field.kind === 'multi') setMode('multi');
@@ -129,9 +155,10 @@ export function ConfigSectionEditor({
     <Box flexDirection="column" gap={1}>
       {visible.length === 0 && <Muted>No settings in this section.</Muted>}
       {visible.map((item, i) => {
-        const current = getAtPath(values, item.path) ?? item.defaultValue;
+        const current = getAtPath(config, item.path) ?? item.defaultValue;
         const display = formatValue(current) || '(unset)';
         const source = sources?.[item.path];
+
         return (
           <Box key={item.path} flexDirection="column">
             <Text
@@ -167,6 +194,7 @@ export function ConfigSectionEditor({
           allowWhenCaptured
           key={field.path}
           items={[...(field.options ?? [])]}
+          // SAFETY: multi-select fields hold arrays of option strings.
           defaultValue={Array.isArray(value) ? (value as string[]) : []}
           onSubmit={(selected) => {
             onChange(field.path, selected);

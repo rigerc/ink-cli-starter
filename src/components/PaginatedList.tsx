@@ -33,13 +33,18 @@ export function PaginatedList<T>({
   const size = listSize(pageSize, 5);
   const count = Math.ceil(items.length / size);
   const current = listIndex(page ?? internal, count);
+
   if (page === undefined && internal !== current) setInternal(current);
+
   const change = (next: number) => {
     const target = listIndex(next, count);
+
     if (!count || target === current) return;
+
     if (page === undefined) setInternal(target);
     onPageChange?.(target);
   };
+
   useKeymap(
     [
       {key: 'left', run: () => change(current - 1)},
@@ -51,13 +56,16 @@ export function PaginatedList<T>({
     ],
     {isActive},
   );
+
   if (!items.length) return <Muted>{emptyMessage}</Muted>;
   const start = current * size;
   const end = Math.min(start + size, items.length);
+
   return (
     <Box flexDirection="column">
       {items.slice(start, end).map((item, offset) => {
         const content = renderItem(item, start + offset);
+
         return (
           <Box key={getKey(item, start + offset)} flexDirection="column">
             {typeof content === 'string' || typeof content === 'number' ? (

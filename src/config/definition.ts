@@ -1,5 +1,19 @@
 import type {z} from 'zod';
 
+/** Parsed JSON document for a stored configuration file. */
+export interface RawConfig {
+  [key: string]: ConfigValue;
+}
+
+/** A JSON-compatible configuration value. */
+export type ConfigValue = string | number | boolean | null | readonly ConfigValue[] | RawConfig;
+
+/** Values snapshot passed to field visibility callbacks. */
+export type FieldValues = RawConfig;
+
+/** Version-to-version migration over the raw document. */
+export type Migration = (raw: RawConfig) => RawConfig;
+
 /** Editor metadata is independent of persistence and can be extended by consuming apps. */
 export interface ConfigField {
   path: string;
@@ -8,32 +22,43 @@ export interface ConfigField {
   kind: 'toggle' | 'select' | 'text' | 'number' | 'multi';
   description?: string;
   options?: readonly {value: string; label: string; hint?: string}[];
-  defaultValue?: unknown;
+  defaultValue?: ConfigValue;
   env?: string;
-  visibleWhen?: (values: Record<string, unknown>) => boolean;
+  visibleWhen?: (values: FieldValues) => boolean;
 }
 
 export interface ConfigDefinition<T extends object> {
   schema: z.ZodType<T>;
   version: number;
   fields: readonly ConfigField[];
-  migrations?: Readonly<Record<number, (raw: Record<string, unknown>) => Record<string, unknown>>>;
+  migrations?: Readonly<Record<number, Migration>>;
 }
 
 export function defineConfig<T extends object>(definition: ConfigDefinition<T>) {
   return definition;
 }
 
-export function getAtPath(values: object, path: string): unknown {
-  return path.split('.').reduce<unknown>((current, part) => {
-    if (!current || typeof current !== 'object' || Array.isArray(current)) return undefined;
-    return (current as Record<string, unknown>)[part];
-  }, values);
+export function getAtPath(values: RawConfig, path: string): ConfigValue | undefined {
+  let current: ConfigValue | undefined = values;
+
+  for (const part of path.split('.')) {
+    if (current === null || current === undefined) return undefined;
+
+    if (Array.isArray(current) || !(current instanceof Object)) return undefined;
+
+    // SAFETY: primitives, null and arrays excluded by the checks above; only RawConfig-shaped plain objects remain.
+    const entry: unknown = (current as RawConfig)[part];
+    // SAFETY: stored configuration values are JSON-compatible values by construction.
+    current = entry as ConfigValue;
+  }
+
+  return current;
 }
 
 /** Immutable nested update. Paths refer to object keys, never array indices. */
-export function setAtPath<T extends object>(values: T, path: string, value: unknown): T {
+export function setAtPath<T extends object>(values: T, path: string, value: ConfigValue): T {
   const segments = path.split('.');
+
   if (
     !segments.length ||
     segments.some(
@@ -43,18 +68,27 @@ export function setAtPath<T extends object>(values: T, path: string, value: unkn
   ) {
     throw new Error('Invalid configuration path');
   }
-  const root: Record<string, unknown> = {...(values as Record<string, unknown>)};
+
+  // SAFETY: T extends object; spreading an object type yields a string-keyed record with the same keys.
+  const root = {...values} as RawConfig;
   let node = root;
+
   for (const segment of segments.slice(0, -1)) {
     const old = node[segment];
+
     const next =
-      old && typeof old === 'object' && !Array.isArray(old)
-        ? {...(old as Record<string, unknown>)}
+      old !== null && old !== undefined && old instanceof Object && !Array.isArray(old)
+        ? // SAFETY: the checks above exclude primitives, null and arrays; only RawConfig-shaped plain objects remain.
+          {...(old as RawConfig)}
         : {};
+
     node[segment] = next;
     node = next;
   }
+
   node[segments[segments.length - 1]!] = value;
+
+  // SAFETY: same keys as the input T, only the target path replaced.
   return root as T;
 }
 

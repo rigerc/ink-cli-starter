@@ -56,14 +56,17 @@ async function main() {
   if (input.length > 0) {
     if (flags.setup || flags.plain)
       throw new AppError('Subcommands cannot be combined with --setup or --plain', {exitCode: 2});
+
     if (runCommand(input[0]!, input.slice(1), {configFile: flags.config, json: flags.json})) return;
     throw new AppError(`Unknown command "${input[0]}"`, {
       exitCode: 2,
       hint: `Run ${APP_NAME} --help for available commands.`,
     });
   }
+
   if (flags.json)
     throw new AppError('--json requires a headless subcommand (e.g. doctor)', {exitCode: 2});
+
   if (!isScreenId(flags.screen))
     throw new AppError(`Unknown screen "${flags.screen}"`, {
       exitCode: 2,
@@ -71,7 +74,9 @@ async function main() {
     });
 
   const {config, error} = loadConfig(flags.config);
+
   if (error) logger.error('config:', error);
+
   if (flags.setup && error)
     throw new AppError('Cannot edit invalid configuration', {hint: error, exitCode: 2});
 
@@ -82,7 +87,9 @@ async function main() {
         : undefined,
     ascii: flags.ascii ? true : undefined,
   };
+
   const resolved = resolveConfig(appConfig.fields, config, {flags: configFlags});
+
   const options: AppOptions = {
     theme: resolveThemeName({
       flag: flags.theme,
@@ -96,6 +103,7 @@ async function main() {
     configFile: flags.config,
     configFlags,
   };
+
   logger.debug('options', options);
 
   if (flags.setup && (flags.plain || !isInteractive()))
@@ -110,6 +118,7 @@ async function main() {
         columns: process.stdout.columns || 80,
       }),
     );
+
     return;
   }
 

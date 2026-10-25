@@ -17,12 +17,16 @@ export function Confirm({message, defaultValue = false, onConfirm, isActive = tr
   useInput(
     (input, key) => {
       if (key.ctrl || key.meta) return;
+
       if (input.toLowerCase() === 'y' || key.leftArrow) setValue(true);
+
       if (input.toLowerCase() === 'n' || key.rightArrow) setValue(false);
+
       if (key.return) onConfirm(value);
     },
     {isActive},
   );
+
   return (
     <Box flexDirection="column">
       <Text>{message}</Text>

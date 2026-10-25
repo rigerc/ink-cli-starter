@@ -9,3 +9,6 @@ screenshots/
 tttt/
 .serena/
 .pi/
+.agents/
+bin/
+.mcp.json

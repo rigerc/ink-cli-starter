@@ -12,6 +12,7 @@ const render = (
   ascii: boolean,
 ) => {
   const {Component} = screens.find((s) => s.id === id)!;
+
   return renderToString(
     <AppProviders options={{theme, ascii, debug: false, screen: id}}>
       <Component />
@@ -27,6 +28,7 @@ describe('every screen × theme × width', () => {
         it(`${id} / ${theme} / ${columns} cols fits the terminal`, () => {
           const out = render(id, theme, columns, false);
           expect(out.length).toBeGreaterThan(0);
+
           for (const line of out.split('\n'))
             expect(stringWidth(line)).toBeLessThanOrEqual(columns);
         });

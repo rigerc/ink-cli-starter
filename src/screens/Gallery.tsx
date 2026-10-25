@@ -41,7 +41,11 @@ export function GalleryScreen() {
     <ScreenLayout
       title="Component gallery"
       description="One component at a time; use [ ] to browse or / to choose"
-      actions={<Badge tone="accent" variant="outline">{index + 1}/{galleryItems.length}</Badge>}
+      actions={
+        <Badge tone="accent" variant="outline">
+          {index + 1}/{galleryItems.length}
+        </Badge>
+      }
     >
       {pickerOpen ? (
         <Panel title="Choose component" footer="Type to filter  ↑/↓ move  Enter choose  Esc cancel">
@@ -66,7 +70,7 @@ export function GalleryScreen() {
               onSearchActiveChange={setSearchActive}
             />
           </Panel>
-          <Muted>[ previous  ] next  / find component</Muted>
+          <Muted>[ previous ] next / find component</Muted>
           <Text dimColor>Only the selected example receives keyboard input.</Text>
         </Box>
       )}

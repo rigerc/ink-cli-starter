@@ -1,6 +1,7 @@
 import {useState} from 'react';
-import {getAtPath, setAtPath} from '../config';
+import {getAtPath, setAtPath, type ConfigValue, type RawConfig} from '../config';
 import {configStore, type Config} from '../lib/config';
+import {toErrorMessage} from '../lib/errors';
 
 /** Reusable transactional draft: no file changes until save(). */
 export function useConfigDraft(path?: string) {
@@ -8,28 +9,34 @@ export function useConfigDraft(path?: string) {
   const [draft, setDraft] = useState<Config>(loaded.config);
   const [error, setError] = useState(loaded.error);
 
-  const update = (fieldPath: string, value: unknown) => {
+  const update = (fieldPath: string, value: ConfigValue) => {
     setDraft((current) => setAtPath(current, fieldPath, value));
     setError(undefined);
   };
+
   const discard = () => {
     setDraft(loaded.config);
     setError(loaded.error);
   };
+
   const save = () => {
     if (loaded.error) throw new Error(loaded.error);
+
     try {
       const result = configStore.write(draft, path);
       setLoaded({config: result, path: configStore.pathFor(path)});
       setDraft(result);
       setError(undefined);
+
       return result;
     } catch (cause) {
-      setError((cause as Error).message);
+      setError(toErrorMessage(cause));
       throw cause;
     }
   };
+
   const changed = JSON.stringify(draft) !== JSON.stringify(loaded.config);
+
   return {
     draft,
     update,
@@ -38,6 +45,9 @@ export function useConfigDraft(path?: string) {
     changed,
     error,
     path: loaded.path,
-    get: (field: string) => getAtPath(draft, field),
+    get: (field: string) => {
+      // SAFETY: the schema-validated draft is treated as a RawConfig document for path lookups.
+      return getAtPath(draft as RawConfig, field);
+    },
   };
 }

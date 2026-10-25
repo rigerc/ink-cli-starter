@@ -25,13 +25,18 @@ export interface ScreenDef {
 /** Visible order controls tab order and numeric shortcuts. */
 export const screens: ScreenDef[] = [
   {id: 'home', label: 'Home', Component: HomeScreen},
-  {id: 'settings', label: 'Settings', Component: SettingsScreen, hints: [
-    {key: '↑/↓', label: 'section'},
-    {key: 'enter', label: 'edit'},
-    {key: 's', label: 'save'},
-    {key: 'd', label: 'discard'},
-    {key: 'w', label: 'wizard'},
-  ]},
+  {
+    id: 'settings',
+    label: 'Settings',
+    Component: SettingsScreen,
+    hints: [
+      {key: '↑/↓', label: 'section'},
+      {key: 'enter', label: 'edit'},
+      {key: 's', label: 'save'},
+      {key: 'd', label: 'discard'},
+      {key: 'w', label: 'wizard'},
+    ],
+  },
   {id: 'help', label: 'Help', Component: HelpScreen},
   {id: 'gallery', label: 'Gallery', Component: GalleryScreen, showInNav: false},
 ];

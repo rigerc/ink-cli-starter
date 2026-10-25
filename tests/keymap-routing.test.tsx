@@ -6,19 +6,14 @@ import {InputCaptureProvider, useInputCapture} from '../src/hooks/useInputCaptur
 import {KeymapProvider, useKeymap} from '../src/hooks/useKeymap';
 import {mount, press, settle} from './helpers/terminal';
 
-function RoutingFixture({
-  calls,
-  controlActive = true,
-}: {
-  calls: string[];
-  controlActive?: boolean;
-}) {
+function RoutingFixture({calls, controlActive = true}: {calls: string[]; controlActive?: boolean}) {
   useKeymap([{key: 'x', run: () => calls.push('global')}], {scope: 'global'});
   useKeymap([{key: 'x', run: () => calls.push('screen')}], {scope: 'screen'});
   useKeymap([{key: 'x', run: () => calls.push('control')}], {
     scope: 'control',
     isActive: controlActive,
   });
+
   return <Text>Router active</Text>;
 }
 
@@ -27,6 +22,7 @@ function CaptureFixture({onShortcut}: {onShortcut: () => void}) {
   useKeymap([{key: '/', run: () => setSearching(true)}], {scope: 'screen'});
   useKeymap([{key: 'q', run: onShortcut}], {scope: 'global'});
   useKeymap([{key: 't', run: onShortcut}], {scope: 'control'});
+
   return (
     <SearchSelect
       items={[{value: 'one', label: 'One'}]}
@@ -39,9 +35,13 @@ function CaptureFixture({onShortcut}: {onShortcut: () => void}) {
 
 function CapturedSelect({onSelect}: {onSelect: (value: string) => void}) {
   useInputCapture(true);
+
   return (
     <Select
-      items={[{value: 'one', label: 'One'}, {value: 'two', label: 'Two'}]}
+      items={[
+        {value: 'one', label: 'One'},
+        {value: 'two', label: 'Two'},
+      ]}
       allowWhenCaptured
       onSelect={onSelect}
     />
