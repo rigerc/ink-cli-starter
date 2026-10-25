@@ -131,16 +131,18 @@ function collectSteps(
   prefix = '',
 ): {id: string; element: ReactElement<StepProps>}[] {
   return Children.toArray(children).flatMap((child, index) => {
-    if (!isValidElement(child))
+    if (!isValidElement<StepProps>(child))
       throw new Error('Stepper children must be Step elements or fragments');
     const id = `${prefix}/${child.key ?? index}`;
 
-    if (child.type === Fragment)
-      return collectSteps((child.props as {children: ReactNode}).children, id);
+    if (child.type === Fragment) {
+      // SAFETY: React fragments contain child nodes, never render callbacks.
+      return collectSteps(child.props.children as ReactNode, id);
+    }
 
     if (child.type !== Step) throw new Error('Stepper children must be Step elements or fragments');
 
-    return [{id, element: child as ReactElement<StepProps>}];
+    return [{id, element: child}];
   });
 }
 
@@ -163,7 +165,12 @@ export function Stepper({
   renderProgress,
 }: StepperProps) {
   const steps = collectSteps(children);
-  const [position, setPosition] = useState({index: initialStep, id: null as string | null});
+
+  const [position, setPosition] = useState<{index: number; id: string | null}>({
+    index: initialStep,
+    id: null,
+  });
+
   const identityIndex = position.id === null ? -1 : steps.findIndex((s) => s.id === position.id);
 
   const currentStep = clamp(
@@ -212,11 +219,11 @@ export function Stepper({
     if (locked.current || ended.current || !active) return;
 
     const target =
-      typeof direction === 'number'
-        ? clamp(direction, steps.length)
-        : direction === 'next'
-          ? currentStep + 1
-          : currentStep - 1;
+      direction === 'next'
+        ? currentStep + 1
+        : direction === 'back'
+          ? currentStep - 1
+          : clamp(direction, steps.length);
 
     if (target === currentStep) return;
     locked.current = true;
@@ -237,7 +244,7 @@ export function Stepper({
       if (!stillCurrent()) return;
       const guard = active.element.props.canProceed ?? true;
 
-      if (direction === 'next' && !(typeof guard === 'function' ? await guard() : guard)) return;
+      if (direction === 'next' && !(guard instanceof Function ? await guard() : guard)) return;
 
       if (!stillCurrent()) return;
 
@@ -298,7 +305,7 @@ export function Stepper({
         {showProgress &&
           (renderProgress ? renderProgress(progress) : <StepperProgress {...progress} />)}
         <Box key={active.id} flexDirection="column">
-          {typeof content === 'function' ? content(context) : content}
+          {content instanceof Function ? content(context) : content}
         </Box>
         {error && <StatusMessage tone="danger">{error}</StatusMessage>}
       </Box>

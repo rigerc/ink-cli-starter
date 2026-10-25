@@ -5,7 +5,14 @@ import {useTheme, useTone} from '../theme/context';
 import type {Tone} from '../theme/tokens';
 import {Divider} from './typography';
 
-export type Cell = string | number | {text: string; tone?: Tone};
+export interface StyledCell {
+  text: string;
+  tone?: Tone;
+}
+
+export type Cell = string | number | StyledCell;
+
+const isStyledCell = (cell: Cell | undefined): cell is StyledCell => cell instanceof Object;
 
 export interface Column {
   key: string;
@@ -15,13 +22,14 @@ export interface Column {
 }
 
 const textOf = (cell: Cell | undefined) =>
-  cell === undefined ? '' : typeof cell === 'object' ? cell.text : String(cell);
+  cell === undefined ? '' : isStyledCell(cell) ? cell.text : String(cell);
 
 function CellText({cell}: {cell: Cell | undefined}) {
-  const style = useTone(typeof cell === 'object' ? (cell.tone ?? 'primary') : 'primary');
+  const styled = isStyledCell(cell);
+  const style = useTone(styled ? (cell.tone ?? 'primary') : 'primary');
 
   return (
-    <Text wrap="truncate-end" {...(typeof cell === 'object' ? style : {})}>
+    <Text wrap="truncate-end" {...(styled ? style : {})}>
       {textOf(cell)}
     </Text>
   );

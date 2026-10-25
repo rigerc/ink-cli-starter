@@ -40,7 +40,8 @@ function usage() {
 }
 
 function isRecord(value) {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
+  // Parsed JSON objects use Object.prototype and arrays are not valid records.
+  return value !== null && value instanceof Object && !Array.isArray(value);
 }
 
 async function readJson(path) {

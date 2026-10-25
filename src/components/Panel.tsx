@@ -40,7 +40,7 @@ export function Panel({
       )}
       {children}
       {footer && (
-        <Box marginTop={1}>{typeof footer === 'string' ? <Muted>{footer}</Muted> : footer}</Box>
+        <Box marginTop={1}>{footer instanceof Object ? footer : <Muted>{footer}</Muted>}</Box>
       )}
     </Box>
   );

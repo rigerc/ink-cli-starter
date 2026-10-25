@@ -37,7 +37,7 @@ export function Alert({
           {title}
         </Text>
       </Box>
-      {typeof children === 'string' ? <Text>{children}</Text> : children}
+      {children instanceof Object ? children : <Text>{children}</Text>}
     </Box>
   );
 }

@@ -18,7 +18,11 @@ function write(level: string, args: unknown[]) {
 
   try {
     mkdirSync(dirname(logPath()), {recursive: true});
-    const line = args.map((a) => (typeof a === 'string' ? a : inspect(a))).join(' ');
+
+    const line = args
+      .map((value) => (value instanceof Object ? inspect(value) : String(value)))
+      .join(' ');
+
     appendFileSync(logPath(), `${new Date().toISOString()} ${level} ${line}\n`);
   } catch {
     // Logging must never break the UI.
