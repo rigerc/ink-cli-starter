@@ -5,7 +5,7 @@ A **GitHub template** for interactive terminal applications built with [Ink](htt
 ## Use this template
 
 1. Select **Use this template → Create a new repository** on GitHub.
-2. Clone your new repository and install dependencies (Node.js 22+ required).
+2. Clone your new repository and install dependencies (Node.js 22.12+ required).
 3. Start the application:
 
 ```bash
@@ -33,7 +33,7 @@ npm run build
 npm start                       # Run dist/cli.js
 ```
 
-The built executable exposes `--help`, `--screen <id>`, `--theme`, `--config`, `--plain`, `--ascii`, and `doctor [--json]`. Headless commands remain usable without a terminal.
+The built executable uses Commander with inferred option types via `@commander-js/extra-typings` and exposes `--help`, `--screen <id>`, `--theme`, `--config`, `--plain`, `--ascii`, and `doctor [--json]`. Headless commands remain usable without a terminal.
 
 ## Customize for your application
 

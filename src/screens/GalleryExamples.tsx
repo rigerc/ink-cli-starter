@@ -59,7 +59,7 @@ const packages = [
   {value: 'typescript', label: 'TypeScript', hint: 'Static types'},
   {value: 'vitest', label: 'Vitest', hint: 'Testing'},
   {value: 'zod', label: 'Zod', hint: 'Validation'},
-  {value: 'meow', label: 'Meow', hint: 'CLI flags'},
+  {value: 'commander', label: 'Commander', hint: 'Typed CLI flags'},
   {value: 'vite-plus', label: 'Vite+', hint: 'Build tooling'},
 ];
 
