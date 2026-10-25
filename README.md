@@ -44,6 +44,19 @@ GitHub templates **do not automatically rename package metadata**. Before publis
 
 The default package and executable name is `ink-kit` until you change it. The `src/` component library is maintained as source in your own repository, not installed as a separate UI package.
 
+## Keep your copy in sync with this template
+
+Repositories created from this template include [the template sync workflow](.github/workflows/template-sync.yml). It checks `rigerc/ink-cli-starter` for updates on the first day of each month at 03:17 UTC, or when manually started, and opens a pull request with proposed changes. The workflow skips the upstream template repository itself.
+
+**Setup in your generated repository:** This upstream template is private, so the generated repository's default `GITHUB_TOKEN` cannot read it. Add the following secrets under **Settings → Secrets and variables → Actions**:
+
+- `TEMPLATE_SYNC_SOURCE_TOKEN`: a token with **Contents: read** access to the private `rigerc/ink-cli-starter` repository (and **Metadata: read**, granted automatically for fine-grained PATs).
+- `TEMPLATE_SYNC_TARGET_TOKEN`: a token with **Contents: write** and **Pull requests: write** access to your generated repository. Also allow workflow-file updates (e.g. **Workflows: write** for a fine-grained token) so changes under `.github/workflows/` can be synced.
+
+Prefer separate, repository-scoped fine-grained personal access tokens; the account creating the source token must have access to the private upstream repository. For private-source sync using PATs, the action's documentation requires the target repository to be private as well.
+
+After adding the secrets, go to **Actions → Sync upstream template → Run workflow** in the generated repository. Review any automatically created PR before merging: upstream updates may touch files you have customized. See [actions-template-sync documentation](https://github.com/marketplace/actions/actions-template-sync) for additional authentication or file-exclusion options.
+
 ## Add functionality
 
 - [Add your first feature](docs/adding-a-feature.md) — a new screen and headless command
