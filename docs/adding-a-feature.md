@@ -43,6 +43,16 @@ footer and Help derive the numeric shortcut range from the screen registry;
 no edits to `src/keys.ts` are needed. Add optional `hints` to the `ScreenDef`
 when a screen has local actions, and use `ScreenState` for async states.
 
+## Full-control screen (optional)
+
+For a screen that supplies its own layout and keyboard behavior, register it with:
+
+```ts
+{id: 'custom', label: 'Custom', Component: CustomScreen, layout: 'bare', globalKeys: false},
+```
+
+A `bare` screen bypasses the app header, tabs, toasts and footer (including in `--plain` output), but still receives the theme, router, config, and keymap providers. `globalKeys: false` is independent of the layout choice; omit it to retain the default app shortcuts. Use Ink `Box`, `Text`, or `useInput` directly. When disabling global shortcuts, provide your own exit/navigation keys if needed.
+
 ## Minimal headless command
 
 In `runCommand()` of `src/commands/index.ts`:
@@ -61,7 +71,7 @@ logic to React hooks or terminal rendering.
 
 ## UI conventions for features
 
-- The shared `AppShell` already supplies header, tabs, toasts, command palette and footer. Keep a new screen inside `ScreenLayout`.
+- The default shared `AppShell` supplies header, tabs, toasts, command palette and footer. Use `ScreenLayout` for convenient heading/spacing, or opt out with `layout: 'bare'` and compose native Ink elements directly.
 - Use `useKeymap([{key: 'r', run: refresh}], {scope: 'screen'})` for screen actions. Add corresponding footer `hints` to the screen registry. Don't wire a second global keyboard handler.
 - Interactive `Select`, `MultiSelect`, `Toggle` and `PaginatedList` controls accept `isActive={false}` when another control owns input. `SearchSelect` captures text input while active; deactivate or unmount it on selection/cancel.
 - Use `useAsync` and `ScreenState` for loading, empty, error and success results; call your domain operation from events/effects rather than render.

@@ -24,7 +24,7 @@ See [architecture](architecture.md) for entry points and [adding a feature](addi
 | `src/theme/`               | Semantic colors, symbols and ASCII compatibility                    |
 | `src/features/` (optional) | Domain models and operations independent of Ink                     |
 
-`AppProviders` installs configuration, theme, input capture, keymap, toast, router and error-boundary providers. The regular `App` already renders `AppShell`, which owns the application header, tabs, command menu, toast area and status footer. **Do not nest a second shell, header, tab bar or footer in your screen.** Instead, use `ScreenLayout` for title, description, actions and consistent content padding. Use `InlineLayout` for an independent compact wizard.
+**AppProviders** installs configuration, theme, input capture, keymap, toast, router and error-boundary providers. By default, `App` renders `AppShell` (header, tabs, command menu, toasts, status footer) around a screen. If that structure does not fit your CLI, register a bare screen or compose native Ink UI directly. `ScreenLayout` and `InlineLayout` are optional conveniences.
 
 ## Create and register a screen
 
@@ -90,13 +90,39 @@ A visible screen gets a tab, a numeric shortcut and a `--screen jobs` flag. `sho
 | Input              | `Select`, `MultiSelect`, `SearchSelect`, `Toggle`, `Confirm`                            |
 | Wizards            | `Stepper`, `Step`, `StepperProgress`, `StepperNavigation`, `InlineLayout`               |
 
-Import components through `../components` and hooks through `../hooks` from a screen. Review the local TypeScript props to select the right abstraction. Give selection options unique `value` fields and paginated items stable keys. Use `isActive={false}` to disable a control while another owns keyboard input. Prefer shared panels, controls and indicators over custom ad-hoc renderers.
+Import components through `../components` and hooks through `../hooks` when useful. They are a toolkit, not the only supported rendering API: Ink `Box`, `Text`, and `useInput` can be used directly. `Panel` and `Card` accept standard Ink Box props (including border and padding overrides); `Stack` and `Row` accept native gap values. Give selection options unique `value` fields and paginated items stable keys. Use `isActive={false}` to disable an inactive keyboard control.
+
+## Using only what you need
+
+Each screen entry may choose how much framework UI to use. Without extra options, the existing shell, navigation, and shortcuts behave as before:
+
+```ts
+// In src/screens/index.ts
+{id: 'jobs', label: 'Jobs', Component: JobsScreen},
+
+// Full control of the terminal view, but still inside AppProviders:
+{id: 'custom', label: 'Custom', Component: CustomScreen, layout: 'bare', globalKeys: false},
+```
+
+`layout: 'bare'` removes the app-provided header, tabs, footer and toast host for that screen, in both interactive and `--plain` rendering. It does **not** remove the providers. `globalKeys: false` is independent of layout: it disables shell shortcuts and their footer hints for that screen, leaving registered screen/control handlers and Ink `useInput` available. If you disable quit/navigation keys, implement your own way to exit or navigate, or use Ctrl+C.
+
+`ScreenLayout` supports a title-free layout with custom spacing:
+
+```tsx
+<ScreenLayout paddingX={0} gap={2}>
+  <Panel borderStyle="double" paddingX={2} title="Custom panel">
+    <Text>Native Ink layout props are supported.</Text>
+  </Panel>
+</ScreenLayout>
+```
+
+`AppShell` can also be used directly with no header and with `showToasts={false}` if you want only part of the shared chrome. These options are additive; existing screens do not need migration.
 
 ## Keyboard routing and focus
 
 `AppProviders` installs a `KeymapProvider` and `InputCaptureProvider`. The provider dispatches **one** matching shortcut per keypress, with priority **control > screen > global**. Use `{scope: 'screen'}` for screen shortcuts, `{scope: 'global'}` for shell shortcuts; controls default to `control`. Avoid overlapping shortcuts between simultaneously active controls.
 
-Free-form input must own the keyboard. `SearchSelect` automatically captures input while active, which pauses regular shortcuts (including Tab, q, t and numeric screen keys). Close or deactivate the search on selection and cancellation:
+When editing free-form input, avoid conflicting keyboard listeners. `SearchSelect` automatically captures input while active, which pauses regular shortcuts (including Tab, q, t and numeric screen keys). Close or deactivate the search on selection and cancellation:
 
 ```tsx
 import {Text} from 'ink';
@@ -128,7 +154,7 @@ export function PackagePicker() {
 }
 ```
 
-For another text editor, call `useInputCapture(isEditing)` while it owns input and release capture when editing stops. Only nested controls explicitly owned by a capturing editor should use `allowWhenCaptured` with `Select` or `MultiSelect`; don't bypass focus management generally. Keep **one text-input control active** at a time. When a child field owns Enter/Escape in a `Stepper`, set `keyboardNav={false}` and navigate using `useStepper()` or the step render callback.
+For another text editor, call `useInputCapture(isEditing)` while it owns input and release capture when editing stops. Nested controls owned by a capturing editor may use `allowWhenCaptured` with `Select` or `MultiSelect`. Prefer keeping **one text-input control active** at a time. When a child field owns Enter/Escape in a `Stepper`, set `keyboardNav={false}` and navigate using `useStepper()` or the step render callback.
 
 ## Async states and notifications
 

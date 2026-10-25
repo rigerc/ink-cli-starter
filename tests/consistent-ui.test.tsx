@@ -1,9 +1,10 @@
-import {renderToString} from 'ink';
+import {Text, renderToString} from 'ink';
 import stringWidth from 'string-width';
 import {describe, expect, it, vi} from 'vite-plus/test';
-import {App} from '../src/app';
-import {ScreenLayout, ScreenState, StatusBar} from '../src/components';
+import {App, PlainView, ScreenFrame} from '../src/app';
+import {AppShell, Panel, Row, ScreenLayout, ScreenState, Stack, StatusBar} from '../src/components';
 import {getGlobalBindings, getGlobalKeys} from '../src/keys';
+import {screens} from '../src/screens';
 import {ThemeProvider} from '../src/theme/context';
 import {mount, press, settle} from './helpers/terminal';
 
@@ -66,6 +67,71 @@ describe('consistent terminal UI', () => {
       expect(out).toContain('[r]');
       expect(out).toContain('[q]');
     }
+  });
+
+
+  it('keeps the shared shell by default but allows a bare screen', () => {
+    const shared = renderToString(
+      <ScreenFrame header={<Text>App title</Text>} footer={<Text>Footer</Text>}>
+        <Text>Content</Text>
+      </ScreenFrame>,
+      {columns: 80},
+    );
+    expect(shared).toContain('App title');
+    expect(shared).toContain('Footer');
+
+    const bare = renderToString(
+      <ScreenFrame layout="bare" header={<Text>App title</Text>} footer={<Text>Footer</Text>}>
+        <Text>Custom content</Text>
+      </ScreenFrame>,
+      {columns: 80},
+    );
+    expect(bare).toContain('Custom content');
+    expect(bare).not.toContain('App title');
+    expect(bare).not.toContain('Footer');
+  });
+
+  it('respects bare layout when rendering a registered screen in plain mode', () => {
+    const testScreen = {
+      id: 'test-bare-screen',
+      label: 'Bare',
+      Component: () => <Text>Standalone view</Text>,
+      layout: 'bare' as const,
+      globalKeys: false,
+      showInNav: false,
+    };
+    screens.push(testScreen);
+    try {
+      const out = renderToString(
+        <PlainView options={{...options, screen: testScreen.id}} />,
+        {columns: 80},
+      );
+      expect(out).toContain('Standalone view');
+      expect(out).not.toContain('ink-kit');
+    } finally {
+      screens.pop();
+    }
+  });
+
+  it('supports custom Ink layouts without forcing a title or spacing scale', () => {
+    const out = renderToString(
+      <ThemeProvider name="mono" ascii>
+        <AppShell showToasts={false}>
+          <ScreenLayout paddingX={0} gap={6}>
+            <Stack gap={5}>
+              <Panel title="Custom" borderStyle="double" paddingX={2}>
+                <Text>Flexible panel</Text>
+              </Panel>
+              <Row gap={8}><Text>One</Text><Text>Two</Text></Row>
+            </Stack>
+          </ScreenLayout>
+        </AppShell>
+      </ThemeProvider>,
+      {columns: 80},
+    );
+    expect(out).toContain('Flexible panel');
+    expect(out).toContain('One');
+    expect(out).toContain('Two');
   });
 
   it('navigates via the command menu and restores the current screen on cancel', async () => {
