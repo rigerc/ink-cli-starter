@@ -92,10 +92,12 @@ export function AppShell({
   nav,
   footer,
   children,
+  showToasts = true,
 }: {
-  header: ReactNode;
+  header?: ReactNode;
   nav?: ReactNode;
   footer?: ReactNode;
+  showToasts?: boolean;
   children: ReactNode;
 }) {
   return (
@@ -105,7 +107,7 @@ export function AppShell({
         {nav}
       </Box>
       <Box flexDirection="column">{children}</Box>
-      <ToastHost />
+      {showToasts && <ToastHost />}
       {footer}
     </Box>
   );

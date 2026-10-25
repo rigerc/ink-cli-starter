@@ -1,16 +1,15 @@
-import {Box, Text} from 'ink';
+import {Box, Text, type BoxProps} from 'ink';
 import type {ReactNode} from 'react';
 import {useTheme, useTone} from '../theme/context';
 import type {Tone} from '../theme/tokens';
 import {Muted} from './typography';
 
-export interface PanelProps {
-  title?: string;
+export interface PanelProps extends Omit<BoxProps, 'children' | 'title'> {
+  title?: ReactNode;
   footer?: ReactNode;
-  /** Tone of the title. */
+  /** Default theme tone of the title; Box props may override border styles. */
   tone?: Tone;
   focused?: boolean;
-  width?: number | string;
   children: ReactNode;
 }
 
@@ -20,8 +19,8 @@ export function Panel({
   footer,
   tone = 'primary',
   focused = false,
-  width,
   children,
+  ...boxProps,
 }: PanelProps) {
   const t = useTheme();
   const titleStyle = useTone(tone);
@@ -31,7 +30,7 @@ export function Panel({
       borderStyle={focused ? t.border.focus : t.border.base}
       borderColor={focused ? t.color.focus : t.color.border}
       paddingX={1}
-      width={width}
+      {...boxProps}
     >
       {title && (
         <Text bold wrap="truncate-end" {...titleStyle}>
@@ -47,7 +46,9 @@ export function Panel({
 }
 
 /** Lightweight alternative to Panel: a colored accent bar on the left. */
-export function Card({tone = 'primary', children}: {tone?: Tone; children: ReactNode}) {
+export type CardProps = Omit<BoxProps, 'children'> & {tone?: Tone; children: ReactNode};
+
+export function Card({tone = 'primary', children, ...boxProps}: CardProps) {
   const t = useTheme();
   return (
     <Box
@@ -58,6 +59,7 @@ export function Card({tone = 'primary', children}: {tone?: Tone; children: React
       borderRight={false}
       borderBottom={false}
       paddingLeft={1}
+      {...boxProps}
     >
       {children}
     </Box>

@@ -5,10 +5,17 @@ import {HelpScreen} from './Help';
 import {HomeScreen} from './Home';
 import {SettingsScreen} from './Settings';
 
+/** Choose the built-in app chrome or render a screen as-is. */
+export type ScreenLayoutMode = 'shell' | 'bare';
+
 export interface ScreenDef {
   id: string;
   label: string;
   Component: ComponentType;
+  /** Omit the shared header, tabs, toasts and footer for a custom Ink view. */
+  layout?: ScreenLayoutMode;
+  /** Opt out of app-wide shortcuts while retaining screen/control handlers. */
+  globalKeys?: boolean;
   /** Hidden development screens remain addressable via --screen. */
   showInNav?: boolean;
   /** Contextual shortcuts shown before global hints in the footer. */
