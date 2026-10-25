@@ -71,7 +71,7 @@ describe('Commander CLI', () => {
   it('rejects unknown commands and extra arguments', () => {
     const unknown = runCli('missing');
     expect(unknown.status).not.toBe(0);
-    expect(unknown.stderr).toContain('unknown command');
+    expect(unknown.stderr).toMatch(/unknown command/i);
 
     const extra = runCli('doctor', 'extra');
     expect(extra.status).not.toBe(0);
