@@ -31,7 +31,7 @@ function matches(spec: string, input: string, key: Key): boolean {
   const name = parts.pop()!;
   const mods = new Set(parts.map((p) => p.toLowerCase()));
 
-  const named: Record<string, boolean> = {
+  const named = {
     tab: key.tab,
     esc: key.escape,
     escape: key.escape,
@@ -52,10 +52,12 @@ function matches(spec: string, input: string, key: Key): boolean {
 
   const lower = name.toLowerCase();
 
-  if (lower in named) {
+  const match = Object.entries(named).find(([keyName]) => keyName === lower);
+
+  if (match) {
     if (lower === 'tab' && mods.has('shift') !== key.shift) return false;
 
-    return mods.has('ctrl') === key.ctrl && Boolean(named[lower]);
+    return mods.has('ctrl') === key.ctrl && match[1];
   }
 
   return mods.has('ctrl') === key.ctrl && !key.meta && input === name;
