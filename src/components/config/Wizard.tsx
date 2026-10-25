@@ -37,7 +37,9 @@ function Review({
         items={appConfig.fields.map((field) => ({
           label: field.label,
           // SAFETY: the schema-validated draft is treated as a RawConfig document for path lookups.
-    value: formatValue(getAtPath(draft as RawConfig, field.path) ?? field.defaultValue) || '(unset)',
+          value:
+            formatValue(getAtPath(draft as RawConfig, field.path) ?? field.defaultValue) ||
+            '(unset)',
         }))}
       />
       <Muted>File: {path}</Muted>

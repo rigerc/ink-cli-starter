@@ -100,9 +100,7 @@ export function ConfigSectionEditor({
   // SAFETY: the schema-validated config object is treated as a RawConfig document for path lookups.
   const config = values as RawConfig;
 
-  const visible = fields.filter(
-    (field) => !field.visibleWhen || field.visibleWhen(config),
-  );
+  const visible = fields.filter((field) => !field.visibleWhen || field.visibleWhen(config));
 
   const [index, setIndex] = useState(0);
   const [mode, setMode] = useState<'list' | 'select' | 'text' | 'multi'>('list');

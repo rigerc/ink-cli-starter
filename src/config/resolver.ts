@@ -1,4 +1,10 @@
-import {getAtPath, setAtPath, type ConfigField, type ConfigValue, type RawConfig} from './definition';
+import {
+  getAtPath,
+  setAtPath,
+  type ConfigField,
+  type ConfigValue,
+  type RawConfig,
+} from './definition';
 
 /** Where a resolved configuration value came from. */
 export type ConfigSource = 'default' | 'file' | 'environment' | 'flag';

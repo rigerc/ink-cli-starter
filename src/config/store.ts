@@ -39,6 +39,7 @@ const configValueSchema: z.ZodType<ConfigValue> = z.lazy(() =>
     z.record(z.string(), configValueSchema),
   ]),
 );
+
 const rawConfigSchema: z.ZodType<RawConfig> = z.record(z.string(), configValueSchema);
 
 const isObjectConfigValue = (value: ConfigValue | undefined): value is RawConfig =>
@@ -107,6 +108,7 @@ export function createConfigStore<T extends object>(
         throw new Error('Configuration must be a JSON object containing valid JSON values');
 
       const document = decoded.data;
+
       const versionResult =
         document.version === undefined
           ? {success: true, data: 0}
