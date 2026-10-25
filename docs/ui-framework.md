@@ -2,13 +2,13 @@
 
 This guide explains the local **Ink 8 / React 19** component framework. The UI framework lives in `src/` and is part of this template, not a separately published dependency.
 
-See [architecture](architecture.md) for entry points and [adding a feature](adding-a-feature.md) for a screen and headless command walkthrough. Run `npm run gallery` to explore the reusable components.
+See [architecture](architecture.md) for entry points and [adding a feature](adding-a-feature.md) for a screen and headless command walkthrough. Reusable components remain available under `src/components/`.
 
 ## Start here
 
 1. Run `npm run dev` in an interactive terminal; use `--plain` for one-shot output in pipes and CI.
 2. Read `src/app.tsx`, `src/screens/Home.tsx` and `src/screens/index.ts` to see the application shell, screen composition and registration.
-3. Discover reusable exports in `src/components/index.ts` and `src/hooks/index.ts`. `npm run gallery` demonstrates interactive components.
+3. Discover reusable exports in `src/components/index.ts` and `src/hooks/index.ts`; compose these in your app screens as needed.
 4. Add domain logic outside the React/Ink layer so noninteractive commands can reuse it.
 
 ## Architecture and ownership

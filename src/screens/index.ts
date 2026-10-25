@@ -1,6 +1,5 @@
 import type {ComponentType} from 'react';
 import type {KeyHint} from '../keys';
-import {GalleryScreen} from './Gallery';
 import {HelpScreen} from './Help';
 import {HomeScreen} from './Home';
 import {SettingsScreen} from './Settings';
@@ -38,7 +37,6 @@ export const screens: ScreenDef[] = [
     ],
   },
   {id: 'help', label: 'Help', Component: HelpScreen},
-  {id: 'gallery', label: 'Gallery', Component: GalleryScreen, showInNav: false},
 ];
 
 export const navScreens = screens.filter((screen) => screen.showInNav !== false);
