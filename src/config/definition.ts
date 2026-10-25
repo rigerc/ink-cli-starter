@@ -38,18 +38,18 @@ export function defineConfig<T extends object>(definition: ConfigDefinition<T>) 
   return definition;
 }
 
+/** Domain-level narrowing over values already decoded as JSON. */
+function isObjectConfigValue(value: ConfigValue | undefined): value is RawConfig {
+  return value !== undefined && value !== null && value instanceof Object && !Array.isArray(value);
+}
+
 export function getAtPath(values: RawConfig, path: string): ConfigValue | undefined {
   let current: ConfigValue | undefined = values;
 
   for (const part of path.split('.')) {
-    if (current === null || current === undefined) return undefined;
+    if (!isObjectConfigValue(current)) return undefined;
 
-    if (Array.isArray(current) || !(current instanceof Object)) return undefined;
-
-    // SAFETY: primitives, null and arrays excluded by the checks above; only RawConfig-shaped plain objects remain.
-    const entry: unknown = (current as RawConfig)[part];
-    // SAFETY: stored configuration values are JSON-compatible values by construction.
-    current = entry as ConfigValue;
+    current = current[part];
   }
 
   return current;
@@ -76,11 +76,7 @@ export function setAtPath<T extends object>(values: T, path: string, value: Conf
   for (const segment of segments.slice(0, -1)) {
     const old = node[segment];
 
-    const next =
-      old !== null && old !== undefined && old instanceof Object && !Array.isArray(old)
-        ? // SAFETY: the checks above exclude primitives, null and arrays; only RawConfig-shaped plain objects remain.
-          {...(old as RawConfig)}
-        : {};
+    const next = isObjectConfigValue(old) ? {...old} : {};
 
     node[segment] = next;
     node = next;

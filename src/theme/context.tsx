@@ -41,7 +41,12 @@ export const useTheme = (): Theme => useContext(ThemeContext).theme;
 export const useThemeControls = () => useContext(ThemeContext);
 
 /** Text props for a tone. Muted falls back to dim in mono mode. */
-export function useTone(tone: Tone): {color: string | undefined; dimColor: boolean} {
+export interface ToneStyle {
+  color: string | undefined;
+  dimColor: boolean;
+}
+
+export function useTone(tone: Tone): ToneStyle {
   const t = useTheme();
 
   return {color: t.color[tone], dimColor: t.mono && tone === 'muted'};
