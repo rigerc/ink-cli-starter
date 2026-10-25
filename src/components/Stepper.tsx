@@ -165,10 +165,12 @@ export function Stepper({
   renderProgress,
 }: StepperProps) {
   const steps = collectSteps(children);
+
   const [position, setPosition] = useState<{index: number; id: string | null}>({
     index: initialStep,
     id: null,
   });
+
   const identityIndex = position.id === null ? -1 : steps.findIndex((s) => s.id === position.id);
 
   const currentStep = clamp(
