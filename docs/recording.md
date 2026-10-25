@@ -38,7 +38,7 @@ for tall screens so the terminal viewport does not crop or scroll their content.
 Images use Ink's static `renderToString()` output, with fixed terminal diagnostics
 and config location. VHS displays that ANSI output in its terminal and takes a PNG.
 There is no HTML conversion. Initial state is stable; font/OS/browser versions can
-still change pixels, so use CI for comparable review artifacts.
+still change pixels, so use manual GitHub Actions captures for comparable review artifacts.
 
 ## Record an interactive journey
 
@@ -62,7 +62,7 @@ snapshots. The runner stops the app after the interaction tape finishes.
 
 ## Keep a shareable `assets/` gallery
 
-The template's GitHub Actions workflow saves one dark-theme, 100-column PNG for each
+The manually triggered GitHub Actions workflow saves one dark-theme, 100-column PNG for each
 registered screen in `assets/screenshots/`. It also saves an MP4
 of the interactive Home-to-Help journey at `assets/demo.mp4`. Both are tracked in Git,
 so README links survive artifact expiration. New screens are included automatically
@@ -123,13 +123,7 @@ FFmpeg and fonts through the official VHS action, then typechecks, tests and run
 the captures. It refreshes `assets/screenshots/*.png` for all registered screens (including hidden development screens) and `assets/demo.mp4` for the interactive
 journey. It uploads the PNGs, MP4 and replayable tapes as a 14-day artifact.
 
-On pushes to `main` or manual dispatch from `main`, GitHub Actions commits changed
-assets back to the branch using `GITHUB_TOKEN`. The workflow needs repository
-**Actions > General > Workflow permissions** set to allow read and write, and any
-branch rules must permit the bot to push. The bot's generated commit does not
-retrigger the workflow. On pull requests and manual runs on other branches, the
-workflow only uploads an artifact; it does not push to contributors' branches.
-Unlike the temporary artifact, the committed `assets/` files persist in Git.
+The workflow runs **only when manually started** from GitHub's **Actions → Screenshots and recordings → Run workflow** menu. It does not run automatically on pull requests or pushes. Select `main` to commit refreshed assets back to `main` using `GITHUB_TOKEN`. The workflow needs repository **Actions > General > Workflow permissions** set to allow read and write, and branch rules must permit the bot to push. Manual runs on other branches upload artifacts only and never push to those branches. Unlike temporary artifacts, committed `assets/` files persist in Git.
 
 To keep capture workflows in a copied template repository, use the existing
 scripts and adapt the output paths for your own app. A minimal upload-only CI
