@@ -1,11 +1,11 @@
 import {createContext, useCallback, useContext, useMemo, useState, type ReactNode} from 'react';
 import {supportsUnicode} from '../lib/terminal';
 import {applyGlyphs, themes} from './themes';
-import {themeNames, type Theme, type ThemeName, type Tone} from './tokens';
+import {type Theme, type Tone} from './tokens';
 
 interface ThemeContextValue {
   theme: Theme;
-  setTheme: (name: ThemeName) => void;
+  setTheme: (name: string) => void;
   cycleTheme: () => void;
 }
 
@@ -18,18 +18,26 @@ const ThemeContext = createContext<ThemeContextValue>({
 export function ThemeProvider({
   name = 'dark',
   ascii = !supportsUnicode(),
+  registry,
   children,
 }: {
-  name?: ThemeName;
+  name?: string;
   ascii?: boolean;
+  /** Extend or override the built-in themes without editing theme source. */
+  registry?: Readonly<Record<string, Theme>>;
   children: ReactNode;
 }) {
-  const [current, setCurrent] = useState<ThemeName>(name);
-  const theme = useMemo(() => applyGlyphs(themes[current], ascii), [current, ascii]);
+  const available = useMemo(() => ({...themes, ...registry}), [registry]);
+  const names = Object.keys(available);
+  const [current, setCurrent] = useState(name);
+  const theme = useMemo(
+    () => applyGlyphs(available[current] ?? themes.dark, ascii),
+    [available, current, ascii],
+  );
 
   const cycleTheme = useCallback(
-    () => setCurrent((c) => themeNames[(themeNames.indexOf(c) + 1) % themeNames.length]!),
-    [],
+    () => setCurrent((c) => names[(names.indexOf(c) + 1) % names.length]!),
+    [names.join('|')],
   );
 
   const value = useMemo(() => ({theme, setTheme: setCurrent, cycleTheme}), [theme, cycleTheme]);

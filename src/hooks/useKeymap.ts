@@ -16,6 +16,9 @@ export interface Binding {
   run: () => void;
 }
 
+/** Return false to let the next eligible input listener handle the event. */
+export type InputHandler = (input: string, key: Key) => boolean | void;
+
 export type KeymapScope = 'global' | 'screen' | 'control';
 
 export interface KeymapOptions {
@@ -67,6 +70,7 @@ interface Listener {
   id: number;
   getBindings: () => Binding[];
   getOptions: () => KeymapOptions;
+  getInputHandler?: () => InputHandler;
 }
 
 type Register = (listener: Omit<Listener, 'id'>) => () => void;
@@ -114,6 +118,12 @@ export function KeymapProvider({children}: {children: ReactNode}) {
           return;
         }
       }
+
+      // Raw input from managed controls participates in the same arbitration
+      // as named bindings instead of creating competing Ink listeners.
+      const onInput = listener.getInputHandler?.();
+
+      if (onInput && onInput(input, key) !== false) return;
     }
   });
 
@@ -152,6 +162,44 @@ export function useKeymap(bindings: Binding[], options: KeymapOptions = {}) {
           return;
         }
       }
+    },
+    {
+      isActive:
+        !register &&
+        (!captured || options.allowWhenCaptured === true) &&
+        (options.isActive ?? true),
+    },
+  );
+}
+
+
+/**
+ * Managed raw input for text editors and composite controls. Shares the
+ * KeymapProvider dispatcher with useKeymap; standalone controls retain
+ * Ink's native useInput behavior when no provider is installed.
+ */
+export function useManagedInput(handler: InputHandler, options: KeymapOptions = {}) {
+  const register = useContext(KeymapContext);
+  const captured = useHasInputCapture();
+  const latest = useRef({handler, options});
+  latest.current = {handler, options};
+
+  useLayoutEffect(() => {
+    if (!register) return;
+
+    return register({
+      getBindings: () => [],
+      getOptions: () => latest.current.options,
+      getInputHandler: () => latest.current.handler,
+    });
+  }, [register]);
+
+  useInput(
+    (input, key) => {
+      if (register || (captured && !options.allowWhenCaptured) || options.isActive === false)
+        return;
+
+      handler(input, key);
     },
     {
       isActive:

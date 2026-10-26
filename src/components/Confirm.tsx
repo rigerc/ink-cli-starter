@@ -1,4 +1,5 @@
-import {Box, Text, useInput} from 'ink';
+import {Box, Text} from 'ink';
+import {useManagedInput} from '../hooks/useKeymap';
 import {useState} from 'react';
 import {useTheme} from '../theme/context';
 import {Kbd, Muted} from './typography';
@@ -14,17 +15,28 @@ export interface ConfirmProps {
 export function Confirm({message, defaultValue = false, onConfirm, isActive = true}: ConfirmProps) {
   const [value, setValue] = useState(defaultValue);
   const t = useTheme();
-  useInput(
+  useManagedInput(
     (input, key) => {
-      if (key.ctrl || key.meta) return;
+      if (key.ctrl || key.meta) return false;
 
-      if (input.toLowerCase() === 'y' || key.leftArrow) setValue(true);
+      if (input.toLowerCase() === 'y' || key.leftArrow) {
+        setValue(true);
+        return true;
+      }
 
-      if (input.toLowerCase() === 'n' || key.rightArrow) setValue(false);
+      if (input.toLowerCase() === 'n' || key.rightArrow) {
+        setValue(false);
+        return true;
+      }
 
-      if (key.return) onConfirm(value);
+      if (key.return) {
+        onConfirm(value);
+        return true;
+      }
+
+      return false;
     },
-    {isActive},
+    {isActive, scope: 'control'},
   );
 
   return (
