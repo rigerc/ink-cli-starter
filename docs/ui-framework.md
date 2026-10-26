@@ -80,13 +80,13 @@ A visible screen gets a tab and a `--screen jobs` flag; only the first nine visi
 
 The screen registry is the source of truth for launch IDs, tabs and capture IDs. These options can be combined independently:
 
-| `ScreenDef` option | Interactive behavior | `--plain` behavior |
-| --- | --- | --- |
-| Default (`layout` omitted) | Shared shell (header, tabs, footer, toasts) | App header and one static screen frame; no interactive tabs/footer |
-| `layout: 'bare'` | Screen renders without app-provided chrome or toast host | Only the screen's own content |
-| `globalKeys: false` | Disables built-in Tab, 1–9, Ctrl+K, `t`, `?`, `q` shortcuts on that screen | No impact: there are no keyboard events |
-| `showInNav: false` | Omitted from tabs, numbered shortcuts and command palette | Still addressable with `--screen <id>` |
-| `hints` | Displays context labels in the status footer (if present) | No footer; hints are not handlers |
+| `ScreenDef` option         | Interactive behavior                                                       | `--plain` behavior                                                 |
+| -------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Default (`layout` omitted) | Shared shell (header, tabs, footer, toasts)                                | App header and one static screen frame; no interactive tabs/footer |
+| `layout: 'bare'`           | Screen renders without app-provided chrome or toast host                   | Only the screen's own content                                      |
+| `globalKeys: false`        | Disables built-in Tab, 1–9, Ctrl+K, `t`, `?`, `q` shortcuts on that screen | No impact: there are no keyboard events                            |
+| `showInNav: false`         | Omitted from tabs, numbered shortcuts and command palette                  | Still addressable with `--screen <id>`                             |
+| `hints`                    | Displays context labels in the status footer (if present)                  | No footer; hints are not handlers                                  |
 
 The visible screen order in `src/screens/index.ts` determines Tab order and the first nine `1`–`9` shortcuts. Additional visible screens remain navigable with Tab and the command menu. Hidden screens are valid `--screen` targets and are included in `--all` screenshots. The default global shortcuts come from `src/keys.ts`; do not register a second implementation of the same key without an explicit reason.
 
@@ -233,7 +233,7 @@ Semantic palettes live in `src/theme/palettes.json` and the project fallback in 
 
 ## Responsive terminal layout: worked example
 
-Ink lays out terminal *cells*, not browser pixels. A panel that looks correct at 120 columns can overflow at 40, especially with long IDs, paths, emoji or wide Unicode characters. `useTerminalSize()` reports `columns`, `rows` and `narrow` (`columns < 80`). Let content choose a vertical arrangement on narrow terminals:
+Ink lays out terminal _cells_, not browser pixels. A panel that looks correct at 120 columns can overflow at 40, especially with long IDs, paths, emoji or wide Unicode characters. `useTerminalSize()` reports `columns`, `rows` and `narrow` (`columns < 80`). Let content choose a vertical arrangement on narrow terminals:
 
 ```tsx
 import {Box, Text} from 'ink';
@@ -262,7 +262,7 @@ Keep panel widths flexible, wrap or truncate user-supplied strings and prefer sy
 
 The normal `--plain` path uses `PlainView`: it renders a single frame with the appropriate screen and an optional header, but without live keyboard navigation. Treat this as a real output mode for CLI pipelines, not a screenshot of an interactive app. Avoid fetching data only in effects when essential information must appear in plain output. For delayed UI, render an intentional loading state or choose a headless subcommand for machine-readable output.
 
-For static visual review, `npm run screenshot -- --screen home --columns 40 --theme mono --ascii` captures the interactive app's *initial* frame; unlike `--plain`, it includes the interactive app shell. For asynchronous or input-dependent views, use `--live --ready 'stable text'`. Both methods are documented in [recording](recording.md). Run width-based `renderToString` regression tests for custom components (see `tests/consistent-ui.test.tsx`) and interaction tests with `ink-testing-library`.
+For static visual review, `npm run screenshot -- --screen home --columns 40 --theme mono --ascii` captures the interactive app's _initial_ frame; unlike `--plain`, it includes the interactive app shell. For asynchronous or input-dependent views, use `--live --ready 'stable text'`. Both methods are documented in [recording](recording.md). Run width-based `renderToString` regression tests for custom components (see `tests/consistent-ui.test.tsx`) and interaction tests with `ink-testing-library`.
 
 A practical new-screen checklist:
 

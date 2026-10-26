@@ -30,13 +30,13 @@ A capture matrix is the **Cartesian product** of the selected screens, themes an
 
 The default output directory is `screenshots/` relative to the working directory:
 
-| Command type | Expected files for Home / dark / 100 columns |
-| --- | --- |
-| Static screenshot | `screenshots/home-dark-100.png`, `screenshots/tapes/home-dark-100.ansi`, `screenshots/tapes/home-dark-100.tape` |
-| Static `--dry-run` | `.ansi` and `.tape` in `screenshots/tapes/`; **no** PNG |
-| `--live` screenshot | `screenshots/home-dark-100.png` and its `.tape`; no static `.ansi` |
-| `npm run record` | `screenshots/home-dark-100-video.png`, `.mp4` and `screenshots/tapes/home-dark-100-video.tape` |
-| Recording `--dry-run` | Video `.tape` only; **no** PNG or video |
+| Command type          | Expected files for Home / dark / 100 columns                                                                    |
+| --------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Static screenshot     | `screenshots/home-dark-100.png`, `screenshots/tapes/home-dark-100.ansi`, `screenshots/tapes/home-dark-100.tape` |
+| Static `--dry-run`    | `.ansi` and `.tape` in `screenshots/tapes/`; **no** PNG                                                         |
+| `--live` screenshot   | `screenshots/home-dark-100.png` and its `.tape`; no static `.ansi`                                              |
+| `npm run record`      | `screenshots/home-dark-100-video.png`, `.mp4` and `screenshots/tapes/home-dark-100-video.tape`                  |
+| Recording `--dry-run` | Video `.tape` only; **no** PNG or video                                                                         |
 
 Adding `--ascii` appends `-ascii` to the basename; video appends `-video`. `--format gif --format webm` requests those videos instead of the default MP4, and an initial PNG is still captured. `--format` and `--tape` require `--video` (which `npm run record` supplies). The runner writes replayable VHS tape files in an output `tapes/` subdirectory; absolute paths in generated tapes can be checkout-specific.
 
@@ -104,15 +104,15 @@ Capture jobs depend on fonts and browser rendering. To compare PNGs reliably, ho
 
 ## Troubleshooting and acceptance checklist
 
-| Problem | Likely cause / action |
-| --- | --- |
-| `Unable to run VHS` | Confirm `vhs` is on `PATH` and ttyd, FFmpeg and a supported Chromium installation are available |
-| Blank or incomplete live frame | Add a stable `--ready 'Finished loading'` marker, check that it appears on screen within 15 seconds, and avoid a transient spinner |
-| A static capture omits fetched content | React effects do not run in static mode; use `--live` or capture an explicit static loading state |
-| `Unknown screen` | Register the ID in `src/screens/index.ts`; see [UI guide](ui-framework.md#create-and-register-a-screen) |
-| `--ready requires --live or --video` | Add `--live`, or use `npm run record` for a video |
-| Unexpected screenshot size/wrapping | Use explicit `--columns`, `--rows`, `--ascii`, matching fonts and the same capture environment |
-| `--dry-run` did not produce PNG/MP4 | Expected; dry-run creates replay tapes (and static ANSI fixtures), not media |
-| Workflow didn't commit files | Publishing is manual and opt-in, requires `main`, `contents: write` and compatible repository branch rules |
+| Problem                                | Likely cause / action                                                                                                              |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `Unable to run VHS`                    | Confirm `vhs` is on `PATH` and ttyd, FFmpeg and a supported Chromium installation are available                                    |
+| Blank or incomplete live frame         | Add a stable `--ready 'Finished loading'` marker, check that it appears on screen within 15 seconds, and avoid a transient spinner |
+| A static capture omits fetched content | React effects do not run in static mode; use `--live` or capture an explicit static loading state                                  |
+| `Unknown screen`                       | Register the ID in `src/screens/index.ts`; see [UI guide](ui-framework.md#create-and-register-a-screen)                            |
+| `--ready requires --live or --video`   | Add `--live`, or use `npm run record` for a video                                                                                  |
+| Unexpected screenshot size/wrapping    | Use explicit `--columns`, `--rows`, `--ascii`, matching fonts and the same capture environment                                     |
+| `--dry-run` did not produce PNG/MP4    | Expected; dry-run creates replay tapes (and static ANSI fixtures), not media                                                       |
+| Workflow didn't commit files           | Publishing is manual and opt-in, requires `main`, `contents: write` and compatible repository branch rules                         |
 
 Before sharing assets, verify the selected screen is correct, text is legible at 40/80/120 columns as relevant, there is no personal data in the view, and the recorded key sequence ends in a recognizable state. For UI behavior and keyboard ownership, see the [UI framework guide](ui-framework.md).

@@ -17,12 +17,12 @@ A missing file is normal: built-in defaults apply until the first save. `--setup
 
 ### Default file location
 
-| Situation | Path |
-| --- | --- |
-| Unmodified `ink-kit` project on Unix-like systems | `~/.config/ink-kit/config.json` |
-| `XDG_CONFIG_HOME=/some/base` | `/some/base/ink-kit/config.json` |
-| Initialized as `my-cli` | `~/.config/my-cli/config.json` (or `$XDG_CONFIG_HOME/my-cli/config.json`) |
-| Explicit `--config ./local.json` | `local.json` in the current working directory |
+| Situation                                         | Path                                                                      |
+| ------------------------------------------------- | ------------------------------------------------------------------------- |
+| Unmodified `ink-kit` project on Unix-like systems | `~/.config/ink-kit/config.json`                                           |
+| `XDG_CONFIG_HOME=/some/base`                      | `/some/base/ink-kit/config.json`                                          |
+| Initialized as `my-cli`                           | `~/.config/my-cli/config.json` (or `$XDG_CONFIG_HOME/my-cli/config.json`) |
+| Explicit `--config ./local.json`                  | `local.json` in the current working directory                             |
 
 `--config` accepts a file path, not a directory. Relative paths resolve against the process's working directory. The default `APP_NAME` comes from `src/lib/config.ts`; the `init:project` script also adjusts the fallback identity in `src/config/store.ts`. On changing identity, old config files are **not moved**: copy the JSON intentionally if you want to retain settings, or continue passing the old file to `--config`. The values shown above describe the default Unix/XDG path construction implemented by the application.
 
@@ -49,11 +49,11 @@ The application uses `conf` to atomically replace a **validated** document on sa
 
 For registered settings, the general order is **CLI flag > environment > saved file > project default**. A runtime override is not automatically written back to the saved file.
 
-| Setting | CLI | Environment | Saved key | Project fallback |
-| --- | --- | --- | --- | --- |
-| Theme | `--theme light` | `INK_KIT_THEME=light` (renamed after init) | `"theme": "light"` | `src/theme/defaults.json` (`auto` initially) |
-| ASCII symbols | `--ascii` (enables) | `CLI_ASCII=1` (enables; `0` disables) | `"ascii": true` | `false` |
-| Config file path | `--config ./settings.json` | `XDG_CONFIG_HOME` selects the default base directory | — | `~/.config/<app-name>/config.json` |
+| Setting          | CLI                        | Environment                                          | Saved key          | Project fallback                             |
+| ---------------- | -------------------------- | ---------------------------------------------------- | ------------------ | -------------------------------------------- |
+| Theme            | `--theme light`            | `INK_KIT_THEME=light` (renamed after init)           | `"theme": "light"` | `src/theme/defaults.json` (`auto` initially) |
+| ASCII symbols    | `--ascii` (enables)        | `CLI_ASCII=1` (enables; `0` disables)                | `"ascii": true`    | `false`                                      |
+| Config file path | `--config ./settings.json` | `XDG_CONFIG_HOME` selects the default base directory | —                  | `~/.config/<app-name>/config.json`           |
 
 **Special case:** any nonempty `NO_COLOR` forces the `mono` theme even if `--theme` is present; `NO_COLOR=0` still counts as set. `NO_COLOR` does not itself select ASCII glyphs. `--ascii` can enable ASCII, but the command has no corresponding `--no-ascii` flag. `auto` theme uses a best-effort terminal light/dark check (`COLORFGBG`, defaulting to dark). Unknown theme overrides are ignored by theme selection; use a documented theme value.
 
@@ -81,14 +81,14 @@ The editor shows a field's value source (`file`, `environment`, `flag`) when it 
 
 The store, resolver and editor have distinct responsibilities:
 
-| File | What to change |
-| --- | --- |
-| `src/config/schema.ts` | Define validation in `configSchema`, plus UI field metadata in `appConfig.fields` |
+| File                       | What to change                                                                                       |
+| -------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `src/config/schema.ts`     | Define validation in `configSchema`, plus UI field metadata in `appConfig.fields`                    |
 | `src/config/definition.ts` | Existing field types (`toggle`, `select`, `text`, `number`, `multi`), paths and visibility contracts |
-| `src/config/resolver.ts` | Resolve only **registered fields** across stored file, environment and supplied flags |
-| `src/config/store.ts` | Persistence, JSON validation, version handling, deep merging and optional migrations |
-| `src/lib/config.ts` | App-specific store instance, `APP_NAME`, compatibility helpers |
-| `src/components/config/` | Shared wizard and editor UI |
+| `src/config/resolver.ts`   | Resolve only **registered fields** across stored file, environment and supplied flags                |
+| `src/config/store.ts`      | Persistence, JSON validation, version handling, deep merging and optional migrations                 |
+| `src/lib/config.ts`        | App-specific store instance, `APP_NAME`, compatibility helpers                                       |
+| `src/components/config/`   | Shared wizard and editor UI                                                                          |
 
 For example, to offer a simple endpoint setting, add to the `z.looseObject` schema in `src/config/schema.ts`:
 
@@ -116,13 +116,13 @@ For breaking stored changes, increment `appConfig.version` and provide `migratio
 
 ## Troubleshooting
 
-| Symptom | Check / remedy |
-| --- | --- |
-| `--setup` reports that a TTY is required | Run in an interactive terminal, without `--plain` or `CI`; otherwise edit JSON directly |
-| Config won't open or save | Run `npm run dev -- doctor --config ./local.json --json`; check reported path, JSON syntax, field types and version; preserve a copy before editing |
-| Settings seem ignored | Check `--config` path, `NO_COLOR`, `INK_KIT_THEME`/renamed theme variable, `CLI_ASCII` and explicit flags; restart after save |
-| Settings disappeared after project rename | Config is under the new command directory; migrate the old JSON intentionally, or pass `--config` |
-| Invalid schema after adding a field | Ensure `configSchema` and `appConfig.fields` agree and update any data consumers; run typechecking and config tests |
-| Don't want personal settings affecting screenshots | Use the capture runner in [recording](recording.md); it isolates settings and forces selected theme/width |
+| Symptom                                            | Check / remedy                                                                                                                                      |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--setup` reports that a TTY is required           | Run in an interactive terminal, without `--plain` or `CI`; otherwise edit JSON directly                                                             |
+| Config won't open or save                          | Run `npm run dev -- doctor --config ./local.json --json`; check reported path, JSON syntax, field types and version; preserve a copy before editing |
+| Settings seem ignored                              | Check `--config` path, `NO_COLOR`, `INK_KIT_THEME`/renamed theme variable, `CLI_ASCII` and explicit flags; restart after save                       |
+| Settings disappeared after project rename          | Config is under the new command directory; migrate the old JSON intentionally, or pass `--config`                                                   |
+| Invalid schema after adding a field                | Ensure `configSchema` and `appConfig.fields` agree and update any data consumers; run typechecking and config tests                                 |
+| Don't want personal settings affecting screenshots | Use the capture runner in [recording](recording.md); it isolates settings and forces selected theme/width                                           |
 
 Run `npm run typecheck && npm test` after changes. For a focused addition, see [adding a feature](adding-a-feature.md); for layout and keyboard conventions, see the [UI guide](ui-framework.md).
