@@ -137,7 +137,7 @@ export function PlainRuntime({
   const brand = definition.brand;
 
   return (
-    <AppProviders options={options}>
+    <AppProviders options={options} themes={definition.themes}>
       <ScreenFrame
         shell={definition.shell}
         layout={screen.layout}

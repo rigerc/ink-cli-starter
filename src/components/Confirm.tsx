@@ -9,10 +9,18 @@ export interface ConfirmProps {
   defaultValue?: boolean;
   onConfirm: (value: boolean) => void;
   isActive?: boolean;
+  /** Allow a confirmation control owned by a capturing editor to receive keys. */
+  allowWhenCaptured?: boolean;
 }
 
 /** Y/N or arrows to choose, Enter to submit; q is left to the host app. */
-export function Confirm({message, defaultValue = false, onConfirm, isActive = true}: ConfirmProps) {
+export function Confirm({
+  message,
+  defaultValue = false,
+  onConfirm,
+  isActive = true,
+  allowWhenCaptured = false,
+}: ConfirmProps) {
   const [value, setValue] = useState(defaultValue);
   const t = useTheme();
   useManagedInput(
@@ -36,7 +44,7 @@ export function Confirm({message, defaultValue = false, onConfirm, isActive = tr
 
       return false;
     },
-    {isActive, scope: 'control'},
+    {isActive, scope: 'control', allowWhenCaptured},
   );
 
   return (

@@ -46,7 +46,7 @@ function Review({
       <Muted>
         {changed ? 'Changes will be written on confirmation.' : 'Save current settings?'}
       </Muted>
-      <Confirm message="Save configuration?" defaultValue onConfirm={onConfirm} />
+      <Confirm message="Save configuration?" defaultValue onConfirm={onConfirm} allowWhenCaptured />
     </Box>
   );
 }
