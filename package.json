@@ -12,6 +12,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx src/cli.tsx",
+    "init:project": "node scripts/init-project.mjs",
     "build": "vp pack",
     "typecheck": "tsc --noEmit",
     "lint": "vp lint",
