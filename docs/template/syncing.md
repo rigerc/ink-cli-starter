@@ -2,14 +2,7 @@
 
 Repositories created from this template include [the template sync workflow](../../.github/workflows/template-sync.yml), but syncing is **manual by default**. Run it when you want to check `rigerc/ink-cli-starter` for updates and open a reviewable pull request. The workflow skips the upstream template repository itself.
 
-To opt into automatic monthly checks, add this trigger alongside `workflow_dispatch` in your downstream `.github/workflows/template-sync.yml`:
-
-```yaml
-  schedule:
-    - cron: '17 3 1 * *'
-```
-
-Workflow files are downstream-owned, so this setting is not overwritten by template sync.
+To opt into automatic monthly checks, add a `schedule` trigger alongside `workflow_dispatch` in your downstream `.github/workflows/template-sync.yml`, using the cron expression `17 3 1 * *` (03:17 UTC on the first day of each month). Workflow files are downstream-owned, so this setting is not overwritten by template sync.
 
 **Setup in your generated repository:** The upstream `rigerc/ink-cli-starter` repository is public, so no source access token is needed. The workflow uses the built-in `GITHUB_TOKEN` by default to read the template and open sync pull requests.
 
