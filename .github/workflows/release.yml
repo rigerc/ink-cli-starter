@@ -67,15 +67,11 @@ jobs:
             echo "No NPM_TOKEN set; publishing with npm trusted publishing (OIDC)"
           fi
           echo "NPM_CONFIG_USERCONFIG=$RUNNER_TEMP/npmrc" >> "$GITHUB_ENV"
-      # changesets/action@v1 pairs with @changesets/cli 2.x and uses camelCase inputs plus the
-      # GITHUB_TOKEN env var. The v2 action (for Changesets v3) renames the inputs (publish-script,
-      # version-script, ...) and takes a custom token via `github-token`. Migrate deliberately.
-      - uses: changesets/action@v2
+      # Changesets v3 is paired with changesets/action v2.\n      # This release job is opt-in and cannot execute in the source template.\n      - uses: changesets/action@v2
         with:
-          version: npm run version-packages
-          publish: ${{ vars.NPM_PUBLISH == 'true' && 'npm run release' || 'npm run release:tag' }}
-          commit: 'chore(release): version packages'
-          title: 'chore(release): version packages'
-          createGithubReleases: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          version-script: npm run version-packages
+          publish-script: ${{ vars.NPM_PUBLISH == 'true' && 'npm run release' || 'npm run release:tag' }}
+          commit-message: 'chore(release): version packages'
+          pr-title: 'chore(release): version packages'
+          create-github-releases: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
