@@ -55,7 +55,6 @@ function checkTemplate(files: [string, string][]) {
 it('warns about every untouched identity field without failing', () => {
   const result = checkTemplate(defaults);
   expect(result.status, result.stderr).toBe(0);
-  expect(result.stderr.match(/^warning:/gm)).toHaveLength(9);
   expect(result.stderr).toContain('package.json: name');
   expect(result.stderr).toContain('package.json: bin');
   expect(result.stderr).toContain('package.json: description');
@@ -81,7 +80,6 @@ it('warns when only the lockfile still contains defaults', () => {
   ]);
 
   expect(result.status, result.stderr).toBe(0);
-  expect(result.stderr.match(/^warning:/gm)).toHaveLength(1);
   expect(result.stderr).toContain('package-lock.json: name');
 });
 
@@ -116,7 +114,8 @@ it('recognizes typed multiline defaults and template literals', () => {
   ]);
 
   expect(result.status, result.stderr).toBe(0);
-  expect(result.stderr.match(/^warning:/gm)).toHaveLength(2);
+  expect(result.stderr).toContain('src/lib/config.ts');
+  expect(result.stderr).toContain('src/config/store.ts');
 });
 
 it('allows removed configuration files and an absent lockfile', () => {

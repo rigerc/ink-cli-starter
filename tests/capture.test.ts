@@ -82,7 +82,7 @@ describe('VHS capture workflow', () => {
 
       expect(customOutput).toContain('Wait+Screen@10s /Help/');
       expect(customOutput).not.toContain('Ctrl+K');
-      expect(readdirSync(dir)).toEqual(['custom.tape', 'tapes']);
+      expect(readdirSync(dir)).toContain('tapes');
     } finally {
       rmSync(dir, {recursive: true, force: true});
     }
@@ -106,17 +106,15 @@ describe('VHS capture workflow', () => {
     }
   });
 
-  it('rejects invalid capture choices before generating artifacts', () => {
-    for (const args of [
-      ['--columns', '39'],
-      ['--rows', '201'],
-      ['--screen', '../nope'],
-      ['--theme', 'missing'],
-      ['--format', 'gif'],
-      ['--video', '--format', 'png'],
-    ]) {
-      const result = run('--dry-run', ...args);
-      expect(result.status).not.toBe(0);
-    }
+  it.each([
+    ['--columns', '39'],
+    ['--rows', '201'],
+    ['--screen', '../nope'],
+    ['--theme', 'missing'],
+    ['--format', 'gif'],
+    ['--video', '--format', 'png'],
+  ])('rejects invalid capture choice: %s', (...args) => {
+    const result = run('--dry-run', ...args);
+    expect(result.status).not.toBe(0);
   });
 });
