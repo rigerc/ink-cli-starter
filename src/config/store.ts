@@ -81,6 +81,16 @@ export function createConfigStore<T extends object>(
       fileExtension: extension.slice(1),
       accessPropertiesByDotNotation: false,
       clearInvalidConfig: false,
+      // Conf normalizes non-object JSON roots into store objects. Validate the
+      // original document first so files such as [] cannot be overwritten.
+      deserialize: (text) => {
+        const decoded = rawConfigSchema.safeParse(JSON.parse(text));
+
+        if (!decoded.success)
+          throw new Error('Configuration must be a JSON object containing valid JSON values');
+
+        return decoded.data;
+      },
       configFileMode: 0o600,
     });
   }

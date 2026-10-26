@@ -127,6 +127,17 @@ describe('configuration persistence', () => {
     }
   });
 
+  it('rejects primitive and array JSON documents without overwriting them', () => {
+    const path = fixture();
+
+    for (const invalid of ['null', 'true', '42', '"hello"', '[{"theme":"dark"}]']) {
+      writeFileSync(path, invalid);
+      expect(loadConfig(path).error).toBeTruthy();
+      expect(() => saveConfig({ascii: true}, path)).toThrow();
+      expect(readFileSync(path, 'utf8')).toBe(invalid);
+    }
+  });
+
   it('blocks unsupported future versions and supports migrations', () => {
     const path = fixture();
 
