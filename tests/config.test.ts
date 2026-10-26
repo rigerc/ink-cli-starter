@@ -39,6 +39,44 @@ describe('configuration persistence', () => {
     expect(configFilePath(path)).toBe(path);
   });
 
+  it('keeps the legacy XDG path for existing application configurations', () => {
+    const base = mkdtempSync(join(tmpdir(), 'ink-kit-xdg-'));
+    dirs.push(base);
+    const previous = process.env.XDG_CONFIG_HOME;
+
+    try {
+      process.env.XDG_CONFIG_HOME = base;
+      const path = join(base, 'legacy-cli', 'config.json');
+      const store = createConfigStore(appConfig, 'legacy-cli');
+      expect(store.pathFor()).toBe(path);
+      store.write({theme: 'light'});
+      expect(JSON.parse(readFileSync(path, 'utf8'))).toMatchObject({version: 1, theme: 'light'});
+    } finally {
+      if (previous === undefined) delete process.env.XDG_CONFIG_HOME;
+      else process.env.XDG_CONFIG_HOME = previous;
+    }
+  });
+
+  it('supports custom filenames and top-level keys containing dots', () => {
+    const path = fixture().replace('config.json', 'user.settings.json');
+    saveConfig({theme: 'dark'}, path);
+    writeFileSync(path, JSON.stringify({theme: 'dark', 'plugin.setting': {enabled: true}}));
+    saveConfig({ascii: true}, path);
+    expect(configFilePath(path)).toBe(path);
+    expect(JSON.parse(readFileSync(path, 'utf8'))).toMatchObject({
+      version: 1,
+      theme: 'dark',
+      ascii: true,
+      'plugin.setting': {enabled: true},
+    });
+  });
+
+  it('supports extensionless config paths', () => {
+    const path = fixture().replace('config.json', 'settings');
+    saveConfig({ascii: true}, path);
+    expect(JSON.parse(readFileSync(path, 'utf8'))).toMatchObject({version: 1, ascii: true});
+  });
+
   it('preserves unknown application keys and merges nested patches', () => {
     const path = fixture();
     writeFileSync(path, JSON.stringify({theme: 'dark', plugin: {one: true, two: 7}}));

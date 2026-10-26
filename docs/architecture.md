@@ -9,7 +9,7 @@ This repository is the actual CLI application copied by GitHub's **Use this temp
 - `src/app.tsx` composes the shared terminal shell, application providers, navigation, and global shortcuts.
 - `src/screens/index.ts` registers the default Home, Settings and Help screens; this registry also determines valid `--screen` values.
 - `src/components/`, `src/hooks/`, and `src/theme/` contain reusable local UI primitives.
-- `src/config/` provides validated, versioned JSON configuration.
+- `src/config/` provides `conf`-backed, Zod-validated, versioned JSON configuration.
 
 ## New features
 
@@ -21,7 +21,7 @@ The default app uses `AppShell`, `ScreenLayout`, `ScreenState`, semantic colors,
 
 ## Configuration and themes
 
-The config store validates settings with Zod and persists them under the application-specific XDG path. Precedence is defaults < saved JSON < environment < CLI flags. Save/discard is explicit in Settings.
+The config store validates settings with Zod and persists them atomically with [`conf`](https://www.npmjs.com/package/conf). The legacy application-specific XDG path (`~/.config/ink-kit/config.json` by default, or `$XDG_CONFIG_HOME/ink-kit/config.json`) and `--config <path>` overrides remain unchanged so existing settings work without data migration. Legacy numeric configuration versions and custom migrations remain handled by the application, not `conf`’s semver migrations. Invalid files are never automatically cleared. Precedence is defaults < saved JSON < environment < CLI flags. Save/discard is explicit in Settings.
 
 Palettes are in `src/theme/palettes.json`, and the project fallback is in `src/theme/defaults.json`. Preserve `NO_COLOR`, `--ascii`, narrow widths, and noninteractive `--plain` output.
 

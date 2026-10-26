@@ -52,7 +52,7 @@ Add screens under `src/screens/`, register them in `src/screens/index.ts`, and p
 
 ## Themes and settings
 
-Themes (`dark`, `light`, `contrast`, `mono`) use semantic tokens and ASCII fallbacks. Configuration uses Zod-validated JSON stored under the application-specific XDG config path. Precedence: defaults < saved file < environment < CLI flags; `NO_COLOR` overrides theme selection.
+Themes (`dark`, `light`, `contrast`, `mono`) use semantic tokens and ASCII fallbacks. Configuration uses [`conf`](https://www.npmjs.com/package/conf) for atomic JSON persistence with Zod validation, stored at the existing application-specific XDG config path (`~/.config/ink-kit/config.json` unless `XDG_CONFIG_HOME` is set). Existing files remain compatible; `--config <path>` still selects a specific JSON file. Invalid files are preserved rather than reset. Precedence: defaults < saved file < environment < CLI flags; `NO_COLOR` overrides theme selection.
 
 ```bash
 npm run theme:list
