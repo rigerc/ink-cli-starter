@@ -36,7 +36,7 @@ jobs:
       # Provenance is only supported for public repositories.
       NPM_CONFIG_PROVENANCE: ${{ github.event.repository.private == false }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: actions/setup-node@v4
