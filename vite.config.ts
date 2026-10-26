@@ -59,6 +59,7 @@ export default defineConfig({
       // AgentsMesh owns these projections; format .agentsmesh/rules instead.
       'AGENTS.md',
       'CLAUDE.md',
+      'opencode.json',
       'build/**',
       'dist/**',
       'screenshots/**',

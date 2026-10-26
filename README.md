@@ -72,9 +72,11 @@ npm run theme:default -- auto
 
 ## Development checks
 
-Agent instructions are managed with [AgentsMesh](https://github.com/sampleXbro/agentsmesh) 0.42.0 for Claude Code, Codex CLI, Pi, and OpenCode. Only rules and hooks are enabled. Edit `.agentsmesh/rules/_root.md` or `.agentsmesh/hooks.yaml`, then run `agentsmesh lint`, `agentsmesh diff`, `agentsmesh generate`, and `agentsmesh check`. Commit the canonical files, generated instructions, and `.agentsmesh/.lock` together. Personal overrides belong in the gitignored `agentsmesh.local.yaml`.
+Agent instructions are managed with [AgentsMesh](https://github.com/sampleXbro/agentsmesh) 0.42.0 for Claude Code, Codex CLI, Pi, and OpenCode. Only rules and hooks are enabled. Edit the canonical files in [`.agentsmesh/rules/`](.agentsmesh/rules/) or `.agentsmesh/hooks.yaml`, then run `agentsmesh lint`, `agentsmesh diff`, `agentsmesh generate`, and `agentsmesh check`. Commit the canonical files, generated instructions, and `.agentsmesh/.lock` together. Personal overrides belong in the gitignored `agentsmesh.local.yaml`.
 
-Vite+ formats the canonical sources. Generated `AGENTS.md` and `CLAUDE.md` are excluded from formatting so regeneration preserves the AgentsMesh lock checksums.
+The always-on `_root.md` covers project-wide guidance; focused rules cover CLI architecture, terminal UI, configuration, and template sync ownership. Claude receives path-scoped rule files. Codex emits nested `AGENTS.md` instructions, Pi embeds rules in the shared root `AGENTS.md`, and OpenCode loads `.opencode/rules/*.md` through `opencode.json`. These projections do not enforce identical file-glob activation; each focused rule states when it applies.
+
+Vite+ formats the canonical sources. Generated `AGENTS.md`, `CLAUDE.md`, and `opencode.json` are excluded from formatting so regeneration preserves the AgentsMesh lock checksums.
 
 A session-start hook runs `agentsmesh generate` in Claude Code and Codex CLI; the AgentsMesh CLI must be available on `PATH`. AgentsMesh 0.42.0 does not generate OpenCode plugins or Pi extensions, so their startup hooks require manual native configuration. `.agentsmesh/hooks.yaml` also contains an optional lint example. Check `agentsmesh matrix` and lint warnings before enabling other events or prompt hooks. The canonical configuration and generated agent directories are excluded from template sync to preserve downstream instructions.
 
