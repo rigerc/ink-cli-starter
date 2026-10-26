@@ -121,7 +121,7 @@ describe('configuration persistence', () => {
 
     for (const invalid of ['{bad json', '{"theme":"not-a-theme"}', '[]']) {
       writeFileSync(path, invalid);
-      expect(loadConfig(path).error).toBeTruthy();
+      expect(loadConfig(path).error, `expected config to reject: ${invalid}`).toBeTruthy();
       expect(() => saveConfig({theme: 'dark'}, path)).toThrow();
       expect(readFileSync(path, 'utf8')).toBe(invalid);
     }
