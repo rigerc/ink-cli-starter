@@ -40,7 +40,7 @@ const configValueSchema: z.ZodType<ConfigValue> = z.lazy(() =>
   ]),
 );
 
-const rawConfigSchema: z.ZodType<RawConfig> = z.record(z.string(), configValueSchema);
+export const rawConfigSchema: z.ZodType<RawConfig> = z.record(z.string(), configValueSchema);
 
 const isObjectConfigValue = (value: ConfigValue | undefined): value is RawConfig =>
   value !== undefined && value !== null && value instanceof Object && !Array.isArray(value);
