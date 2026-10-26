@@ -1,3 +1,33 @@
-# Downstream projects customize their release setup; keep template-sync from overwriting it.
+# Application identity and package setup belong to the downstream project.
+# Review upstream dependency and npm script changes manually.
+README.md
+package.json
+package-lock.json
+
+# Application composition, navigation, commands and screens are customization points.
+src/app.tsx
+src/cli.tsx
+src/keys.ts
+src/commands/index.ts
+src/screens/
+
+# Keep application settings and branding; shared config/theme utilities still sync.
+src/config/schema.ts
+src/lib/config.ts
+src/theme/defaults.json
+src/theme/palettes.json
+
+# These integration tests encode the downstream app's screens, settings and shortcuts.
+# Keep reusable component, hook and tooling tests eligible for updates.
+tests/capture.test.ts
+tests/cli.test.ts
+tests/config-ui.test.tsx
+tests/consistent-ui.test.tsx
+tests/screens.test.tsx
+tests/theme.test.ts
+
+# Downstream projects customize their release setup.
 .github/workflows/release.yml
 .changeset/config.json
+
+# Existing copies must adopt ignore changes manually: this file itself never syncs.

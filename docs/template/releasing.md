@@ -65,3 +65,7 @@ For token authentication, add an `NPM_TOKEN` secret containing a granular access
 - Trusted publishing requires npm >= 11.5.1 and Node >= 22.14.0. The release job uses Node 24 and updates npm; regular CI stays on Node 22.
 - `.templatesyncignore` excludes `release.yml` and `.changeset/config.json` from template-sync updates so downstream customization is preserved. See the [template-sync ignore documentation](https://github.com/AndreasAugustin/actions-template-sync#templatesyncignore).
 - To get PR links in the changelog, switch `changelog` in `.changeset/config.json` to `["@changesets/changelog-github", {"repo": "OWNER/REPO"}]` and install that package.
+
+## Packaging
+
+`npm pack` creates an installable CLI tarball. Complete the [customization and licensing checklist](customization.md) before publishing to npm.

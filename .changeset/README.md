@@ -12,4 +12,4 @@ release workflow opens a "version packages" PR that applies all pending
 changesets, bumps `package.json` and updates `CHANGELOG.md`. Merging that PR
 tags the release and, when enabled, publishes to npm.
 
-See [docs/releasing.md](../docs/releasing.md) for setup and the opt-in switches.
+See [docs/template/releasing.md](../docs/template/releasing.md) for setup and the opt-in switches.

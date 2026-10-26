@@ -7,7 +7,7 @@ name: Release
 #   NPM_PUBLISH=true      also publish to npm (otherwise: version PR, git tags, GitHub releases)
 #
 # npm auth: trusted publishing (OIDC) by default. Add an NPM_TOKEN secret to use a token instead.
-# See docs/releasing.md.
+# See docs/template/releasing.md.
 
 on:
   push:

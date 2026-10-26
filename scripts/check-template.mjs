@@ -65,6 +65,6 @@ for (const warning of warnings) console.warn(`warning: ${warning}`);
 
 if (warnings.length) {
   console.warn(
-    'Customize these values before publishing your application. See README.md, "Customize for your application". Template warnings do not fail this check.',
+    'Customize these values before publishing your application. See docs/template/customization.md. Template warnings do not fail this check.',
   );
 }
