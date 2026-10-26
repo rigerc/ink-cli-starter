@@ -30,7 +30,7 @@
     "changeset": "changeset",
     "version-packages": "changeset version && npm install --package-lock-only",
     "release": "npm run build && changeset publish",
-    "release:tag": "changeset tag"
+    "release:tag": "changeset git-tag"
   },
   "dependencies": {
     "@commander-js/extra-typings": "^15.0.0",
