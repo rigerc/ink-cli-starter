@@ -70,7 +70,7 @@ jobs:
       # changesets/action@v1 pairs with @changesets/cli 2.x and uses camelCase inputs plus the
       # GITHUB_TOKEN env var. The v2 action (for Changesets v3) renames the inputs (publish-script,
       # version-script, ...) and takes a custom token via `github-token`. Migrate deliberately.
-      - uses: changesets/action@v1
+      - uses: changesets/action@v2
         with:
           version: npm run version-packages
           publish: ${{ vars.NPM_PUBLISH == 'true' && 'npm run release' || 'npm run release:tag' }}
