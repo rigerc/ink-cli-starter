@@ -56,6 +56,9 @@ export default defineConfig({
     bracketSpacing: false,
     // Generated output, scaffolded apps and tool state are not sources.
     ignorePatterns: [
+      // AgentsMesh owns these projections; format .agentsmesh/rules instead.
+      'AGENTS.md',
+      'CLAUDE.md',
       'build/**',
       'dist/**',
       'screenshots/**',
