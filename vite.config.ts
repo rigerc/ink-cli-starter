@@ -1,5 +1,25 @@
 import {defineConfig} from 'vite-plus';
 
+// Additional style and architecture restrictions are opt-in for downstream applications.
+const strictLint = process.env.INK_STRICT_LINT === '1';
+const opinionatedLintRules = {
+  'anti-slop/no-array-filter-map': 'error',
+  'anti-slop/no-conditional-empty-object-spread': 'error',
+  'anti-slop/no-known-value-widening': 'error',
+  'anti-slop/no-module-mocking': 'error',
+  'anti-slop/no-object-parameters': 'error',
+  'anti-slop/no-reflect-apply': 'error',
+  'anti-slop/no-reflect-get': 'error',
+  'anti-slop/no-runtime-typeof': 'error',
+  'anti-slop/no-shape-in-symbol-names': 'error',
+  'anti-slop/no-unknown-parameters': 'error',
+  'anti-slop/no-unknown-returns': 'error',
+  'anti-slop/no-unknown-type-aliases': 'error',
+  'anti-slop/no-unsafe-dictionary-type': 'error',
+  'anti-slop/require-readable-spacing': 'error',
+  'anti-slop/require-safety-comment-for-type-assertion': 'error',
+} as const;
+
 export default defineConfig({
   staged: {
     '*': 'vp check --fix',
@@ -61,26 +81,14 @@ export default defineConfig({
       {name: 'anti-slop', specifier: './tools/oxlint/anti-slop/index.ts'},
     ],
     rules: {
+      // High-confidence correctness and costly patterns stay enabled by default.
       'vite-plus/prefer-vite-plus-imports': 'error',
       'oxc/no-accumulating-spread': 'error',
-      'anti-slop/no-array-filter-map': 'error',
       'anti-slop/no-reduce-accumulator-copy': 'error',
       'anti-slop/no-chained-type-assertions': 'error',
-      'anti-slop/no-conditional-empty-object-spread': 'error',
-      'anti-slop/no-known-value-widening': 'error',
-      'anti-slop/no-module-mocking': 'error',
-      'anti-slop/no-object-parameters': 'error',
-      'anti-slop/no-reflect-apply': 'error',
-      'anti-slop/no-reflect-get': 'error',
-      'anti-slop/no-runtime-typeof': 'error',
-      'anti-slop/no-shape-in-symbol-names': 'error',
-      'anti-slop/no-unknown-parameters': 'error',
-      'anti-slop/no-unknown-returns': 'error',
-      'anti-slop/no-unknown-type-aliases': 'error',
-      'anti-slop/no-unsafe-dictionary-type': 'error',
       'anti-slop/no-widen-then-assert': 'error',
-      'anti-slop/require-readable-spacing': 'error',
-      'anti-slop/require-safety-comment-for-type-assertion': 'error',
+      // Set INK_STRICT_LINT=1 to enable additional opinionated conventions.
+      ...(strictLint ? opinionatedLintRules : {}),
     },
     options: {typeAware: true, typeCheck: true},
     ignorePatterns: [
