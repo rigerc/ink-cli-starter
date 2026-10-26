@@ -21,7 +21,17 @@ The default app uses `AppShell`, `ScreenLayout`, `ScreenState`, semantic colors,
 
 ## Configuration and themes
 
-The config store validates settings with Zod and persists them atomically with [`conf`](https://www.npmjs.com/package/conf). The legacy application-specific XDG path (`~/.config/ink-kit/config.json` by default, or `$XDG_CONFIG_HOME/ink-kit/config.json`) and `--config <path>` overrides remain unchanged so existing settings work without data migration. Legacy numeric configuration versions and custom migrations remain handled by the application, not `conf`’s semver migrations. Invalid files are never automatically cleared. Precedence is defaults < saved JSON < environment < CLI flags. Save/discard is explicit in Settings.
+The config store validates settings with Zod and persists them atomically with
+[`conf`](https://www.npmjs.com/package/conf). For the unmodified `ink-kit`
+identity, the application-specific XDG path (`~/.config/ink-kit/config.json`
+by default, or `$XDG_CONFIG_HOME/ink-kit/config.json`) and `--config <path>`
+overrides remain unchanged, so existing settings at that path work without
+data migration. Running `init:project` changes the default config directory
+to the new executable name; it does not move a pre-existing config file.
+Legacy numeric configuration versions and custom migrations remain handled by
+the application, not `conf`’s semver migrations. Invalid files are never
+automatically cleared. Precedence is defaults < saved JSON < environment < CLI
+flags. Save/discard is explicit in Settings.
 
 Palettes are in `src/theme/palettes.json`, and the project fallback is in `src/theme/defaults.json`. Preserve `NO_COLOR`, `--ascii`, narrow widths, and noninteractive `--plain` output.
 
@@ -29,4 +39,4 @@ Palettes are in `src/theme/palettes.json`, and the project fallback is in `src/t
 
 Run `npm run typecheck`, `npm test`, and `npm run build`. CI also smoke-tests help, plain output, the doctor command, and the packaged executable.
 
-See [the UI framework guide](ui-framework.md) and [adding a feature](adding-a-feature.md).
+See [the configuration guide](configuration.md) for file locations, precedence, validation and migrations; [the recording guide](recording.md) for screen capture; [the UI framework guide](ui-framework.md) for layout and focus; and [adding a feature](adding-a-feature.md) for implementation examples.

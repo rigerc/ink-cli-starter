@@ -2,7 +2,7 @@
 
 This guide explains the local **Ink 8 / React 19** component framework. The UI framework lives in `src/` and is part of this template, not a separately published dependency. Downstream apps may remove unused primitives, providers, or demos. If syncing upstream later, exclude intentionally deleted shared paths in `.templatesyncignore`.
 
-See [architecture](architecture.md) for entry points and [adding a feature](adding-a-feature.md) for a screen and headless command walkthrough. Reusable components remain available under `src/components/`.
+See [architecture](architecture.md) for entry points, [adding a feature](adding-a-feature.md) for a screen and headless command walkthrough, [configuration](configuration.md) for saved settings, and [recording](recording.md) for terminal captures. Reusable components remain available under `src/components/`.
 
 ## Start here
 
@@ -74,7 +74,25 @@ Import `JobsScreen` in `src/screens/index.ts`, then add to the `screens` array:
 ]},
 ```
 
-A visible screen gets a tab, a numeric shortcut and a `--screen jobs` flag. `showInNav: false` makes a screen addressable through `--screen` without putting it in the tab bar. The `hints` property describes contextual actions in the footer but **does not register key handlers**; use `useKeymap` for those. Global keys are defined in `src/keys.ts`, not copied into each screen.
+A visible screen gets a tab and a `--screen jobs` flag; only the first nine visible screens get numeric shortcuts (`1`–`9`). `showInNav: false` makes a screen addressable through `--screen` without putting it in the tab bar. The `hints` property describes contextual actions in the footer but **does not register key handlers**; use `useKeymap` for those. Global keys are defined in `src/keys.ts`, not copied into each screen.
+
+## Choose a screen layout and navigation model
+
+The screen registry is the source of truth for launch IDs, tabs and capture IDs. These options can be combined independently:
+
+| `ScreenDef` option | Interactive behavior | `--plain` behavior |
+| --- | --- | --- |
+| Default (`layout` omitted) | Shared shell (header, tabs, footer, toasts) | App header and one static screen frame; no interactive tabs/footer |
+| `layout: 'bare'` | Screen renders without app-provided chrome or toast host | Only the screen's own content |
+| `globalKeys: false` | Disables built-in Tab, 1–9, Ctrl+K, `t`, `?`, `q` shortcuts on that screen | No impact: there are no keyboard events |
+| `showInNav: false` | Omitted from tabs, numbered shortcuts and command palette | Still addressable with `--screen <id>` |
+| `hints` | Displays context labels in the status footer (if present) | No footer; hints are not handlers |
+
+The visible screen order in `src/screens/index.ts` determines Tab order and the first nine `1`–`9` shortcuts. Additional visible screens remain navigable with Tab and the command menu. Hidden screens are valid `--screen` targets and are included in `--all` screenshots. The default global shortcuts come from `src/keys.ts`; do not register a second implementation of the same key without an explicit reason.
+
+For navigation within a custom screen, `useRouter()` (inside `AppProviders`) exposes `current`, `push(id)`, `replace(id)`, `pop()` and `canGoBack`. Pass screen IDs from the registry. `push` keeps history, `replace` changes the current entry, and `pop` returns to the previous entry if present. A bare screen with global keys disabled should provide its own exit and navigation controls (or document Ctrl+C).
+
+**Prefer the shared shell** for several related views with conventional navigation. Use a **bare screen** for a self-contained flow, a focused prompt or a full-width visualization. In either case, native Ink `Box` and `Text` remain available, and you do not have to keep unused sample components in a downstream project.
 
 ## Which components to use
 
@@ -156,6 +174,23 @@ export function PackagePicker() {
 
 For another text editor, call `useInputCapture(isEditing)` while it owns input and release capture when editing stops. Nested controls owned by a capturing editor may use `allowWhenCaptured` with `Select` or `MultiSelect`. Prefer keeping **one text-input control active** at a time. When a child field owns Enter/Escape in a `Stepper`, set `keyboardNav={false}` and navigate using `useStepper()` or the step render callback.
 
+### Handling conflicting input controls
+
+`useKeymap()` registers shortcuts with the provider; only the highest-priority active match runs (`control` > `screen` > `global`, most recently registered within the same scope). Its `isActive` flag is important when a control is mounted but not focused. By contrast, Ink's native `useInput()` has **its own listeners** and is not arbitrated by `KeymapProvider`. Avoid leaving native listeners active beside a competing shortcut handler.
+
+For text input:
+
+1. Call `useInputCapture(isEditing)` for any custom free-form editor that should pause app shortcuts. Built-in `SearchSelect` captures input while active.
+2. Set `isActive={false}` on inactive keyboard controls (`Select`, `MultiSelect`, `SearchSelect`, and other controls that support it), or unmount them. Do not render two competing text editors as active at once.
+3. `useKeymap` handlers are suspended while input is captured unless a control explicitly sets `allowWhenCaptured: true`. The bundled config editor uses this for child selection controls.
+4. Handle Escape and completion inside the active editor, release capture on close and restore normal screen shortcuts. A field-level Enter/Escape handler inside a `Stepper` should generally use `keyboardNav={false}`.
+
+The `Select` component handles arrows, `j`/`k` and Enter; it does **not** include an Escape callback. Handle cancellation in the owning screen. `SearchSelect` handles text, arrows, Enter, Escape (via `onCancel`) and Ctrl+U to clear the query. The footer `hints` are informative only; if a hint says `r refresh`, the screen must register `r` separately.
+
+### Focus test cases
+
+Use `ink-testing-library` (see `tests/keymap-routing.test.tsx` and `tests/collections.test.tsx`) to assert that opening a search pauses Tab, `q`, `t` and number navigation; closing it restores them. Verify inactive selectors do not move on arrow presses, and a single Enter event selects once. Test Escape both from control mode and from the screen itself. Raw `useInput` requires more careful isolation than `useKeymap`.
+
 ## Async states and notifications
 
 `useAsync(fn)` returns `run` and a state with `status` (`idle`, `loading`, `success`, `error`); it ignores stale results after unmount or superseding runs. Start operations from an event or effect, **not during render**. `ScreenState` renders loading, empty, error and success views, but the caller determines whether a successful result is empty.
@@ -195,6 +230,47 @@ Use semantic theme tokens instead of hardcoded colors: `primary`, `accent`, `suc
 `useTerminalSize()` exposes the current column count. Prefer stacking panels at narrow widths and using Ink flex layouts over rigid dimensions. Wrap or truncate unbounded text. Test around 40, 80 and 120 columns.
 
 Semantic palettes live in `src/theme/palettes.json` and the project fallback in `src/theme/defaults.json`. The `theme:list`, `theme:token` and `theme:default` scripts inspect and edit project source. A runtime theme can be overridden by CLI flag, environment or saved config.
+
+## Responsive terminal layout: worked example
+
+Ink lays out terminal *cells*, not browser pixels. A panel that looks correct at 120 columns can overflow at 40, especially with long IDs, paths, emoji or wide Unicode characters. `useTerminalSize()` reports `columns`, `rows` and `narrow` (`columns < 80`). Let content choose a vertical arrangement on narrow terminals:
+
+```tsx
+import {Box, Text} from 'ink';
+import {Panel} from '../components';
+import {useTerminalSize} from '../hooks';
+
+export function SummaryColumns() {
+  const {narrow} = useTerminalSize();
+
+  return (
+    <Box flexDirection={narrow ? 'column' : 'row'} gap={1}>
+      <Panel flexGrow={1} minWidth={0} title="Jobs">
+        <Text wrap="truncate-end">12 jobs</Text>
+      </Panel>
+      <Panel flexGrow={1} minWidth={0} title="Status">
+        <Text wrap="truncate-end">Ready</Text>
+      </Panel>
+    </Box>
+  );
+}
+```
+
+Keep panel widths flexible, wrap or truncate user-supplied strings and prefer symbols from `useTheme().symbols` over hardcoded Unicode. Use color and an icon or text label together for status. Check wide and narrow layouts under `--ascii` and `NO_COLOR=1`. The starter's `StatusBar` already reduces the number of visible hints as width shrinks (and attempts to retain the quit hint); custom footers need similar handling.
+
+## Deterministic rendering and visual review
+
+The normal `--plain` path uses `PlainView`: it renders a single frame with the appropriate screen and an optional header, but without live keyboard navigation. Treat this as a real output mode for CLI pipelines, not a screenshot of an interactive app. Avoid fetching data only in effects when essential information must appear in plain output. For delayed UI, render an intentional loading state or choose a headless subcommand for machine-readable output.
+
+For static visual review, `npm run screenshot -- --screen home --columns 40 --theme mono --ascii` captures the interactive app's *initial* frame; unlike `--plain`, it includes the interactive app shell. For asynchronous or input-dependent views, use `--live --ready 'stable text'`. Both methods are documented in [recording](recording.md). Run width-based `renderToString` regression tests for custom components (see `tests/consistent-ui.test.tsx`) and interaction tests with `ink-testing-library`.
+
+A practical new-screen checklist:
+
+- Launch `npm run dev -- --screen <id> --plain` and confirm its static content is meaningful.
+- Run the interactive view in a real terminal; test Tab, the command menu, a screen-specific key and quit/back behavior.
+- Verify loading, empty, error and success states; avoid displaying stale data after a later request supersedes an earlier one.
+- Capture 40, 80 and 120 columns where relevant; test mono, ASCII and a light theme.
+- Add a repeatable screenshot example or recording workflow when the new feature has important visual behavior.
 
 ## Testing and quality
 
