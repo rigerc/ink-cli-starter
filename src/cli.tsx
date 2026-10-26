@@ -31,7 +31,10 @@ const program = new Command()
     `\nEnvironment:
   NO_COLOR=1       Force the mono theme
   ${APP_THEME_ENV}=...  Default theme
-  CLI_ASCII=1      Force ASCII symbols\n`,
+  CLI_ASCII=1      Force ASCII symbols
+  NODE_CONFIG_DIR=...  Directory containing deployment config files
+  NODE_CONFIG_ENV=...  Select deployment (overrides NODE_ENV)
+  NODE_CONFIG=...      JSON configuration overrides\n`,
   );
 
 async function runApp(flags: ReturnType<typeof program.opts>) {

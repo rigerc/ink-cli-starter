@@ -1,7 +1,7 @@
-import {mkdtempSync, readFileSync, rmSync, writeFileSync} from 'node:fs';
+import {mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
-import {afterEach, describe, expect, it} from 'vite-plus/test';
+import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
 import {z} from 'zod';
 import {
   appConfig,
@@ -26,6 +26,7 @@ function fixture() {
 }
 
 afterEach(() => {
+  vi.unstubAllEnvs();
   for (const directory of dirs.splice(0)) rmSync(directory, {recursive: true, force: true});
 });
 
@@ -161,5 +162,64 @@ describe('configuration fields and precedence', () => {
     });
     expect(resolveConfig(fields, file, {env: {}}).sources['nested.level']).toBe('file');
     expect(resolveConfig(fields, {}, {env: {}}).values).toEqual({nested: {level: 1}});
+  });
+});
+
+describe('node-config deployment configuration', () => {
+  it('layers deployment files, saved XDG JSON, and NODE_CONFIG overrides', () => {
+    const directory = mkdtempSync(join(tmpdir(), 'ink-kit-node-config-'));
+    dirs.push(directory);
+    const deployment = join(directory, 'deployment');
+    mkdirSync(deployment);
+    writeFileSync(
+      join(deployment, 'default.json'),
+      JSON.stringify({theme: 'dark', ascii: false, plugin: {first: true}}),
+    );
+    writeFileSync(
+      join(deployment, 'production.json'),
+      JSON.stringify({theme: 'light', plugin: {second: true}}),
+    );
+    vi.stubEnv('NODE_CONFIG_DIR', deployment);
+    vi.stubEnv('NODE_CONFIG_ENV', 'production');
+    vi.stubEnv('NODE_CONFIG', '');
+    vi.stubEnv('XDG_CONFIG_HOME', directory);
+
+    expect(loadConfig().config).toMatchObject({
+      theme: 'light',
+      ascii: false,
+      plugin: {first: true, second: true},
+    });
+    saveConfig({theme: 'contrast'});
+    expect(JSON.parse(readFileSync(configFilePath(), 'utf8'))).toMatchObject({
+      version: 1,
+      theme: 'contrast',
+    });
+    expect(loadConfig().config).toMatchObject({
+      theme: 'contrast',
+      ascii: false,
+      plugin: {first: true, second: true},
+    });
+
+    vi.stubEnv('NODE_CONFIG', JSON.stringify({theme: 'mono', plugin: {third: true}}));
+    expect(loadConfig().config).toMatchObject({
+      theme: 'mono',
+      plugin: {first: true, second: true, third: true},
+    });
+  });
+
+  it('keeps --config isolated from deployment files and NODE_CONFIG', () => {
+    const directory = mkdtempSync(join(tmpdir(), 'ink-kit-node-config-'));
+    dirs.push(directory);
+    const deployment = join(directory, 'deployment');
+    mkdirSync(deployment);
+    writeFileSync(join(deployment, 'default.json'), '{broken');
+    vi.stubEnv('NODE_CONFIG_DIR', deployment);
+    vi.stubEnv('NODE_CONFIG', '{"theme":"dark"}');
+
+    const path = fixture();
+    writeFileSync(path, JSON.stringify({theme: 'light'}));
+    expect(loadConfig(path).config).toEqual({theme: 'light'});
+    expect(loadConfig(path).error).toBeUndefined();
+    expect(loadConfig().error).toBeTruthy();
   });
 });

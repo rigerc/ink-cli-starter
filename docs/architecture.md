@@ -9,7 +9,7 @@ This repository is the actual CLI application copied by GitHub's **Use this temp
 - `src/app.tsx` composes the shared terminal shell, application providers, navigation, and global shortcuts.
 - `src/screens/index.ts` registers the default Home, Settings and Help screens; this registry also determines valid `--screen` values.
 - `src/components/`, `src/hooks/`, and `src/theme/` contain reusable local UI primitives.
-- `src/config/` provides validated, versioned JSON configuration.
+- `src/config/` provides Zod-validated, versioned settings and reads layered deployment files through node-config.
 
 ## New features
 
@@ -21,7 +21,7 @@ The default app uses `AppShell`, `ScreenLayout`, `ScreenState`, semantic colors,
 
 ## Configuration and themes
 
-The config store validates settings with Zod and persists them under the application-specific XDG path. Precedence is defaults < saved JSON < environment < CLI flags. Save/discard is explicit in Settings.
+The config loader reads node-config's `config/default.json`, deployment, host and local layers (selectable via `NODE_CONFIG_ENV`/`NODE_CONFIG_DIR`). The config store still validates and atomically persists **user overrides** to the application-specific XDG JSON path, leaving deployment files untouched. Precedence is field defaults < deployment files < saved JSON < `NODE_CONFIG` JSON < application environment < CLI flags. An explicit `--config <path>` reads and writes just that JSON file, bypassing deployment configuration and `NODE_CONFIG`. Save/discard is explicit in Settings.
 
 Palettes are in `src/theme/palettes.json`, and the project fallback is in `src/theme/defaults.json`. Preserve `NO_COLOR`, `--ascii`, narrow widths, and noninteractive `--plain` output.
 
