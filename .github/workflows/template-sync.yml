@@ -23,9 +23,21 @@ jobs:
           token: ${{ secrets.TEMPLATE_SYNC_TARGET_TOKEN || github.token }}
           persist-credentials: false
 
+      - name: Preserve downstream exclusions and guard
+        run: node scripts/template-sync-guard.mjs snapshot "$RUNNER_TEMP/template-sync-state.json"
+
       - name: Sync upstream template and open pull request
         uses: AndreasAugustin/actions-template-sync@v2
         with:
           source_repo_path: rigerc/ink-cli-starter
           target_gh_token: ${{ secrets.TEMPLATE_SYNC_TARGET_TOKEN || github.token }}
           pr_title: 'chore: sync changes from ink-cli-starter'
+          git_remote_pull_params: --allow-unrelated-histories --squash --strategy=recursive
+          is_allow_hooks: true
+          hooks: |
+            precommit:
+              commands:
+                - node "$RUNNER_TEMP/template-sync-guard.mjs" prepare "$RUNNER_TEMP/template-sync-state.json"
+            prepush:
+              commands:
+                - node "$RUNNER_TEMP/template-sync-guard.mjs" verify "$RUNNER_TEMP/template-sync-state.json"

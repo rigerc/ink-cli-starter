@@ -1,15 +1,36 @@
-# Application identity and package setup belong to the downstream project.
-# Review upstream dependency and npm script changes manually.
-README.md
+# Downstream ownership policy: see AGENTS.md and docs/template/syncing.md.
+# These are Git pathspecs, not .gitignore rules. Keep entries for deleted files.
+# Add any customized shared file before syncing; static exclusions cannot detect edits.
+
+# Package identity, dependencies and scripts require manual review.
 package.json
 package-lock.json
+npm-shrinkwrap.json
+pnpm-lock.yaml
+yarn.lock
+bun.lock
+bun.lockb
+deno.lock
+
+# Project documentation, licensing and release history.
+README.md
+LICENSE*
+COPYING*
+CHANGELOG*
+
+# Agent instructions and the downstream sync policy.
+AGENTS.md
+CLAUDE.md
+.github/copilot-instructions.md
+.templatesyncignore
 
 # Application composition, navigation, commands and screens are customization points.
 src/app.tsx
 src/cli.tsx
 src/keys.ts
-src/commands/index.ts
+src/commands/
 src/screens/
+src/features/
 
 # Keep application settings and branding; shared config/theme utilities still sync.
 src/config/schema.ts
@@ -21,13 +42,16 @@ src/theme/palettes.json
 # Keep reusable component, hook and tooling tests eligible for updates.
 tests/capture.test.ts
 tests/cli.test.ts
+tests/commands.test.ts
 tests/config-ui.test.tsx
 tests/consistent-ui.test.tsx
 tests/screens.test.tsx
 tests/theme.test.ts
+tests/features/
+# Add downstream feature tests stored outside tests/features/ explicitly.
 
-# Downstream projects customize their release setup.
-.github/workflows/release.yml
-.changeset/config.json
+# Repository automation, pending changesets and release setup require manual review.
+.github/workflows/
+.changeset/
 
 # Existing copies must adopt ignore changes manually: this file itself never syncs.
