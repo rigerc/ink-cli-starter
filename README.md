@@ -67,4 +67,4 @@ The template vendors [anti-slop](https://github.com/dmmulroy/anti-slop) under [`
 
 Run `npm run lint && npm run check && npm run typecheck && npm test && npm run build` to verify code before opening a PR. Core lint and formatting checks are blocking CI steps; optional strict lint rules are not required by CI. CI also verifies tests, builds, plain output, headless diagnostics, and the packaged binary.
 
-Screenshots and recordings are optional and require [VHS](https://github.com/charmbracelet/vhs), ttyd, FFmpeg and Chromium. Use `npm run screenshot -- --dry-run` to inspect generated capture tapes without external tooling.
+Screenshots and recordings are optional and require [VHS](https://github.com/charmbracelet/vhs), ttyd, FFmpeg and Chromium. `npm run screenshot` captures one default PNG; add `--all` to capture every screen or `--live` for asynchronously rendered content. `npm run record` creates an MP4 demo, and `--dry-run` generates tapes without VHS. The [capture workflow](.github/workflows/screenshots.yml) uploads artifacts by default; video and Git commits are opt-in. See the [recording guide](docs/recording.md).
