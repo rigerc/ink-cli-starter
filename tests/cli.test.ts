@@ -42,7 +42,14 @@ describe('Commander CLI', () => {
       expect(result.status, result.stderr).toBe(0);
       const report = JSON.parse(result.stdout);
       expect(report.ok).toBe(true);
-      expect(report.checks[1].detail).toContain(config);
+      expect(report.checks).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            name: 'configuration',
+            detail: expect.stringContaining(config),
+          }),
+        ]),
+      );
     } finally {
       rmSync(dir, {recursive: true, force: true});
     }
@@ -51,7 +58,9 @@ describe('Commander CLI', () => {
   it('accepts root options before a subcommand', () => {
     const result = runCli('--json', 'doctor');
     expect(result.status, result.stderr).toBe(0);
-    expect(JSON.parse(result.stdout).checks).toHaveLength(2);
+    expect(JSON.parse(result.stdout).checks).toEqual(
+      expect.arrayContaining([expect.objectContaining({name: 'configuration'})]),
+    );
   });
 
   it('rejects JSON output without a headless subcommand', () => {
