@@ -26,9 +26,12 @@ export const shellQuote = (value: string): string => "'" + value.replaceAll("'",
 export function readyPattern(text: string): string {
   if (!text.trim() || /[\r\n]/u.test(text)) throw new Error('--ready must be one nonempty line');
 
-  return text.replaceAll(/[.*+?^${}()|[\]\\/]/gu, String.raw`\export const shellQuote = (value: string): string => "'" + value.replaceAll("'", "'\"'\"'") + "'";`);
-}
+  const specials = '.+*?^$()[]{}|/\\';
 
+  return Array.from(text, (character) =>
+    specials.includes(character) ? '\\' + character : character,
+  ).join('');
+}
 export function captureTape(options: {
   columns: number;
   rows: number;
