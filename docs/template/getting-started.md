@@ -16,4 +16,4 @@ The initializer updates the package name, binary, lockfile and config identity. 
 
 Dependabot runs weekly for npm dependencies and GitHub Actions. Review its PRs before merging; Dependabot settings are downstream-owned and excluded from upstream template sync.
 
-Next, [customize the application](customization.md), configure [template sync](syncing.md), and review [release setup](releasing.md).
+Next, [customize the application](customization.md). Optionally [run upstream template sync](syncing.md) or [configure releases](releasing.md); neither runs automatically by default.
