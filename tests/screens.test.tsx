@@ -21,7 +21,7 @@ const render = (
   );
 };
 
-describe('every screen × theme × width', () => {
+describe('screen rendering', () => {
   it('includes the built-in screens', () => {
     expect(screenIds).toEqual(expect.arrayContaining(['home', 'settings', 'help']));
     expect(isScreenId('unknown-screen')).toBe(false);
