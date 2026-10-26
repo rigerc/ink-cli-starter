@@ -2,6 +2,7 @@ import {useState} from 'react';
 import {Badge, CommandMenu, Header, StatusBar, Tabs} from '../../components';
 import {
   useExit,
+  useActionHints,
   useHasInputCapture,
   useKeymap,
   useRouter,
@@ -28,6 +29,7 @@ function ActiveScreen({definition}: {definition: UIAppDefinition}) {
   const exit = useExit();
   const {theme, cycleTheme} = useThemeControls();
   const inputCaptured = useHasInputCapture();
+  const actionHints = useActionHints();
   const [commandOpen, setCommandOpen] = useState(false);
   const screen = definition.findScreen(router.current) ?? definition.findScreen(definition.initialScreen)!;
   const navScreens = definition.navScreens;
@@ -55,14 +57,18 @@ function ActiveScreen({definition}: {definition: UIAppDefinition}) {
     {isActive: screen.globalKeys !== false && !inputCaptured && !commandOpen, scope: 'global'},
   );
 
+  const contextualHints = [
+    ...(screen.hints ?? []),
+    ...actionHints,
+    ...(screen.globalKeys === false ? [] : getGlobalKeys(navScreens.length)),
+  ];
   const hints = commandOpen
     ? menuHints
     : inputCaptured
       ? inputHints
-      : [
-          ...(screen.hints ?? []),
-          ...(screen.globalKeys === false ? [] : getGlobalKeys(navScreens.length)),
-        ];
+      : contextualHints.filter(
+          (hint, position) => contextualHints.findIndex((item) => item.key === hint.key) === position,
+        );
 
   const Screen = screen.Component;
   const brand = definition.brand;

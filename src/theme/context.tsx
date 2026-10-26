@@ -27,8 +27,11 @@ export function ThemeProvider({
   registry?: Readonly<Record<string, Theme>>;
   children: ReactNode;
 }) {
-  const available = useMemo(() => ({...themes, ...registry}), [registry]);
-  const names = Object.keys(available);
+  const available: Readonly<Record<string, Theme>> = useMemo(
+    () => ({...themes, ...registry}),
+    [registry],
+  );
+  const names = useMemo(() => Object.keys(available), [available]);
   const [current, setCurrent] = useState(name);
   const theme = useMemo(
     () => applyGlyphs(available[current] ?? themes.dark, ascii),
@@ -37,7 +40,7 @@ export function ThemeProvider({
 
   const cycleTheme = useCallback(
     () => setCurrent((c) => names[(names.indexOf(c) + 1) % names.length]!),
-    [names.join('|')],
+    [names],
   );
 
   const value = useMemo(() => ({theme, setTheme: setCurrent, cycleTheme}), [theme, cycleTheme]);
