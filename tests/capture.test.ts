@@ -120,7 +120,16 @@ describe('VHS capture workflow', () => {
     const dir = mkdtempSync(path.join(tmpdir(), 'capture all screens '));
 
     try {
-      const result = run('--all', '--dry-run', '--theme', 'dark', '--columns', '100', '--output-dir', dir);
+      const result = run(
+        '--all',
+        '--dry-run',
+        '--theme',
+        'dark',
+        '--columns',
+        '100',
+        '--output-dir',
+        dir,
+      );
       expect(result.status, result.stderr).toBe(0);
       const expected = screenIds.map((id) => `${id}-dark-100.tape`).sort();
 
