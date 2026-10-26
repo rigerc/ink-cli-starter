@@ -22,7 +22,7 @@ The UI layer is a **set of defaults, not a required design system**. Downstream 
 ```bash
 npm run dev                     # Interactive app in a terminal
 npm run dev -- --plain          # Render one frame for pipes / CI
-npm run dev -- --setup          # Interactive configuration editor
+npm run dev -- --setup          # Configuration wizard (interactive TTY only)
 npm run dev -- doctor --json    # Headless environment diagnostics
 npm run lint                    # Core Vite+ lint and high-confidence anti-slop rules
 npm run check                   # Template warnings, Vite+ lint, format and type checks
@@ -45,6 +45,7 @@ The built executable uses Commander with inferred option types via `@commander-j
 
 - [Add your first feature](docs/adding-a-feature.md) — a new screen and headless command
 - [Architecture](docs/architecture.md) — application boundaries and extension points
+- [Configuration guide](docs/configuration.md) — paths, precedence, Settings, migrations and recovery
 - [UI framework guide](docs/ui-framework.md) — components, navigation, focus, themes and tests
 - [Recording guide](docs/recording.md) — optional VHS screenshots and terminal video
 
@@ -52,7 +53,15 @@ Add screens under `src/screens/`, register them in `src/screens/index.ts`, and p
 
 ## Themes and settings
 
-Themes (`dark`, `light`, `contrast`, `mono`) use semantic tokens and ASCII fallbacks. Configuration uses [`conf`](https://www.npmjs.com/package/conf) for atomic JSON persistence with Zod validation, stored at the existing application-specific XDG config path (`~/.config/ink-kit/config.json` unless `XDG_CONFIG_HOME` is set). Existing files remain compatible; `--config <path>` still selects a specific JSON file. Invalid files are preserved rather than reset. Precedence: defaults < saved file < environment < CLI flags; `NO_COLOR` overrides theme selection.
+Themes (`dark`, `light`, `contrast`, `mono`) use semantic tokens and ASCII
+fallbacks. Configuration uses [`conf`](https://www.npmjs.com/package/conf) for
+atomic JSON persistence with Zod validation. By default, settings are stored at
+`~/.config/ink-kit/config.json`, or under `XDG_CONFIG_HOME` when it is set. This
+`ink-kit` path applies before running `init:project`; renaming the CLI changes
+the config directory but does not move an existing file. Existing files at the
+selected path remain compatible, and `--config <path>` selects a specific JSON
+file. Invalid files are preserved rather than reset. See the [configuration guide](docs/configuration.md) for setup, migration, troubleshooting and extending fields. Precedence: defaults <
+saved file < environment < CLI flags; `NO_COLOR` overrides theme selection.
 
 ```bash
 npm run theme:list
@@ -67,4 +76,4 @@ The template vendors [anti-slop](https://github.com/dmmulroy/anti-slop) under [`
 
 Run `npm run lint && npm run check && npm run typecheck && npm test && npm run build` to verify code before opening a PR. Core lint and formatting checks are blocking CI steps; optional strict lint rules are not required by CI. CI also verifies tests, builds, plain output, headless diagnostics, and the packaged binary.
 
-Screenshots and recordings are optional and require [VHS](https://github.com/charmbracelet/vhs), ttyd, FFmpeg and Chromium. `npm run screenshot` captures one default PNG; add `--all` to capture every screen or `--live` for asynchronously rendered content. `npm run record` creates an MP4 demo, and `--dry-run` generates tapes without VHS. The [capture workflow](.github/workflows/screenshots.yml) uploads artifacts by default; video and Git commits are opt-in. See the [recording guide](docs/recording.md).
+Screenshots and recordings are optional and require [VHS](https://github.com/charmbracelet/vhs), ttyd, FFmpeg and Chromium. `npm run screenshot` captures one default PNG; add `--all` to capture every screen or `--live` for asynchronously rendered content. `npm run record` creates an MP4 demo, and `--dry-run` generates tapes without VHS. The [capture workflow](.github/workflows/screenshots.yml) uploads artifacts by default; video and Git commits are opt-in. See the [recording guide](docs/recording.md) for static versus live capture, readiness checks, naming, and troubleshooting.

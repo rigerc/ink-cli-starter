@@ -15,7 +15,7 @@ Alternatively, customize the following fields manually before publishing:
 3. Change `APP_NAME` in `src/lib/config.ts` and the `appName` defaults in `src/config/store.ts` to the new command name. This controls the user config directory and the `<APP_NAME>_THEME` environment variable.
 4. Replace the sample Home content and extend the screen/command registries.
 
-The default package and executable name is `ink-kit` until you change it. The `src/` component library is maintained as source in your own repository, not installed as a separate UI package.
+The default package and executable name is `ink-kit` until you change it. See [configuration](../configuration.md) for the exact saved-file paths, rename migration, override precedence and runtime editor. The `src/` component library is maintained as source in your own repository, not installed as a separate UI package.
 
 Run `npm run check:template` to find unchanged package names, command names, the package description, root lockfile metadata, and configuration identity defaults. It also runs as part of `npm run check`, including in CI. Warnings include the file and field to customize and do not fail the check, so the upstream template can keep its defaults. Documentation, examples, test fixtures, and dependency metadata are not scanned. Deleted configuration files and an absent lockfile are skipped.
 
