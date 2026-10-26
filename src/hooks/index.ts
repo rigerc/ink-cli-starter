@@ -8,6 +8,8 @@ export * from './useInterval';
 
 export * from './useKeymap';
 
+export * from './useActions';
+
 export * from './useRouter';
 
 export * from './useTerminalSize';

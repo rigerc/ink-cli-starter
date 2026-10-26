@@ -8,6 +8,22 @@ describe('global navigation shortcuts', () => {
     expect(getGlobalKeys(0).some((hint) => hint.label === 'jump to screen')).toBe(false);
   });
 
+  it('omits help when an app does not register a help screen', () => {
+    expect(getGlobalKeys(1, {help: false}).some((hint) => hint.key === '?')).toBe(false);
+    const noop = () => {};
+    const handlers: GlobalHandlers = {
+      next: noop,
+      previous: noop,
+      commands: noop,
+      theme: noop,
+      help: noop,
+      quit: noop,
+    };
+    expect(
+      getGlobalBindings(1, handlers, noop, {help: false}).some((binding) => binding.key === '?'),
+    ).toBe(false);
+  });
+
   it('binds at most nine jump shortcuts with more visible screens', () => {
     const visited: number[] = [];
     const noop = () => {};

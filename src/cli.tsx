@@ -2,7 +2,7 @@
 import {render, renderToString} from 'ink';
 import {Command} from '@commander-js/extra-typings';
 import packageJson from '../package.json' with {type: 'json'};
-import {App, PlainView, type AppOptions} from './app';
+import {App, PlainView, defaultApp, type AppOptions} from './app';
 import {runCommand} from './commands';
 import {appConfig, resolveConfig, type Config} from './config';
 import {ConfigSetup} from './demos/ConfigSetup';
@@ -10,7 +10,8 @@ import {APP_NAME, APP_THEME_ENV, loadConfig} from './lib/config';
 import {AppError, toAppError} from './lib/errors';
 import {logger} from './lib/logger';
 import {isInteractive, noColor, supportsUnicode} from './lib/terminal';
-import {isScreenId, screenIds} from './screens';
+const screenIds = defaultApp.screens.map((screen) => screen.id);
+const isScreenId = (id: string) => Boolean(defaultApp.findScreen(id));
 import {isThemeName, resolveThemeName} from './theme/resolve';
 
 const program = new Command()
@@ -19,7 +20,7 @@ const program = new Command()
   .description('Interactive terminal application with headless diagnostics')
   .version(packageJson.version)
   .option('--theme <name>', 'Theme: dark, light, contrast, mono, or auto')
-  .option('--screen <id>', `Initial screen: ${screenIds.join(', ')}`, 'home')
+  .option('--screen <id>', `Initial screen: ${screenIds.join(', ')}`, defaultApp.initialScreen)
   .option('--ascii', 'Use ASCII symbols and borders')
   .option('--config <path>', 'Read/write a specific JSON configuration file')
   .option('--setup', 'Open the interactive configuration wizard')

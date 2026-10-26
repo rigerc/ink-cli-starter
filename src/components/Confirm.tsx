@@ -1,4 +1,5 @@
-import {Box, Text, useInput} from 'ink';
+import {Box, Text} from 'ink';
+import {useManagedInput} from '../hooks/useKeymap';
 import {useState} from 'react';
 import {useTheme} from '../theme/context';
 import {Kbd, Muted} from './typography';
@@ -8,23 +9,42 @@ export interface ConfirmProps {
   defaultValue?: boolean;
   onConfirm: (value: boolean) => void;
   isActive?: boolean;
+  /** Allow a confirmation control owned by a capturing editor to receive keys. */
+  allowWhenCaptured?: boolean;
 }
 
 /** Y/N or arrows to choose, Enter to submit; q is left to the host app. */
-export function Confirm({message, defaultValue = false, onConfirm, isActive = true}: ConfirmProps) {
+export function Confirm({
+  message,
+  defaultValue = false,
+  onConfirm,
+  isActive = true,
+  allowWhenCaptured = false,
+}: ConfirmProps) {
   const [value, setValue] = useState(defaultValue);
   const t = useTheme();
-  useInput(
+  useManagedInput(
     (input, key) => {
-      if (key.ctrl || key.meta) return;
+      if (key.ctrl || key.meta) return false;
 
-      if (input.toLowerCase() === 'y' || key.leftArrow) setValue(true);
+      if (input.toLowerCase() === 'y' || key.leftArrow) {
+        setValue(true);
+        return true;
+      }
 
-      if (input.toLowerCase() === 'n' || key.rightArrow) setValue(false);
+      if (input.toLowerCase() === 'n' || key.rightArrow) {
+        setValue(false);
+        return true;
+      }
 
-      if (key.return) onConfirm(value);
+      if (key.return) {
+        onConfirm(value);
+        return true;
+      }
+
+      return false;
     },
-    {isActive},
+    {isActive, scope: 'control', allowWhenCaptured},
   );
 
   return (
