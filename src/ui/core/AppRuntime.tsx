@@ -28,6 +28,7 @@ function ActiveScreen({definition}: {definition: UIAppDefinition}) {
   const screen =
     definition.findScreen(router.current) ?? definition.findScreen(definition.initialScreen)!;
   const navScreens = definition.navScreens;
+  const hasHelp = Boolean(definition.findScreen('help'));
   const index = Math.max(
     0,
     navScreens.findIndex((item) => item.id === router.current),
@@ -53,6 +54,7 @@ function ActiveScreen({definition}: {definition: UIAppDefinition}) {
         quit: exit,
       },
       go,
+      {help: hasHelp},
     ),
     {isActive: screen.globalKeys !== false && !inputCaptured && !commandOpen, scope: 'global'},
   );
@@ -60,7 +62,7 @@ function ActiveScreen({definition}: {definition: UIAppDefinition}) {
   const contextualHints = [
     ...(screen.hints ?? []),
     ...actionHints,
-    ...(screen.globalKeys === false ? [] : getGlobalKeys(navScreens.length)),
+    ...(screen.globalKeys === false ? [] : getGlobalKeys(navScreens.length, {help: hasHelp})),
   ];
   const hints = commandOpen
     ? menuHints
