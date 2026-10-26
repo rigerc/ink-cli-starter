@@ -15,7 +15,7 @@ Set both under **Settings -> Secrets and variables -> Actions -> Variables**.
 
 ## Included setup
 
-The template includes Changesets v3, its configuration, and these scripts:
+The template already includes Changesets v2, its configuration, and these scripts:
 
 | Command                    | Purpose                                           |
 | -------------------------- | ------------------------------------------------- |
@@ -24,7 +24,7 @@ The template includes Changesets v3, its configuration, and these scripts:
 | `npm run release`          | Build and publish unpublished versions to npm.    |
 | `npm run release:tag`      | Create local git tags without publishing to npm.  |
 
-`@changesets/cli` v3 is paired with `changesets/action@v2`, which requires kebab-case inputs (`version-script`, `publish-script`, etc.) and an explicit `github-token` input for custom tokens. See the [v2 action documentation](https://github.com/changesets/action/blob/main/README.md). The tag-only script uses `changeset git-tag` (renamed from `changeset tag`).
+`@changesets/cli` stays on major version 2 on purpose: `changesets/action@v1` targets Changesets v2, while the action's `main` branch (v2) targets Changesets v3 and uses different input names. See the [v1 action documentation](https://github.com/changesets/action/tree/v1).
 
 `"private": true` makes accidental publishing impossible until a downstream project removes it.
 The scripts are not named `version`, which would collide with npm's `version` lifecycle hook.
@@ -58,9 +58,9 @@ For token authentication, add an `NPM_TOKEN` secret containing a granular access
 
 ## Gotchas
 
-- PRs opened with the default `GITHUB_TOKEN` do not trigger other workflows, so CI will not run on the version PR. Use a GitHub App or PAT token if you need that: pass it as the `github-token` input on `changesets/action@v2` (the environment variable alone is ignored).
-- `changesets/action@v2` no longer writes `~/.npmrc` automatically. The workflow points npm at a dedicated userconfig to keep token fallback separate from OIDC.
-- Hardening for later: the action's v2 README recommends its individual sub-actions (version, publish) when using trusted publishing, so the publish job alone gets `id-token: write`. Verify both tag-only and npm-publish flows in a downstream opt-in repository; upstream template CI intentionally skips releases.
+- PRs opened with the default `GITHUB_TOKEN` do not trigger other workflows, so CI will not run on the version PR. Use a GitHub App or PAT token if you need that: set it as `GITHUB_TOKEN` in the step's `env` for `changesets/action@v1`, or pass it as the `github-token` input on v2 (v2 ignores the env var).
+- `changesets/action@v1` writes `~/.npmrc` with `NPM_TOKEN` by default, which can interfere with OIDC. The workflow points npm at its own userconfig to avoid that.
+- Hardening for later: the action's v2 README recommends its individual sub-actions (version, publish) when using trusted publishing, so the publish job alone gets `id-token: write`.
 - Merge the version PR through your normal review and branch-protection process. The workflow does not enable automatic merging.
 - Trusted publishing requires npm >= 11.5.1 and Node >= 22.14.0. The release job uses Node 24 and updates npm; regular CI stays on Node 22.
 - `.templatesyncignore` excludes `release.yml` and `.changeset/config.json` from template-sync updates so downstream customization is preserved. See the [template-sync ignore documentation](https://github.com/AndreasAugustin/actions-template-sync#templatesyncignore).
