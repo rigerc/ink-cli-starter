@@ -11,4 +11,6 @@ npm ci
 npm run dev
 ```
 
+Dependabot runs weekly for npm dependencies and GitHub Actions. Review its PRs before merging; Dependabot settings are downstream-owned and excluded from upstream template sync.
+
 Next, [customize the application](customization.md), configure [template sync](syncing.md), and review [release setup](releasing.md).

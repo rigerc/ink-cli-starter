@@ -55,6 +55,7 @@ tests/features/
 
 # Repository automation, pending changesets and release setup require manual review.
 .github/workflows/
+.github/dependabot.yml
 .changeset/
 
 # Existing copies must adopt ignore changes manually: this file itself never syncs.
