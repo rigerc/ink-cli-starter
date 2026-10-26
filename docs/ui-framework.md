@@ -1,6 +1,6 @@
 # UI framework guide
 
-This guide explains the local **Ink 8 / React 19** component framework. The UI framework lives in `src/` and is part of this template, not a separately published dependency.
+This guide explains the local **Ink 8 / React 19** component framework. The UI framework lives in `src/` and is part of this template, not a separately published dependency. Downstream apps may remove unused primitives, providers, or demos. If syncing upstream later, exclude intentionally deleted shared paths in `.templatesyncignore`.
 
 See [architecture](architecture.md) for entry points and [adding a feature](adding-a-feature.md) for a screen and headless command walkthrough. Reusable components remain available under `src/components/`.
 
