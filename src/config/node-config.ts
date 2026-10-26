@@ -8,7 +8,8 @@ import type {RawConfig} from './definition';
  * CLI sessions that choose a different NODE_CONFIG_DIR after module import.
  */
 export function readNodeConfig(): RawConfig {
-  const loader = Load.fromEnvironment();
+  const deployment = process.env.NODE_CONFIG_ENV || process.env.NODE_ENV || 'development';
+  const loader = Load.fromEnvironment(deployment);
   loader.scan();
 
   return rawConfigSchema.parse(loader.config);
