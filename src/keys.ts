@@ -20,24 +20,39 @@ export const globalKeys: ReadonlyArray<KeyHint & {action: Action}> = [
 
 export type GlobalHandlers = Record<Exclude<Action, 'jump'>, () => void>;
 
-export function getGlobalKeys(count: number): KeyHint[] {
-  return globalKeys.map(({action, key, label}) => ({
-    key: action === 'jump' ? `1-${count}` : key,
-    label,
-  }));
+export interface GlobalKeyOptions {
+  /** Disable the built-in help shortcut for apps without a help screen. */
+  help?: boolean;
+}
+
+export function getGlobalKeys(count: number, options: GlobalKeyOptions = {}): KeyHint[] {
+  const maxJump = Math.min(Math.max(0, count), 9);
+
+  return globalKeys
+    .filter(
+      ({action}) =>
+        (action !== 'jump' || maxJump > 0) && (action !== 'help' || options.help !== false),
+    )
+    .map(({action, key, label}) => ({
+      key: action === 'jump' ? `1-${maxJump}` : key,
+      label,
+    }));
 }
 
 export function getGlobalBindings(
   count: number,
   handlers: GlobalHandlers,
   onJump: (index: number) => void,
+  options: GlobalKeyOptions = {},
 ): Binding[] {
-  return globalKeys.flatMap(({action, key}) =>
-    action === 'jump'
-      ? Array.from({length: Math.min(count, 9)}, (_, i) => ({
-          key: String(i + 1),
-          run: () => onJump(i),
-        }))
-      : [{key, run: handlers[action]}],
-  );
+  return globalKeys
+    .filter(({action}) => action !== 'help' || options.help !== false)
+    .flatMap(({action, key}) =>
+      action === 'jump'
+        ? Array.from({length: Math.min(count, 9)}, (_, i) => ({
+            key: String(i + 1),
+            run: () => onJump(i),
+          }))
+        : [{key, run: handlers[action]}],
+    );
 }

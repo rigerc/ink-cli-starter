@@ -1,7 +1,6 @@
-import {randomBytes} from 'node:crypto';
-import {existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync} from 'node:fs';
+import Conf from 'conf';
 import {homedir} from 'node:os';
-import {dirname, isAbsolute, join, resolve} from 'node:path';
+import {basename, dirname, extname, isAbsolute, join, resolve} from 'node:path';
 import type {ConfigDefinition, ConfigValue, RawConfig} from './definition';
 import {toErrorMessage} from '../lib/errors';
 import {z} from 'zod';
@@ -72,6 +71,30 @@ export function createConfigStore<T extends object>(
   const pathFor = (override?: string) => configFilePath(override, appName);
   const versionSchema = z.number().int().nonnegative();
 
+  /** Keep the old on-disk location and --config filename when switching to conf. */
+  function open(path: string): Conf<RawConfig> {
+    const extension = extname(path);
+
+    return new Conf<RawConfig>({
+      cwd: dirname(path),
+      configName: basename(path, extension),
+      fileExtension: extension.slice(1),
+      accessPropertiesByDotNotation: false,
+      clearInvalidConfig: false,
+      // Conf normalizes non-object JSON roots into store objects. Validate the
+      // original document first so files such as [] cannot be overwritten.
+      deserialize: (text) => {
+        const decoded = rawConfigSchema.safeParse(JSON.parse(text));
+
+        if (!decoded.success)
+          throw new Error('Configuration must be a JSON object containing valid JSON values');
+
+        return decoded.data;
+      },
+      configFileMode: 0o600,
+    });
+  }
+
   function validate(value: RawConfig): T {
     const result = definition.schema.safeParse(value);
 
@@ -88,27 +111,16 @@ export function createConfigStore<T extends object>(
 
   function read(override?: string): ConfigRead<T> {
     const path = pathFor(override);
-    let raw: unknown;
 
     try {
-      raw = JSON.parse(readFileSync(path, 'utf8'));
-    } catch (error) {
-      if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
-        return {config: validate({}), path};
-      }
-
-      // SAFETY: placeholder config is never used by callers when `error` is set.
-      return {config: {} as T, path, error: `Could not read ${path}: ${toErrorMessage(error)}`};
-    }
-
-    try {
-      const decoded = rawConfigSchema.safeParse(raw);
+      // Conf handles missing files and JSON decoding; Zod retains the existing
+      // application schema, migration and extension-key validation contracts.
+      const decoded = rawConfigSchema.safeParse(open(path).store);
 
       if (!decoded.success)
         throw new Error('Configuration must be a JSON object containing valid JSON values');
 
       const document = decoded.data;
-
       const versionResult =
         document.version === undefined
           ? {success: true, data: 0}
@@ -121,6 +133,7 @@ export function createConfigStore<T extends object>(
         throw new Error(
           `Configuration version ${version} is newer than supported version ${definition.version}`,
         );
+
       let migrated: RawConfig = document;
 
       for (let current = version; current < definition.version; current++) {
@@ -131,30 +144,20 @@ export function createConfigStore<T extends object>(
       return {config: validate(rawConfigSchema.parse(migrated)), path};
     } catch (error) {
       // SAFETY: placeholder config is never used by callers when `error` is set.
-      return {config: {} as T, path, error: toErrorMessage(error)};
+      return {config: {} as T, path, error: `Could not read ${path}: ${toErrorMessage(error)}`};
     }
   }
 
-  /** Refuses corrupt files; validates the merged document before an atomic replacement. */
+  /** Refuses corrupt files; conf performs the atomic replacement after validation. */
   function write(patch: DeepPartial<T>, override?: string): T {
     const {config, error, path} = read(override);
 
     if (error) throw new Error(error);
     const next = validate({...mergeConfig(config, patch), version: definition.version});
-    const directory = dirname(path);
-    mkdirSync(directory, {recursive: true});
-    const temporary = join(directory, `.${randomBytes(8).toString('hex')}.tmp`);
 
-    try {
-      writeFileSync(temporary, JSON.stringify(next, null, 2) + '\n', {
-        encoding: 'utf8',
-        flag: 'wx',
-        mode: 0o600,
-      });
-      renameSync(temporary, path);
-    } finally {
-      if (existsSync(temporary)) unlinkSync(temporary);
-    }
+    // A whole-store assignment is one atomic write, including nested patches and
+    // preserved application-specific keys; never clear malformed configuration.
+    open(path).store = next as RawConfig;
 
     return next;
   }

@@ -1,4 +1,5 @@
-import {Box, Text, useInput} from 'ink';
+import {Box, Text} from 'ink';
+import {useManagedInput} from '../hooks/useKeymap';
 import {useState} from 'react';
 import {useInputCapture} from '../hooks/useInputCapture';
 import {listIndex, listSize, listWindow} from '../lib/list';
@@ -62,7 +63,7 @@ export function SearchSelect<T extends string>({
   };
 
   useInputCapture(isActive);
-  useInput(
+  useManagedInput(
     (input, key) => {
       if (key.ctrl && input === 'u') {
         changeQuery('');
@@ -108,7 +109,7 @@ export function SearchSelect<T extends string>({
 
       if (printable) changeQuery(query + printable);
     },
-    {isActive},
+    {isActive, scope: 'control', allowWhenCaptured: true},
   );
   const {start, end} = listWindow(index, matches.length, listSize(maxVisible, 6));
 

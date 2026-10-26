@@ -20,9 +20,18 @@ CHANGELOG*
 
 # Agent instructions and the downstream sync policy.
 AGENTS.md
+:(glob)**/AGENTS.md
 CLAUDE.md
+opencode.json
 .github/copilot-instructions.md
 .templatesyncignore
+agentsmesh.yaml
+agentsmesh.local.yaml
+.agentsmesh/
+.claude/
+.codex/
+.pi/
+.opencode/
 
 # Repository ignore rules are customized by the downstream application.
 .gitignore

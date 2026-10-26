@@ -1,152 +1,118 @@
 # Terminal screenshots and recordings
 
-## Install once
+The optional capture tool (`scripts/screenshot.tsx`) uses [VHS](https://github.com/charmbracelet/vhs) to take **real terminal screenshots**, not an HTML rendering. By default, `npm run screenshot` captures **one** PNG of the Home screen, in dark theme at 100 columns × 40 rows. There is no automatic capture or commit on every push. Recording videos, running a matrix and publishing assets are opt-in.
 
-Use Node.js 22+ and install the project's dependencies first. Capture requires
-[VHS 0.12.1 or newer](https://github.com/charmbracelet/vhs#installation),
-[ttyd](https://github.com/tsl0922/ttyd#installation), FFmpeg, Chromium, and the
-DejaVu Sans Mono font. VHS supplies the browser automation; Playwright is not used.
+## Install prerequisites
 
-On macOS with Homebrew:
+Install project dependencies with `npm ci`, then install VHS **0.12.1+**, ttyd, FFmpeg, Chromium and DejaVu Sans Mono. VHS may download Chromium on first use. On macOS:
 
 ```sh
 brew install vhs ttyd ffmpeg
 ```
 
-On Debian/Ubuntu, install `ttyd`, `ffmpeg`, `fonts-dejavu-core` and a Chromium
-browser from your distribution, then install VHS from its release packages or
-`go install github.com/charmbracelet/vhs@v0.12.1`. Make sure all three commands
-are on PATH. VHS finds a supported browser on the system or downloads Chromium on its first
-run. A sandboxed Linux container may also need
-`VHS_NO_SANDBOX=1`. See the [VHS documentation](https://github.com/charmbracelet/vhs).
+On Debian/Ubuntu, install ttyd, FFmpeg, DejaVu fonts and a browser through your distribution; install VHS via its releases or Go. A sandboxed Linux runner may need `VHS_NO_SANDBOX=1`. Consult the [VHS installation guide](https://github.com/charmbracelet/vhs#installation) when browser setup differs. The `--dry-run` mode described below does **not** require VHS, but does need the project's Node dependencies to render static ANSI fixtures.
 
-## Capture images
-
-Run the package.json `screenshot` script. The examples below use npm.
+## Quick recipes
 
 ```sh
-npm run screenshot
-npm run screenshot -- --screen home --theme dark --columns 100
-npm run screenshot -- --screen help --theme mono --ascii --rows 60
-npm run screenshot -- --output-dir ./screenshots/review
+npm run screenshot                                             # home-dark-100.png
+npm run screenshot -- --screen help --theme mono --ascii       # One custom PNG
+npm run screenshot -- --all                                    # Home + Settings + Help by default
+npm run screenshot -- --screen home --screen help --columns 80 --columns 120
+npm run screenshot -- --all --theme dark --theme light --columns 80 --columns 120
+npm run screenshot -- --rows 50 --output-dir assets/screenshots
+npm run screenshot -- --dry-run                                 # Generate only fixtures/tape
 ```
 
-Screens, themes and columns can be repeated to select a matrix. Defaults are all
-registered screens, all four themes, and 80/120 columns. Terminal height defaults to 40 rows; increase `--rows`
-for tall screens so the terminal viewport does not crop or scroll their content.
+A capture matrix is the **Cartesian product** of the selected screens, themes and widths. For example, three default screens × two themes × two widths produces 12 PNGs; `--all` uses **all registered IDs** (including `showInNav: false` screens), not just tab-visible screens. `--screen` cannot be combined with `--all`. Valid `--columns` values are integers from 40–240, and `--rows` from 20–200. Theme values are `dark`, `light`, `contrast` and `mono` (not `auto`).
 
-Images use Ink's static `renderToString()` output, with fixed terminal diagnostics
-and config location. VHS displays that ANSI output in its terminal and takes a PNG.
-There is no HTML conversion. Initial state is stable; font/OS/browser versions can
-still change pixels, so use manual GitHub Actions captures for comparable review artifacts.
+### Outputs and naming
 
-## Record an interactive journey
+The default output directory is `screenshots/` relative to the working directory:
+
+| Command type          | Expected files for Home / dark / 100 columns                                                                    |
+| --------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Static screenshot     | `screenshots/home-dark-100.png`, `screenshots/tapes/home-dark-100.ansi`, `screenshots/tapes/home-dark-100.tape` |
+| Static `--dry-run`    | `.ansi` and `.tape` in `screenshots/tapes/`; **no** PNG                                                         |
+| `--live` screenshot   | `screenshots/home-dark-100.png` and its `.tape`; no static `.ansi`                                              |
+| `npm run record`      | `screenshots/home-dark-100-video.png`, `.mp4` and `screenshots/tapes/home-dark-100-video.tape`                  |
+| Recording `--dry-run` | Video `.tape` only; **no** PNG or video                                                                         |
+
+Adding `--ascii` appends `-ascii` to the basename; video appends `-video`. `--format gif --format webm` requests those videos instead of the default MP4, and an initial PNG is still captured. `--format` and `--tape` require `--video` (which `npm run record` supplies). The runner writes replayable VHS tape files in an output `tapes/` subdirectory; absolute paths in generated tapes can be checkout-specific.
+
+## Static versus live capture
+
+**Static (default)** generates a single Ink `renderToString(<App ...>)` frame, writes it to a `.ansi` fixture and uses VHS to screenshot that frame. It is fast and generally deterministic for visual regression review, but React effects, delayed data fetching, input handling and animations do **not** execute. Use static mode for initial screen composition, light/dark comparisons, narrow widths and stable first-frame states.
+
+**Live (`--live`)** launches the actual CLI in a pseudo-terminal, so effects and key handling work. Use this for screens that must settle after a fetch, update or a prompt:
 
 ```sh
-npm run record
-npm run record -- --screen home --theme contrast --columns 120 --ascii
-npm run record -- --format webm --format mp4
+npm run screenshot -- --screen home --live
+# Example after implementing and registering a jobs screen:
+npm run screenshot -- --screen jobs --live --ready 'Jobs loaded' --columns 120
+```
+
+`--ready` waits for **literal, visible, single-line text**, escaped for the VHS matcher; it is not a regular expression. It is accepted only with `--live` or `--video`. The generated tape waits up to 15 seconds for that text; absent `--ready`, it waits for a standard screen border/decorative character. A custom `layout: 'bare'` screen without borders should supply `--ready`. Choose a marker visible only after the desired state is reached. The runner then sleeps 500 ms before taking the screenshot, so avoid fleeting messages/spinners as readiness markers. Live/video paths launch with an isolated `--config` file and remove the temporary directory afterward.
+
+The capture script also sets `CI=1`, `FORCE_COLOR=3`, clears `NO_COLOR` and points `XDG_CONFIG_HOME` to a temporary capture-specific location; its live command removes CI and overrides theme directly. As a result, normal screenshot runs do not intentionally read or modify the user's saved application configuration. Keep that isolation if adapting the script.
+
+## Record an interactive demo
+
+```sh
+npm run record                                                # Initial PNG + MP4
+npm run record -- --screen home --theme light --columns 100
+npm run record -- --format gif --format webm
 npm run record -- --tape scripts/tapes/workflow.tape
+npm run record -- --dry-run
 ```
 
-`record` invokes the screenshot runner with `--video`. Defaults are Home, dark,
-100 columns and GIF + MP4, plus an initial PNG. Use repeatable `--format` for GIF,
-MP4 or WebM. Names include screen, theme, columns, optional `-ascii`, and `-video`.
-`--output-dir` changes the destination for every output.
+`npm run record` runs `scripts/screenshot.tsx --video` and always launches the real interactive CLI. It first captures the initial PNG, then executes the interaction snippet from `scripts/tapes/workflow.tape` (whose starter sequence opens the command menu and goes to Help). Edit that file, or pass `--tape` pointing at a different snippet. Do **not** put `Output`, terminal sizing, `Env`, app-launch or shutdown commands into the snippet; the runner supplies those around it. The interaction snippet can use VHS commands such as:
 
-The video runs the source CLI in a real PTY, clears CI/NO_COLOR/CLI_ASCII overrides,
-passes explicit theme flags and an isolated temporary config, and leaves the
-user's settings untouched. Normal capture removes that temporary config on exit.
-Video captures include live animation and state changes; they are not pixel-stable
-snapshots. The runner stops the app after the interaction tape finishes.
+```text
+Sleep 500ms
+Ctrl+K
+Type "help"
+Enter
+Sleep 1s
+```
 
-## Keep shareable screen captures in `assets/`
-
-The manually triggered GitHub Actions workflow saves one dark-theme, 100-column PNG for each
-registered screen in `assets/screenshots/`. It also saves an MP4
-of the interactive Home-to-Help journey at `assets/demo.mp4`. Both are tracked in Git,
-so README links survive artifact expiration. New screens are included automatically
-through the screen registry; no list needs maintaining in the workflow.
-
-To refresh these assets locally with the same settings:
+Preview/replay without recording everything again:
 
 ```sh
-mkdir -p assets/screenshots
-rm -f assets/screenshots/*.png
-npm run screenshot -- --theme dark --columns 100 --output-dir assets/screenshots
-npm run record -- --screen home --theme dark --columns 100 --format mp4
-cp screenshots/home-dark-100-video.mp4 assets/demo.mp4
+npm run screenshot -- --dry-run
+npm run record -- --dry-run
+vhs screenshots/tapes/home-dark-100.tape
 ```
 
-Only the PNGs and `demo.mp4` should be committed. The workflow stages only
-`assets/screenshots/*.png` and `assets/demo.mp4`, leaving generated replay tapes
-in `assets/screenshots/tapes/` untracked (not ignored). The recording's working
-files in `screenshots/` remain ignored.
-Change the recording screen, theme, width or `--tape` in the workflow dispatch inputs
-to replace the demo; the screenshot step still captures every registered screen at the fixed defaults.
-The workflow checks the capture commands before committing, avoiding broken media.
+Regenerate tapes after relocating a checkout because generated commands/fixtures can contain absolute paths. Videos are not pixel-stable snapshots: rely on static PNGs for repeatable visual comparisons and recordings for showing interaction flows.
 
-## Adapt the workflow
+## GitHub Actions: manual capture and publishing
 
-Start with `scripts/tapes/workflow.tape`. It opens the command menu, searches for
-Help, navigates there, then switches theme. It works without optional screens.
-Replace its VHS key presses, `Type`, `Wait` and `Sleep` commands with your journey.
-Prefer `Wait+Screen@10s /expected text/` for asynchronous transitions, then a short
-`Sleep` for a readable pause. Add `Screenshot "screenshots/checkpoint.png"` for
-checkpoints. Paths in interactions resolve from the project root. Keep launch,
-Output and Set commands in the runner; interaction snippets run after launch.
+The [Screenshots and recordings workflow](../.github/workflows/screenshots.yml) runs only through **Actions → Screenshots and recordings → Run workflow**.
 
-Screens can use custom tapes with Enter, arrow keys and confirmation steps.
-Scenarios can save isolated temporary settings, but commands that call external
-services still need suitable demo fixtures.
+1. The default job runs typechecking and tests, captures dark/100-column PNGs for **all registered screens**, and uploads `terminal-captures` (14-day retention). This does not commit or publish files.
+2. Set **Record demo** to make an MP4 using the provided screen/theme/columns/tape inputs; it is copied to `assets/demo.mp4` for upload/optional commit.
+3. Set **Commit assets** on `main` to run a separate write-permission job that commits `assets/screenshots/` (and `assets/demo.mp4` if present). On other branches, it uploads artifacts only. Bot pushes may be prevented by branch-protection rules or repository settings.
+
+Match the workflow locally with:
 
 ```sh
-# Write tapes/fixtures without VHS. Useful for review and debugging.
-npm run record -- --dry-run --tape scripts/tapes/workflow.tape
-# Replay a generated tape from the project root (requires capture tools).
-vhs screenshots/tapes/home-dark-100-video.tape
-# Record your own key sequence, then edit it into an interaction-only snippet.
-vhs record > /tmp/my-session.tape
+npm run screenshot -- --all --theme dark --columns 100 --output-dir assets/screenshots
 ```
 
-Generated tapes include absolute local output/fixture paths and inline the selected
-interaction snippet. They are replayable in the same checkout; regenerate after
-moving or copying the checkout. A replay uses a fresh config at the tape's recorded
-temporary path; remove it yourself if the scenario writes settings during replay.
-Dry-run does not verify VHS dependencies or produce images/videos. For a portable
-workflow, commit the source interaction tape and regenerate on each machine.
+Capture jobs depend on fonts and browser rendering. To compare PNGs reliably, hold the OS, VHS, Chromium, font version, theme, ASCII mode, and terminal size constant. A changed font or border style can affect wrapping even when application code is unchanged.
 
-## Continuous integration
+## Troubleshooting and acceptance checklist
 
-The template's `.github/workflows/screenshots.yml` installs pinned VHS, ttyd,
-FFmpeg and fonts through the official VHS action, then typechecks, tests and runs
-the captures. It refreshes `assets/screenshots/*.png` for all registered screens (including hidden development screens) and `assets/demo.mp4` for the interactive
-journey. It uploads the PNGs, MP4 and replayable tapes as a 14-day artifact.
+| Problem                                | Likely cause / action                                                                                                              |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `Unable to run VHS`                    | Confirm `vhs` is on `PATH` and ttyd, FFmpeg and a supported Chromium installation are available                                    |
+| Blank or incomplete live frame         | Add a stable `--ready 'Finished loading'` marker, check that it appears on screen within 15 seconds, and avoid a transient spinner |
+| A static capture omits fetched content | React effects do not run in static mode; use `--live` or capture an explicit static loading state                                  |
+| `Unknown screen`                       | Register the ID in `src/screens/index.ts`; see [UI guide](ui-framework.md#create-and-register-a-screen)                            |
+| `--ready requires --live or --video`   | Add `--live`, or use `npm run record` for a video                                                                                  |
+| Unexpected screenshot size/wrapping    | Use explicit `--columns`, `--rows`, `--ascii`, matching fonts and the same capture environment                                     |
+| `--dry-run` did not produce PNG/MP4    | Expected; dry-run creates replay tapes (and static ANSI fixtures), not media                                                       |
+| Workflow didn't commit files           | Publishing is manual and opt-in, requires `main`, `contents: write` and compatible repository branch rules                         |
 
-The workflow runs **only when manually started** from GitHub's **Actions → Screenshots and recordings → Run workflow** menu. It does not run automatically on pull requests or pushes. Select `main` to commit refreshed assets back to `main` using `GITHUB_TOKEN`. The workflow needs repository **Actions > General > Workflow permissions** set to allow read and write, and branch rules must permit the bot to push. Manual runs on other branches upload artifacts only and never push to those branches. Unlike temporary artifacts, committed `assets/` files persist in Git.
-
-To keep capture workflows in a copied template repository, use the existing
-scripts and adapt the output paths for your own app. A minimal upload-only CI
-job can use these steps:
-
-```yaml
-- uses: charmbracelet/vhs-action@v2
-  with:
-    version: v0.12.1
-    install-fonts: true
-- run: npm run screenshot -- --theme dark --columns 100 --output-dir assets/screenshots
-- run: npm run record -- --format mp4
-- run: cp screenshots/home-dark-100-video.mp4 assets/demo.mp4
-- uses: actions/upload-artifact@v7
-  with:
-    name: terminal-captures
-    path: |
-      assets/screenshots/*.png
-      assets/demo.mp4
-    retention-days: 14
-```
-
-To publish screenshot assets persistently, add a separate, permissions-
-restricted commit step for trusted branches as in this repository's workflow. The VHS
-action with no `path` installs dependencies without running a tape. Keep the capture
-font and VHS version aligned across development and CI.
+Before sharing assets, verify the selected screen is correct, text is legible at 40/80/120 columns as relevant, there is no personal data in the view, and the recorded key sequence ends in a recognizable state. For UI behavior and keyboard ownership, see the [UI framework guide](ui-framework.md).

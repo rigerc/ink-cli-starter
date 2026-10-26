@@ -33,7 +33,7 @@ export interface Symbols {
 }
 
 export interface Theme {
-  name: ThemeName;
+  name: string;
   /** True when the theme carries no color and relies on weight/symbols. */
   mono: boolean;
   color: Palette;

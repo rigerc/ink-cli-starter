@@ -203,6 +203,27 @@ it('keeps downstream edits and deletions while syncing shared updates and deleti
   });
 });
 
+it.each(['opencode.json', 'src/config/AGENTS.md', 'src/components/deep/AGENTS.md'])(
+  'preserves downstream agent configuration and removes upstream additions: %s',
+  (path) => {
+    withProject((project) => {
+      project.write(path, 'downstream agent configuration\n');
+      project.commit('customize agent configuration');
+      project.pull(() => {
+        project.write(path, 'upstream agent configuration\n');
+        project.write('src/hooks/AGENTS.md', 'new upstream instructions\n');
+        project.write('src/hooks/New.ts', 'shared hook\n');
+      });
+      project.finish();
+
+      expect(project.read(path)).toBe('downstream agent configuration\n');
+      expect(existsSync(join(project.root, 'src/hooks/AGENTS.md'))).toBe(false);
+      expect(project.read('src/hooks/New.ts')).toBe('shared hook\n');
+      expect(project.git('diff', '--name-only', 'HEAD^', 'HEAD')).toBe('src/hooks/New.ts\n');
+    });
+  },
+);
+
 it('stops shared conflicts before staging can hide the unmerged index', () => {
   withProject((project) => {
     project.write('src/components/Shared.tsx', 'downstream shared customization\n');

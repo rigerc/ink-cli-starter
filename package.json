@@ -12,8 +12,9 @@
   "type": "module",
   "scripts": {
     "dev": "tsx src/cli.tsx",
+    "init:project": "node scripts/init-project.mjs",
     "build": "vp pack",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "node node_modules/typescript/bin/tsc --noEmit",
     "lint": "vp lint",
     "check": "npm run check:template && vp check",
     "check:template": "node scripts/check-template.mjs",
@@ -29,25 +30,27 @@
     "changeset": "changeset",
     "version-packages": "changeset version && npm install --package-lock-only",
     "release": "npm run build && changeset publish",
-    "release:tag": "changeset tag"
+    "release:tag": "changeset git-tag"
   },
   "dependencies": {
     "@commander-js/extra-typings": "^15.0.0",
     "commander": "^15.0.0",
+    "conf": "^16.0.0",
     "ink": "^8.0.0",
     "react": "^19.3.1",
     "string-width": "^8.3.0",
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.31.1",
+    "@changesets/cli": "^3.0.3",
     "@oxlint/plugins": "1.89.0",
-    "@types/node": "^22.20.5",
+    "@types/node": "^26.6.5",
     "@types/react": "^19.3.0",
+    "@typescript/typescript6": "6.0.2",
     "ink-testing-library": "^4.0.0",
     "oxlint": "1.89.0",
     "tsx": "^4.23.15",
-    "typescript": "^5.9.3",
+    "typescript": "^7.0.2",
     "vite-plus": "1.4.0",
     "vitest": "5.0.5"
   },

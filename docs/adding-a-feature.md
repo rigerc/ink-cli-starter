@@ -8,7 +8,7 @@ semantic styling and async states.
 1. Create `src/features/example/` for pure models and operations if needed.
 2. Add `src/screens/Example.tsx` and register the screen in `src/screens/index.ts`.
 3. If required, add a noninteractive subcommand to `src/commands/index.ts`.
-4. Add typed configuration in `src/config/schema.ts` only when necessary.
+4. Add typed configuration in `src/config/schema.ts` only when necessary (see [configuration](configuration.md) for schema, editor fields and persistence).
 5. Write tests under `tests/` and run `npm run typecheck`, `npm test`, and `npm run build`.
 
 ## Minimal screen
@@ -38,9 +38,10 @@ import {ExampleScreen} from './Example';
 {id: 'example', label: 'Example', Component: ExampleScreen},
 ```
 
-The screen now has a tab, numeric shortcut, and `--screen example`. The
-footer and Help derive the numeric shortcut range from the screen registry;
-no edits to `src/keys.ts` are needed. Add optional `hints` to the `ScreenDef`
+The screen now has a tab and `--screen example`. It also gets a numeric
+shortcut if it is among the first nine visible screens. The footer and Help
+derive the available numeric shortcut range from the screen registry; no edits
+to `src/keys.ts` are needed. Add optional `hints` to the `ScreenDef`
 when a screen has local actions, and use `ScreenState` for async states.
 
 ## Full-control screen (optional)
@@ -89,4 +90,4 @@ logic to React hooks or terminal rendering.
 - Use `useAsync` and `ScreenState` for loading, empty, error and success results; call your domain operation from events/effects rather than render.
 - Use `useTheme` / `useTone` for colors and `useTerminalSize` for responsive layouts. Test `--plain`, mono/ASCII and narrow widths.
 
-See [the UI framework guide](ui-framework.md) for runnable screen, focus and async examples.
+See [the UI framework guide](ui-framework.md) for screen, focus and async examples. Use [the recording guide](recording.md) to capture a new screen after registering its ID.

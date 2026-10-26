@@ -1,6 +1,8 @@
 # Keep your copy in sync with this template
 
-Repositories created from this template include [the template sync workflow](../../.github/workflows/template-sync.yml). It checks `rigerc/ink-cli-starter` for updates on the first day of each month at 03:17 UTC, or when manually started, and opens a pull request with proposed changes. The workflow skips the upstream template repository itself.
+Repositories created from this template include [the template sync workflow](../../.github/workflows/template-sync.yml), but syncing is **manual by default**. Run it when you want to check `rigerc/ink-cli-starter` for updates and open a reviewable pull request. The workflow skips the upstream template repository itself.
+
+To opt into automatic monthly checks, add a `schedule` trigger alongside `workflow_dispatch` in your downstream `.github/workflows/template-sync.yml`, using the cron expression `17 3 1 * *` (03:17 UTC on the first day of each month). Workflow files are downstream-owned, so this setting is not overwritten by template sync.
 
 **Setup in your generated repository:** The upstream `rigerc/ink-cli-starter` repository is public, so no source access token is needed. The workflow uses the built-in `GITHUB_TOKEN` by default to read the template and open sync pull requests.
 
@@ -30,6 +32,8 @@ To adopt this in an existing repository, copy `scripts/template-sync-changelog.m
 ## Files owned by your application
 
 [`.templatesyncignore`](../../.templatesyncignore) protects package metadata, the README, `.gitignore`, application composition and screens, configuration and branding, related integration tests, and release setup. Downstream ignore rules are preserved even when upstream changes conflict. Reusable components, hooks, utilities, and tooling remain eligible for sync. Review upstream dependency and npm script changes manually because package files are excluded as a whole.
+
+Agent configuration exclusions include the generated `opencode.json` instruction loader and nested `AGENTS.md` files. The latter use the Git pathspec `:(glob)**/AGENTS.md` so instructions under shared directories remain downstream-owned too.
 
 Existing copies must adopt ignore changes manually: the action preserves the downstream ignore file instead of syncing it. Changing the ignore file does not rewrite an existing sync branch; review or regenerate that branch before merging.
 
