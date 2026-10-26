@@ -50,7 +50,9 @@ it('customizes package identity, lockfile, and both config defaults, then become
     expect(readFileSync(join(root, 'src/lib/config.ts'), 'utf8')).toContain(
       "APP_NAME = 'my-cli'",
     );
-    expect(readFileSync(join(root, 'src/config/store.ts'), 'utf8').match(/appName = 'my-cli'/g)).toHaveLength(2);
+    expect(
+      readFileSync(join(root, 'src/config/store.ts'), 'utf8').match(/appName = 'my-cli'/g),
+    ).toHaveLength(2);
 
     const rerun = run(root, '--name', 'my-cli', '--description', 'My own CLI');
     expect(rerun.status, rerun.stderr).toBe(0);
