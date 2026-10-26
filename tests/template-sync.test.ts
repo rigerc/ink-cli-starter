@@ -25,6 +25,7 @@ class SyncProject {
     this.git('config', 'user.email', 'template-sync@example.invalid');
     this.git('config', 'core.autocrlf', 'false');
     this.git('config', 'merge.renames', 'true');
+    this.write('.gitignore', '/node_modules/\n');
     this.write('README.md', 'application documentation\n');
     this.write('package.json', '{"name":"my-app"}\n');
     this.write('src/screens/Owned.tsx', 'application screen, with unique contents\n');
@@ -147,6 +148,26 @@ function withProject(run: (project: SyncProject) => void) {
     rmSync(project.directory, {recursive: true, force: true});
   }
 }
+
+it('preserves customized gitignore rules when upstream changes conflict', () => {
+  withProject((project) => {
+    const downstream = '/node_modules/\n/local-data/\n';
+    project.write('.gitignore', downstream);
+    project.commit('customize ignore rules');
+
+    const merge = project.pull(() => {
+      project.write('.gitignore', '/node_modules/\n/screenshots/\n');
+      project.write('src/components/Shared.tsx', 'updated shared component\n');
+    });
+
+    expect(merge.status).not.toBe(0);
+    expect(project.git('ls-files', '--unmerged')).toContain('.gitignore');
+    project.finish();
+    expect(project.read('.gitignore')).toBe(downstream);
+    expect(project.read('src/components/Shared.tsx')).toBe('updated shared component\n');
+    expect(project.git('diff', '--name-only', 'HEAD^', 'HEAD')).toBe('src/components/Shared.tsx\n');
+  });
+});
 
 it('keeps downstream edits and deletions while syncing shared updates and deletions', () => {
   withProject((project) => {

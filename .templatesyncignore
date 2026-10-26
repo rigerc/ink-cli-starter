@@ -24,6 +24,9 @@ CLAUDE.md
 .github/copilot-instructions.md
 .templatesyncignore
 
+# Repository ignore rules are customized by the downstream application.
+.gitignore
+
 # Application composition, navigation, commands and screens are customization points.
 src/app.tsx
 src/cli.tsx

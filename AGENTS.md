@@ -19,6 +19,8 @@ Use an exclusion-based workflow: `.templatesyncignore` defines files owned by th
 
 The following paths must never be replaced, removed, or reset to template defaults by an automatic sync. This table is the ownership policy; `.templatesyncignore` must be updated to enforce it before running a sync.
 
+Downstream projects also own `.gitignore`; preserve their ignore rules, including when upstream changes conflict.
+
 | Ownership                                  | Paths to exclude                                                                                                                                                                                                  |
 | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Package identity, dependencies and scripts | `package.json`, package-manager lockfiles                                                                                                                                                                         |

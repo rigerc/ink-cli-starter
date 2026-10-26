@@ -11,7 +11,7 @@ The workflow automatically uses `TEMPLATE_SYNC_TARGET_TOKEN` when provided and f
 
 ## Files owned by your application
 
-[`.templatesyncignore`](../../.templatesyncignore) protects package metadata, the README, application composition and screens, configuration and branding, related integration tests, and release setup. Reusable components, hooks, utilities, and tooling remain eligible for sync. Review upstream dependency and npm script changes manually because package files are excluded as a whole.
+[`.templatesyncignore`](../../.templatesyncignore) protects package metadata, the README, `.gitignore`, application composition and screens, configuration and branding, related integration tests, and release setup. Downstream ignore rules are preserved even when upstream changes conflict. Reusable components, hooks, utilities, and tooling remain eligible for sync. Review upstream dependency and npm script changes manually because package files are excluded as a whole.
 
 Existing copies must adopt ignore changes manually: the action preserves the downstream ignore file instead of syncing it. Changing the ignore file does not rewrite an existing sync branch; review or regenerate that branch before merging.
 
