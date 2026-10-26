@@ -29,7 +29,10 @@ export function getGlobalKeys(count: number, options: GlobalKeyOptions = {}): Ke
   const maxJump = Math.min(Math.max(0, count), 9);
 
   return globalKeys
-    .filter(({action}) => (action !== 'jump' || maxJump > 0) && (action !== 'help' || options.help !== false))
+    .filter(
+      ({action}) =>
+        (action !== 'jump' || maxJump > 0) && (action !== 'help' || options.help !== false),
+    )
     .map(({action, key, label}) => ({
       key: action === 'jump' ? `1-${maxJump}` : key,
       label,
@@ -45,11 +48,11 @@ export function getGlobalBindings(
   return globalKeys
     .filter(({action}) => action !== 'help' || options.help !== false)
     .flatMap(({action, key}) =>
-    action === 'jump'
-      ? Array.from({length: Math.min(count, 9)}, (_, i) => ({
-          key: String(i + 1),
-          run: () => onJump(i),
-        }))
-      : [{key, run: handlers[action]}],
-  );
+      action === 'jump'
+        ? Array.from({length: Math.min(count, 9)}, (_, i) => ({
+            key: String(i + 1),
+            run: () => onJump(i),
+          }))
+        : [{key, run: handlers[action]}],
+    );
 }

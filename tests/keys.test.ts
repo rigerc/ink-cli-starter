@@ -19,7 +19,9 @@ describe('global navigation shortcuts', () => {
       help: noop,
       quit: noop,
     };
-    expect(getGlobalBindings(1, handlers, noop, {help: false}).some((binding) => binding.key === '?')).toBe(false);
+    expect(
+      getGlobalBindings(1, handlers, noop, {help: false}).some((binding) => binding.key === '?'),
+    ).toBe(false);
   });
 
   it('binds at most nine jump shortcuts with more visible screens', () => {
