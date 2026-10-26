@@ -22,6 +22,13 @@ export function tapeQuote(value: string): string {
 
 export const shellQuote = (value: string): string => "'" + value.replaceAll("'", "'\"'\"'") + "'";
 
+/** Treat --ready as literal screen text, not a VHS regular expression. */
+export function readyPattern(text: string): string {
+  if (!text.trim() || /[\r\n]/u.test(text)) throw new Error('--ready must be one nonempty line');
+
+  return text.replaceAll(/[.*+?^${}()|[\]\\/]/gu, String.raw`\export const shellQuote = (value: string): string => "'" + value.replaceAll("'", "'\"'\"'") + "'";`);
+}
+
 export function captureTape(options: {
   columns: number;
   rows: number;
@@ -66,6 +73,9 @@ export async function main(args = process.argv.slice(2)) {
     args,
     options: {
       screen: {type: 'string', multiple: true},
+      all: {type: 'boolean', default: false},
+      live: {type: 'boolean', default: false},
+      ready: {type: 'string'},
       theme: {type: 'string', multiple: true},
       columns: {type: 'string', multiple: true},
       rows: {type: 'string', default: '40'},
@@ -81,14 +91,17 @@ export async function main(args = process.argv.slice(2)) {
 
   if (values.help) {
     console.log(`Usage: npm run screenshot -- [options]
-  --screen <id>       Screen ID or inline (repeat; default: all; video: home)
-  --theme <name>      dark | light | contrast | mono (repeat; default: all; video: dark)
-  --columns <n>       Terminal width, 40–240 (repeat; default: 80 and 120; video: 100)
+  --screen <id>       Screen ID (repeat; default: home)
+  --all               Capture every registered screen (instead of --screen)
+  --theme <name>      dark | light | contrast | mono (repeat; default: dark)
+  --columns <n>       Terminal width, 40–240 (repeat; default: 100)
   --rows <n>          Terminal height, 20–200 (default: 40)
   --output-dir <dir>  Destination directory (default: screenshots)
   --ascii            Use ASCII glyphs and borders
-  --video            Record keyboard interactions as well as the initial PNG
-  --format <format>  gif | mp4 | webm (repeat; video only; default: gif and mp4)
+  --live             Capture a running TTY session (for async or dynamic screens)
+  --ready <text>     Wait for this literal text before capturing (live/video)
+  --video            Record interactions as well as a live initial PNG
+  --format <format>  gif | mp4 | webm (repeat; video only; default: mp4)
   --tape <file>       Interaction tape (video only; default: scripts/tapes/workflow.tape)
   --dry-run          Write replayable tapes and ANSI fixtures without running VHS
   -h, --help         Show this help
@@ -100,7 +113,11 @@ Requires VHS 0.12.1+, ttyd, FFmpeg and Chromium. See docs/recording.md.`);
 
   if (!values.video && (values.format || values.tape))
     throw new Error('--format and --tape require --video');
-  const selectedFormats = [...new Set(values.format ?? ['gif', 'mp4'])];
+  if (values.all && values.screen) throw new Error('Choose --all or --screen, not both');
+  if (values.ready !== undefined && !(values.live || values.video))
+    throw new Error('--ready requires --live or --video');
+  const selectedFormats = [...new Set(values.format ?? ['mp4'])];
+  const ready = values.ready === undefined ? undefined : readyPattern(values.ready);
 
   if (selectedFormats.some((format) => !formats.includes(format)))
     throw new Error('Unknown format. Choose: ' + formats.join(', '));
@@ -120,12 +137,9 @@ Requires VHS 0.12.1+, ttyd, FFmpeg and Chromium. See docs/recording.md.`);
 
   const availableScreens = screenIds;
 
-  const selectedScreens = [
-    ...new Set(values.screen ?? (values.video ? ['home'] : availableScreens)),
-  ];
-
-  const selectedThemes = [...new Set(values.theme ?? (values.video ? ['dark'] : themeNames))];
-  const widths = [...new Set(values.columns ?? (values.video ? ['100'] : ['80', '120']))];
+  const selectedScreens = [...new Set(values.screen ?? (values.all ? availableScreens : ['home']))];
+  const selectedThemes = [...new Set(values.theme ?? ['dark'])];
+  const widths = [...new Set(values.columns ?? ['100'])];
 
   for (const screen of selectedScreens) {
     if (!availableScreens.includes(screen))
@@ -174,7 +188,7 @@ Requires VHS 0.12.1+, ttyd, FFmpeg and Chromium. See docs/recording.md.`);
 
           let command: string;
 
-          if (values.video) {
+          if (values.live || values.video) {
             // Ink treats CI as noninteractive even in a PTY. Explicit flags and an
             // isolated config prevent the recording from reading/writing user settings.
             command =
@@ -224,6 +238,7 @@ Requires VHS 0.12.1+, ttyd, FFmpeg and Chromium. See docs/recording.md.`);
               screenshot,
               outputs,
               workflow,
+              ready,
             }),
           );
 
