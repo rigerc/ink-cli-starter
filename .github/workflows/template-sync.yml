@@ -22,16 +22,27 @@ jobs:
         with:
           token: ${{ secrets.TEMPLATE_SYNC_TARGET_TOKEN || github.token }}
           persist-credentials: false
+          fetch-depth: 0
 
       - name: Preserve downstream exclusions and guard
-        run: node scripts/template-sync-guard.mjs snapshot "$RUNNER_TEMP/template-sync-state.json"
+        run: |
+          node scripts/template-sync-guard.mjs snapshot "$RUNNER_TEMP/template-sync-state.json"
+          cp scripts/template-sync-changelog.mjs "$RUNNER_TEMP/template-sync-changelog.mjs"
 
       - name: Sync upstream template and open pull request
+        id: sync
         uses: AndreasAugustin/actions-template-sync@v2
         with:
           source_repo_path: rigerc/ink-cli-starter
           target_gh_token: ${{ secrets.TEMPLATE_SYNC_TARGET_TOKEN || github.token }}
           pr_title: 'chore: sync changes from ink-cli-starter'
+          pr_body: |
+            Sync changes from [ink-cli-starter](https://github.com/rigerc/ink-cli-starter/commit/${TEMPLATE_GIT_HASH}).
+
+            Review the Files changed tab for applied changes. Package metadata, dependencies,
+            npm scripts, workflows, release setup, and application-owned files are excluded
+            and require separate manual review. Additional customizations depend on maintaining
+            `.templatesyncignore` and reviewing each sync PR.
           git_remote_pull_params: --allow-unrelated-histories --squash --strategy=recursive
           is_allow_hooks: true
           hooks: |
@@ -41,3 +52,14 @@ jobs:
             prepush:
               commands:
                 - node "$RUNNER_TEMP/template-sync-guard.mjs" verify "$RUNNER_TEMP/template-sync-state.json"
+
+      - name: Add changelog to sync pull request
+        if: steps.sync.outputs.pr_number != ''
+        env:
+          GH_TOKEN: ${{ secrets.TEMPLATE_SYNC_TARGET_TOKEN || github.token }}
+          SYNC_PR_NUMBER: ${{ steps.sync.outputs.pr_number }}
+          SYNC_PR_BRANCH: ${{ steps.sync.outputs.pr_branch }}
+          SYNC_TEMPLATE_HASH: ${{ steps.sync.outputs.template_git_hash }}
+        run: |
+          node "$RUNNER_TEMP/template-sync-guard.mjs" verify "$RUNNER_TEMP/template-sync-state.json"
+          node "$RUNNER_TEMP/template-sync-changelog.mjs" "$RUNNER_TEMP/template-sync-state.json"

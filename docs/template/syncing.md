@@ -9,6 +9,24 @@ Repositories created from this template include [the template sync workflow](../
 
 The workflow automatically uses `TEMPLATE_SYNC_TARGET_TOKEN` when provided and falls back to `GITHUB_TOKEN` otherwise. Go to **Actions → Sync upstream template → Run workflow** to trigger a sync manually. Review any created PR before merging: upstream updates may touch files you have customized. See [actions-template-sync documentation](https://github.com/marketplace/actions/actions-template-sync) for additional authentication or file-exclusion options.
 
+## Changelogs in sync pull requests
+
+After the action creates a PR, [the changelog helper](../../scripts/template-sync-changelog.mjs) updates its description with:
+
+- **Applied changes:** files added, modified, deleted, or renamed in the guarded sync commit, after downstream exclusions have been restored. The Files changed tab remains the complete diff.
+- **Upstream changelog:** linked commit subjects since the last accepted upstream revision. This includes upstream changes to excluded files; it describes upstream context, not just changes applied to your application.
+- **Manual adoption:** reminders to review excluded dependency, script, workflow, release, and application changes separately.
+
+The helper uses the action's documented [`pr_number`, `pr_branch`, and `template_git_hash` outputs](https://github.com/AndreasAugustin/actions-template-sync/tree/v2#action-outputs). It runs only when a PR was created. No changes or an already-existing sync branch normally produce no PR number, so rerunning the workflow does not refresh an existing PR's description.
+
+Each enriched PR records the full upstream commit SHA in a hidden `<!-- template-sync:rigerc/ink-cli-starter@SHA -->` marker. Keep this marker in the description: subsequent runs look through closed PRs for the latest merged sync PR with a matching source marker, target branch, and downstream repository. Its merge commit must be an ancestor of the downstream commit saved before pulling. This works with squash merges and unrelated template history; it does not use upstream commits as downstream ancestors. Checkout uses full history for this check.
+
+On the first run, or when no accepted marker is available, the description says that a commit range cannot be established and records the current upstream revision for future syncs. Older PRs without a marker are not guessed from titles or branch names. Deleted upstream revisions and diverged or backward-moving history are reported with a comparison link instead of an unreliable commit list.
+
+Descriptions show at most 50 files and 50 commits, with additional size limits and links to the full diff and upstream comparison. Long filenames and subjects are shortened. Authentication, API, or description-update failures fail the changelog step; the already-created PR retains its initial description and the guarded sync commit remains available for review. After correcting the problem, regenerate the sync PR to retry enrichment because the action normally skips an existing branch.
+
+To adopt this in an existing repository, copy `scripts/template-sync-changelog.mjs` and manually update `.github/workflows/template-sync.yml`, including full-history checkout, the helper copy into `RUNNER_TEMP`, the action step ID and initial `pr_body`, and the follow-up changelog step. Use the same target token as the sync action. No new dependencies, permissions, or ownership exclusions are needed. The helper is saved before pulling so incoming template changes cannot replace the code used to update the current PR.
+
 ## Files owned by your application
 
 [`.templatesyncignore`](../../.templatesyncignore) protects package metadata, the README, `.gitignore`, application composition and screens, configuration and branding, related integration tests, and release setup. Downstream ignore rules are preserved even when upstream changes conflict. Reusable components, hooks, utilities, and tooling remain eligible for sync. Review upstream dependency and npm script changes manually because package files are excluded as a whole.
