@@ -7,12 +7,7 @@ const TEMPLATE_NAME = 'ink-kit';
 const TEMPLATE_DESCRIPTION =
   'GitHub template for an Ink 8, React 19 and TypeScript terminal application';
 
-const paths = [
-  'package.json',
-  'package-lock.json',
-  'src/lib/config.ts',
-  'src/config/store.ts',
-];
+const paths = ['package.json', 'package-lock.json', 'src/lib/config.ts', 'src/config/store.ts'];
 
 function ensureExpected(value, expected, location) {
   if (value !== TEMPLATE_NAME && value !== expected) {
@@ -135,13 +130,7 @@ function main() {
       1,
       command,
     ),
-    rewriteAssignments(
-      originals[3],
-      paths[3],
-      /(\bappName\s*=\s*)(['"])([^'"]+)\2/g,
-      2,
-      command,
-    ),
+    rewriteAssignments(originals[3], paths[3], /(\bappName\s*=\s*)(['"])([^'"]+)\2/g, 2, command),
   ];
 
   let changed = 0;
@@ -158,8 +147,7 @@ function main() {
 
   if (!changed) console.log(`Already initialized as ${name}`);
 
-  if (changed && !values['dry-run'])
-    console.log(`Initialized ${name} (CLI command: ${command})`);
+  if (changed && !values['dry-run']) console.log(`Initialized ${name} (CLI command: ${command})`);
 }
 
 try {
