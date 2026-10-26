@@ -65,7 +65,9 @@ function main() {
   });
 
   if (values.help) {
-    console.log('Usage: npm run init:project -- --name my-cli [--description "My CLI"] [--dry-run]');
+    console.log(
+      'Usage: npm run init:project -- --name my-cli [--description "My CLI"] [--dry-run]',
+    );
 
     return;
   }
