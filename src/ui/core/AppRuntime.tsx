@@ -108,7 +108,7 @@ function ActiveScreen({definition}: {definition: UIAppDefinition}) {
 
 export function AppRuntime({definition, options}: {definition: UIAppDefinition; options: AppOptions}) {
   return (
-    <AppProviders options={options}>
+    <AppProviders options={options} themes={definition.themes}>
       <ActiveScreen definition={definition} />
     </AppProviders>
   );

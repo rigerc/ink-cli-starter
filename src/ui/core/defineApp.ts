@@ -1,6 +1,7 @@
 import type {ComponentType} from 'react';
 import type {AppShellProps} from '../../components/AppShell';
 import type {KeyHint} from '../../keys';
+import type {Theme} from '../../theme/tokens';
 
 /** The terminal view may use the shared shell or render without chrome. */
 export type ScreenLayoutMode = 'shell' | 'bare';
@@ -30,6 +31,7 @@ export interface UIAppDefinition {
   readonly screens: readonly ScreenDef[];
   readonly initialScreen: string;
   readonly shell?: ComponentType<AppShellProps>;
+  readonly themes?: Readonly<Record<string, Theme>>;
   readonly brand?: {title: string; version: string};
   readonly navScreens: ScreenDef[];
   findScreen: (id: string) => ScreenDef | undefined;
@@ -40,6 +42,8 @@ export interface UIAppOptions {
   initialScreen: string;
   /** Optional replacement for the standard five-region app shell. */
   shell?: ComponentType<AppShellProps>;
+  /** Additional named palettes available to ThemeProvider via AppRuntime. */
+  themes?: Readonly<Record<string, Theme>>;
   brand?: {title: string; version: string};
 }
 
@@ -61,6 +65,7 @@ export function defineApp(options: UIAppOptions): UIAppDefinition {
     screens: options.screens,
     initialScreen: options.initialScreen,
     shell: options.shell,
+    themes: options.themes,
     brand: options.brand,
     get navScreens() {
       return options.screens.filter((screen) => screen.showInNav !== false);
