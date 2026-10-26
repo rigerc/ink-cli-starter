@@ -1,25 +1,11 @@
-import type {ComponentType} from 'react';
-import type {KeyHint} from '../keys';
+import type {ScreenDef} from '../ui/core/defineApp';
+export type {ScreenDef} from '../ui/core/defineApp';
 import {HelpScreen} from './Help';
 import {HomeScreen} from './Home';
 import {SettingsScreen} from './Settings';
 
-/** Choose the built-in app chrome or render a screen as-is. */
-export type ScreenLayoutMode = 'shell' | 'bare';
-
-export interface ScreenDef {
-  id: string;
-  label: string;
-  Component: ComponentType;
-  /** Omit the shared header, tabs, toasts and footer for a custom Ink view. */
-  layout?: ScreenLayoutMode;
-  /** Opt out of app-wide shortcuts while retaining screen/control handlers. */
-  globalKeys?: boolean;
-  /** Hidden development screens remain addressable via --screen. */
-  showInNav?: boolean;
-  /** Contextual shortcuts shown before global hints in the footer. */
-  hints?: readonly KeyHint[];
-}
+/** Compatibility alias for existing callers. */
+export type {ScreenLayoutMode} from '../ui/core/defineApp';
 
 /** Visible order controls tab order and numeric shortcuts. */
 export const screens: ScreenDef[] = [

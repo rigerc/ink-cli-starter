@@ -1,174 +1,25 @@
-import {useState, type ReactNode} from 'react';
 import pkg from '../package.json';
-import {AppShell, Badge, CommandMenu, ErrorBoundary, Header, StatusBar, Tabs} from './components';
-import {ConfigRuntimeProvider} from './config/context';
-import type {Config} from './config';
-import {
-  useExit,
-  useKeymap,
-  KeymapProvider,
-  useRouter,
-  RouterProvider,
-  ToastProvider,
-  InputCaptureProvider,
-  useHasInputCapture,
-} from './hooks';
-import {getGlobalBindings, getGlobalKeys, type KeyHint} from './keys';
-import {navScreens, screens, type ScreenLayoutMode} from './screens';
-import {ThemeProvider, useThemeControls} from './theme/context';
-import type {ThemeName} from './theme/tokens';
+import {AppRuntime, PlainRuntime} from './ui/core/AppRuntime';
+import {defineApp} from './ui/core/defineApp';
+import {screens} from './screens';
+import type {AppOptions} from './ui/core/AppProviders';
 
-export interface AppOptions {
-  theme: ThemeName;
-  ascii: boolean;
-  debug: boolean;
-  screen: string;
-  configFile?: string;
-  configFlags?: Partial<Config>;
-}
+export {AppProviders, type AppOptions} from './ui/core/AppProviders';
+export {ScreenFrame} from './ui/layout/ScreenFrame';
+export {defineApp, type ScreenChrome, type ScreenDef, type UIAppDefinition} from './ui/core/defineApp';
+export {AppRuntime, PlainRuntime} from './ui/core/AppRuntime';
 
-export function AppProviders({options, children}: {options: AppOptions; children: ReactNode}) {
-  return (
-    <ConfigRuntimeProvider path={options.configFile} flags={options.configFlags}>
-      <ThemeProvider name={options.theme} ascii={options.ascii}>
-        <InputCaptureProvider>
-          <KeymapProvider>
-            <ToastProvider>
-              <RouterProvider initial={options.screen}>
-                <ErrorBoundary debug={options.debug}>{children}</ErrorBoundary>
-              </RouterProvider>
-            </ToastProvider>
-          </KeymapProvider>
-        </InputCaptureProvider>
-      </ThemeProvider>
-    </ConfigRuntimeProvider>
-  );
-}
-
-const menuHints: KeyHint[] = [
-  {key: '↑/↓', label: 'navigate'},
-  {key: 'enter', label: 'select'},
-  {key: 'esc', label: 'close'},
-];
-
-const inputHints: KeyHint[] = [
-  {key: 'esc', label: 'back'},
-  {key: 'enter', label: 'edit/select'},
-];
-
-/** Built-in chrome is a default, not a requirement for every screen. */
-export function ScreenFrame({
-  layout = 'shell',
-  header,
-  nav,
-  footer,
-  children,
-}: {
-  layout?: ScreenLayoutMode;
-  header?: ReactNode;
-  nav?: ReactNode;
-  footer?: ReactNode;
-  children: ReactNode;
-}) {
-  if (layout === 'bare') return <>{children}</>;
-
-  return (
-    <AppShell header={header} nav={nav} footer={footer}>
-      {children}
-    </AppShell>
-  );
-}
-
-function Shell() {
-  const router = useRouter();
-  const exit = useExit();
-  const {theme, cycleTheme} = useThemeControls();
-  const inputCaptured = useHasInputCapture();
-  const [commandOpen, setCommandOpen] = useState(false);
-  const screen = screens.find((s) => s.id === router.current) ?? navScreens[0]!;
-
-  const index = Math.max(
-    0,
-    navScreens.findIndex((s) => s.id === router.current),
-  );
-
-  const go = (i: number) =>
-    router.replace(navScreens[(i + navScreens.length) % navScreens.length]!.id);
-
-  useKeymap(
-    getGlobalBindings(
-      navScreens.length,
-      {
-        next: () => go(index + 1),
-        previous: () => go(index - 1),
-        commands: () => setCommandOpen(true),
-        theme: cycleTheme,
-        help: () => router.replace('help'),
-        quit: exit,
-      },
-      go,
-    ),
-    {isActive: screen.globalKeys !== false && !inputCaptured && !commandOpen, scope: 'global'},
-  );
-
-  const Screen = screen.Component;
-
-  const hints = commandOpen
-    ? menuHints
-    : inputCaptured
-      ? inputHints
-      : [
-          ...(screen.hints ?? []),
-          ...(screen.globalKeys === false ? [] : getGlobalKeys(navScreens.length)),
-        ];
-
-  return (
-    <ScreenFrame
-      layout={screen.layout}
-      header={
-        <Header
-          title={pkg.name}
-          version={pkg.version}
-          right={<Badge tone="accent">{theme.name}</Badge>}
-        />
-      }
-      nav={<Tabs items={navScreens} activeId={router.current} />}
-      footer={<StatusBar hints={hints} />}
-    >
-      {commandOpen ? (
-        <CommandMenu
-          items={navScreens.map((item) => ({id: item.id, label: item.label, hint: 'Go to screen'}))}
-          onSelect={(id) => {
-            router.replace(id);
-            setCommandOpen(false);
-          }}
-          onCancel={() => setCommandOpen(false)}
-        />
-      ) : (
-        <Screen />
-      )}
-    </ScreenFrame>
-  );
-}
+/** Defaults only; downstream applications may provide their own definition. */
+export const defaultApp = defineApp({
+  screens,
+  initialScreen: 'home',
+  brand: {title: pkg.name, version: pkg.version},
+});
 
 export const App = ({options}: {options: AppOptions}) => (
-  <AppProviders options={options}>
-    <Shell />
-  </AppProviders>
+  <AppRuntime definition={defaultApp} options={options} />
 );
 
-/** Static, non-interactive rendering of one screen (pipes, CI, --plain). */
-export function PlainView({options}: {options: AppOptions}) {
-  const Screen = (screens.find((s) => s.id === options.screen) ?? screens[0]!).Component;
-
-  return (
-    <AppProviders options={options}>
-      <ScreenFrame
-        layout={screens.find((s) => s.id === options.screen)?.layout}
-        header={<Header title={pkg.name} version={pkg.version} />}
-      >
-        <Screen />
-      </ScreenFrame>
-    </AppProviders>
-  );
-}
+export const PlainView = ({options}: {options: AppOptions}) => (
+  <PlainRuntime definition={defaultApp} options={options} />
+);

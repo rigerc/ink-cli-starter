@@ -91,19 +91,21 @@ export function ToastHost() {
 }
 
 /** Header, nav, body, toasts, status bar: in that order, inline (no alt screen). */
+export interface AppShellProps {
+  header?: ReactNode;
+  nav?: ReactNode;
+  footer?: ReactNode;
+  showToasts?: boolean;
+  children: ReactNode;
+}
+
 export function AppShell({
   header,
   nav,
   footer,
   children,
   showToasts = true,
-}: {
-  header?: ReactNode;
-  nav?: ReactNode;
-  footer?: ReactNode;
-  showToasts?: boolean;
-  children: ReactNode;
-}) {
+}: AppShellProps) {
   return (
     <Box flexDirection="column" gap={1}>
       <Box flexDirection="column">
