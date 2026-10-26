@@ -21,10 +21,14 @@ export const globalKeys: ReadonlyArray<KeyHint & {action: Action}> = [
 export type GlobalHandlers = Record<Exclude<Action, 'jump'>, () => void>;
 
 export function getGlobalKeys(count: number): KeyHint[] {
-  return globalKeys.map(({action, key, label}) => ({
-    key: action === 'jump' ? `1-${count}` : key,
-    label,
-  }));
+  const maxJump = Math.min(Math.max(0, count), 9);
+
+  return globalKeys
+    .filter(({action}) => action !== 'jump' || maxJump > 0)
+    .map(({action, key, label}) => ({
+      key: action === 'jump' ? `1-${maxJump}` : key,
+      label,
+    }));
 }
 
 export function getGlobalBindings(
