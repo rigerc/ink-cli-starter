@@ -3,7 +3,7 @@ import {mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync} from 'nod
 import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {describe, expect, it} from 'vite-plus/test';
-import {captureTape, shellQuote, tapeQuote} from '../scripts/screenshot';
+import {captureTape, readyPattern, shellQuote, tapeQuote} from '../scripts/screenshot';
 import {screenIds} from '../src/screens';
 
 const run = (...args: string[]) =>
@@ -20,6 +20,12 @@ describe('VHS capture workflow', () => {
     expect(tapeQuote('a "quote"')).toBe(`'a "quote"'`);
     expect(() => tapeQuote('bad\nType evil')).toThrow();
     expect(() => tapeQuote('"\'`')).toThrow();
+  });
+
+  it('quotes ready text literally and rejects multiline patterns', () => {
+    expect(readyPattern('Loading... /')).toBe('Loading\\.\\.\\. \\/');
+    expect(() => readyPattern('')).toThrow();
+    expect(() => readyPattern('Ready\nType evil')).toThrow();
   });
 
   it('sets exact cell dimensions and waits for rendered output before capturing', () => {
@@ -62,6 +68,13 @@ describe('VHS capture workflow', () => {
       expect(readFileSync(path.join(dir, 'tapes/home-mono-80-ascii.ansi'), 'utf8')).toContain(
         'Home',
       );
+      const live = run(...common, '--live', '--ready', 'Home');
+      expect(live.status, live.stderr).toBe(0);
+      const liveTape = readFileSync(path.join(dir, 'tapes/home-mono-80-ascii.tape'), 'utf8');
+      expect(liveTape).toContain('exec env -u CI');
+      expect(liveTape).toContain('Wait+Screen@15s /Home/');
+      expect(liveTape).not.toContain('Output ');
+
       const recording = run(...common, '--video', '--format', 'webm');
       expect(recording.status, recording.stderr).toBe(0);
       const tape = readFileSync(path.join(dir, 'tapes/home-mono-80-ascii-video.tape'), 'utf8');
@@ -88,11 +101,35 @@ describe('VHS capture workflow', () => {
     }
   });
 
-  it('covers every registered screen by default', () => {
+  it('captures just Home at a single width and theme by default', () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'capture default '));
+
+    try {
+      const result = run('--dry-run', '--output-dir', dir);
+      expect(result.status, result.stderr).toBe(0);
+      expect(readdirSync(path.join(dir, 'tapes')).sort()).toEqual([
+        'home-dark-100.ansi',
+        'home-dark-100.tape',
+      ]);
+    } finally {
+      rmSync(dir, {recursive: true, force: true});
+    }
+  });
+
+  it('covers every registered screen when --all is selected', () => {
     const dir = mkdtempSync(path.join(tmpdir(), 'capture all screens '));
 
     try {
-      const result = run('--dry-run', '--theme', 'dark', '--columns', '100', '--output-dir', dir);
+      const result = run(
+        '--all',
+        '--dry-run',
+        '--theme',
+        'dark',
+        '--columns',
+        '100',
+        '--output-dir',
+        dir,
+      );
       expect(result.status, result.stderr).toBe(0);
       const expected = screenIds.map((id) => `${id}-dark-100.tape`).sort();
 
@@ -113,6 +150,9 @@ describe('VHS capture workflow', () => {
     ['--theme', 'missing'],
     ['--format', 'gif'],
     ['--video', '--format', 'png'],
+    ['--all', '--screen', 'home'],
+    ['--ready', 'Home'],
+    ['--live', '--ready', ''],
   ])('rejects invalid capture choice: %s', (...args) => {
     const result = run('--dry-run', ...args);
     expect(result.status).not.toBe(0);

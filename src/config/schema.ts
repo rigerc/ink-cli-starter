@@ -4,6 +4,9 @@ import {themeNames} from '../theme/tokens';
 import {defaultTheme} from '../theme/resolve';
 import {defineConfig} from './definition';
 
+// A scoped npm package still exposes an unscoped executable and environment prefix.
+const executableName = Object.keys(pkg.bin)[0] ?? pkg.name.split('/').at(-1) ?? pkg.name;
+
 /** Loose parsing retains application-specific extension keys during edits. */
 export const configSchema = z.looseObject({
   version: z.number().int().positive().optional(),
@@ -24,7 +27,7 @@ export const appConfig = defineConfig({
       kind: 'select',
       description: 'Auto detects light/dark; NO_COLOR always forces mono.',
       defaultValue: defaultTheme,
-      env: `${pkg.name.replaceAll('-', '_').toUpperCase()}_THEME`,
+      env: `${executableName.replaceAll('-', '_').toUpperCase()}_THEME`,
       options: [
         {value: 'auto', label: 'Auto (terminal default)'},
         ...themeNames.map((value) => ({value, label: value})),

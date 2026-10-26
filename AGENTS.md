@@ -8,10 +8,10 @@ This repository is a **GitHub template that directly contains the application**.
 - Reuse `src/components/` and `src/hooks/` when helpful, but native Ink components and custom layout are supported. `Panel`, `Card`, `Stack` and `Row` accept standard Ink Box props. `ScreenLayout` can omit a title and customize spacing.
 - `useKeymap` supports scoped shortcuts (control > screen > global) when you want coordinated handling. Native Ink `useInput` is also available; avoid conflicting active listeners and use input capture when editing free-form text.
 - Use semantic theme tokens; preserve `NO_COLOR`, ASCII rendering, narrow widths, and deterministic `--plain` output. Do not write to stdout while Ink is rendering.
-- Preserve the reusable UI components, hooks, themes and standalone demos for apps built from this template; keep example screens optional.
+- Reuse framework components and demos when helpful, but downstream applications may remove unused screens, components, hooks, themes, and providers. Add customized or intentionally deleted shared paths to `.templatesyncignore` before any upstream sync.
 - This project uses **Vite+**, not plain Vite. Prefer the declared npm scripts: `npm run typecheck`, `npm test`, `npm run build`. Run `npm ci` after pulling dependency changes.
 - Update documentation and interaction/width regression tests when changing shared framework conventions.
-- `npm run lint` runs the Vite+ and vendored anti-slop rules; `npm run check` additionally checks formatting and types. The vendored plugin is under `tools/oxlint/anti-slop/`, excluded from application lint/format checks, and should be updated with its `UPSTREAM.md` provenance in mind.
+- `npm run lint` runs Vite+ and high-confidence anti-slop rules; set `INK_STRICT_LINT=1` to enable the other opinionated anti-slop rules. `npm run check` also checks formatting and types. The vendored plugin is under `tools/oxlint/anti-slop/`, excluded from application lint/format checks, and should be updated with its `UPSTREAM.md` provenance in mind.
 
 ## Template sync ownership and exclusions
 

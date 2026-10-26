@@ -3,6 +3,7 @@ import {defaultTheme, resolveThemeName} from '../src/theme/resolve';
 import defaults from '../src/theme/defaults.json';
 import palettes from '../src/theme/palettes.json';
 import {appConfig} from '../src/config/schema';
+import {APP_THEME_ENV} from '../src/lib/config';
 import {themes} from '../src/theme/themes';
 import {themeNames, tones} from '../src/theme/tokens';
 
@@ -28,6 +29,10 @@ describe('themes', () => {
 });
 
 describe('resolveThemeName', () => {
+  it('uses the executable identity for the theme environment variable', () => {
+    expect(appConfig.fields.find((field) => field.path === 'theme')?.env).toBe(APP_THEME_ENV);
+  });
+
   it('uses the shared project default when higher-priority values are absent', () => {
     expect(defaultTheme).toBe(defaults.defaultTheme);
     expect(appConfig.fields.find((field) => field.path === 'theme')?.defaultValue).toBe(
