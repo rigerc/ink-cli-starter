@@ -23,6 +23,13 @@ AGENTS.md
 CLAUDE.md
 .github/copilot-instructions.md
 .templatesyncignore
+agentsmesh.yaml
+agentsmesh.local.yaml
+.agentsmesh/
+.claude/
+.codex/
+.pi/
+.opencode/
 
 # Repository ignore rules are customized by the downstream application.
 .gitignore

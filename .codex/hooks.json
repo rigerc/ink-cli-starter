@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "agentsmesh generate",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  }
+}

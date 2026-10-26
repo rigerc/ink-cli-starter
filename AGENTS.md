@@ -1,4 +1,12 @@
+<!-- agentsmesh:root-generation-contract:start -->
+## AgentsMesh Generation Contract
+
+**NEVER edit generated files** (`CLAUDE.md`, `AGENTS.md`, `.claude/`, `.cursor/`, `.github/copilot-instructions.md`, and other tool outputs) — `agentsmesh generate` overwrites them. Edit the canonical source in `.agentsmesh` instead, or `agentsmesh.yaml` to change targets and features, then run `agentsmesh generate`.
+<!-- agentsmesh:root-generation-contract:end -->
+
 # Instructions for this Ink CLI application
+
+`agentsmesh.yaml` enables only rules and hooks for Claude Code, Codex CLI, Pi, and OpenCode. Edit their canonical files under the `.agentsmesh` directory, then run `agentsmesh generate` to update tool instructions.
 
 This repository is a **GitHub template that directly contains the application**. There is no scaffold generator. Read `README.md`, [architecture](docs/architecture.md), [adding a feature](docs/adding-a-feature.md), and [the UI framework guide](docs/ui-framework.md) before making architectural changes.
 
@@ -25,7 +33,7 @@ Downstream projects also own `.gitignore`; preserve their ignore rules, includin
 | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Package identity, dependencies and scripts | `package.json`, package-manager lockfiles                                                                                                                                                                         |
 | Project documentation and licensing        | `README.md`, `LICENSE*`, `COPYING*`, `CHANGELOG*`                                                                                                                                                                 |
-| Agent instructions and sync policy         | `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, `.templatesyncignore`                                                                                                                                |
+| Agent instructions and sync policy         | `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, `agentsmesh.yaml`, `agentsmesh.local.yaml`, `.agentsmesh/`, `.claude/`, `.codex/`, `.pi/`, `.opencode/`, `.templatesyncignore` |
 | Application composition and behavior       | `src/app.tsx`, `src/cli.tsx`, `src/keys.ts`, `src/screens/`, `src/features/`, `src/commands/`                                                                                                                     |
 | Application settings and branding          | `src/config/schema.ts`, `src/lib/config.ts`, `src/theme/defaults.json`, `src/theme/palettes.json`                                                                                                                 |
 | Repository automation and release state    | `.github/workflows/`, `.changeset/`                                                                                                                                                                               |
