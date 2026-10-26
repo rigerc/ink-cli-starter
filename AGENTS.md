@@ -9,7 +9,6 @@ This repository is a **GitHub template that directly contains the application**.
 - `useKeymap` supports scoped shortcuts (control > screen > global) when you want coordinated handling. Native Ink `useInput` is also available; avoid conflicting active listeners and use input capture when editing free-form text.
 - Use semantic theme tokens; preserve `NO_COLOR`, ASCII rendering, narrow widths, and deterministic `--plain` output. Do not write to stdout while Ink is rendering.
 - Preserve the reusable UI components, hooks, themes and standalone demos for apps built from this template; keep example screens optional.
-- For new repositories generated from the template, prefer `npm run init:project -- --name my-cli` over manually changing package, binary, lockfile and config identity. The initializer refuses to overwrite unrelated customizations and keeps the package private.
 - This project uses **Vite+**, not plain Vite. Prefer the declared npm scripts: `npm run typecheck`, `npm test`, `npm run build`. Run `npm ci` after pulling dependency changes.
 - Update documentation and interaction/width regression tests when changing shared framework conventions.
 - `npm run lint` runs the Vite+ and vendored anti-slop rules; `npm run check` additionally checks formatting and types. The vendored plugin is under `tools/oxlint/anti-slop/`, excluded from application lint/format checks, and should be updated with its `UPSTREAM.md` provenance in mind.
