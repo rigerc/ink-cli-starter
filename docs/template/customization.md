@@ -1,6 +1,14 @@
 # Customize for your application
 
-GitHub templates **do not automatically rename package metadata**. Before publishing the copied application:
+GitHub templates **do not automatically rename package metadata**. In a fresh repository generated from this template, initialize the identity with:
+
+```bash
+npm run init:project -- --name my-cli --description "My terminal application"
+```
+
+This updates `package.json`, the root metadata in `package-lock.json`, and the CLI configuration defaults. Scoped package names such as `@example/my-cli` are supported; their executable and config name use `my-cli`. Omit `--description` to use a generated description, or add `--dry-run` to preview changes without writing files. The command is repeatable with the same identity and refuses to replace a different existing identity. It intentionally leaves `"private": true`, application screens and documentation untouched.
+
+Alternatively, customize the following fields manually before publishing:
 
 1. Change `name`, `description`, and the command key under `bin` in `package.json`.
 2. Update the matching root package metadata and bin entry in `package-lock.json` (for example, regenerate the lockfile with `npm install --package-lock-only`).
