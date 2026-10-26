@@ -1,0 +1,16 @@
+# Auto-generated. DO NOT EDIT MANUALLY.
+# Tracks the state of all config files for team conflict resolution.
+
+generated_at: 2026-10-26T22:34:55.840Z
+generated_by: bond
+lib_version: 0.42.0
+checksums:
+  hooks.yaml: sha256:6bca4972891bd72caf7a0e246256eafc5be86145caae528d2584e870a24310a9
+  rules/_root.md: sha256:2bfdc96100ec0ce09dd77abc8cf1a37b0b5904595b724109e5ff3f03087868b8
+extends: {}
+packs: {}
+outputs:
+  CLAUDE.md: sha256:df23f8273371575ebf1409df2a2f191b19c4bd5877a393b39ac293882e44272e
+  AGENTS.md: sha256:df23f8273371575ebf1409df2a2f191b19c4bd5877a393b39ac293882e44272e
+  .claude/settings.json: sha256:13fcf13fa18e64e9db35d1eb5c3945bdb3924d28727d1367e1efe7ceecf7d9dd
+  .codex/hooks.json: sha256:13fcf13fa18e64e9db35d1eb5c3945bdb3924d28727d1367e1efe7ceecf7d9dd

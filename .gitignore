@@ -12,3 +12,7 @@ tttt/
 .agents/
 bin/
 .mcp.json
+agentsmesh.local.yaml
+.agentsmeshcache
+.agentsmesh/.lock.tmp
+.agentsmesh/packs/

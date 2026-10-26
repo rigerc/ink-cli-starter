@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=https://unpkg.com/agentsmesh@0.42.0/schemas/hooks.json
+# Regenerate tool configuration when a session starts.
+SessionStart:
+  - matcher: '*'
+    type: command
+    command: agentsmesh generate
+    timeout: 60
+
+# Uncomment to check lint after file edits.
+# OpenCode and Pi support only a subset of canonical hook events and types;
+# inspect `agentsmesh matrix` and `agentsmesh lint` before enabling hooks.
+# PostToolUse:
+#   - matcher: "Edit|Write"
+#     type: command
+#     command: npm run lint
+#     timeout: 60
