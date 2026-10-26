@@ -6,7 +6,8 @@ This repository is the actual CLI application copied by GitHub's **Use this temp
 
 - `src/cli.tsx` parses arguments, invokes noninteractive commands, and chooses interactive or one-frame Ink rendering.
 - `src/commands/index.ts` registers headless commands. Commands must not depend on a TTY or import Ink.
-- `src/app.tsx` composes the shared terminal shell, application providers, navigation, and global shortcuts.
+- `src/app.tsx` defines the default application and preserves the `App` / `PlainView` compatibility entry points.
+- `src/ui/core/` provides `defineApp`, `AppProviders`, `AppRuntime` and `PlainRuntime`; `src/ui/layout/` composes optional shell regions and per-screen chrome.
 - `src/screens/index.ts` registers the default Home, Settings and Help screens; this registry also determines valid `--screen` values.
 - `src/components/`, `src/hooks/`, and `src/theme/` contain reusable local UI primitives.
 - `src/config/` provides `conf`-backed, Zod-validated, versioned JSON configuration.
@@ -15,7 +16,7 @@ This repository is the actual CLI application copied by GitHub's **Use this temp
 
 Keep application models and operations in `src/features/<feature>/` independent of rendering. Both a screen and a headless command can call the same operation. Add other services only as needed; this template does not impose a database, network client, or state manager.
 
-The default app uses `AppShell`, `ScreenLayout`, `ScreenState`, semantic colors, and scoped `useKeymap` handlers. These are defaults rather than rules. `ScreenDef.layout: 'bare'` renders a screen without application chrome in both interactive and plain modes; `globalKeys: false` turns off the built-in shortcuts on that screen. Existing screens remain unchanged when these properties are omitted.
+The default app uses `AppShell`, `ScreenLayout`, `ScreenState`, semantic colors, and scoped `useKeymap` handlers. Application policies now live in `defineApp` rather than inside the reusable runtime. Built-in text and composite inputs use `useManagedInput` so keyboard arbitration remains consistent with `useKeymap`. `useAction` can register an action and its contextual footer hint together. These are defaults rather than rules. `ScreenDef.layout: 'bare'` renders a screen without application chrome in both interactive and plain modes; `globalKeys: false` turns off the built-in shortcuts on that screen. Existing screens remain unchanged when these properties are omitted.
 
 `Panel`, `Card`, `Stack` and `Row` accept Ink Box props, and `ScreenLayout` supports optional headings and configurable spacing. Import Ink's `Box`, `Text` and `useInput` directly for custom UI. Coordinated `useKeymap` priority is control > screen > global; activate only one free-form text editor at a time to avoid shortcut conflicts.
 

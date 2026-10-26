@@ -15,7 +15,7 @@ For a repository created from this template, set its package, executable and con
 
 The default app provides **Home, Settings and Help** screens. Reusable UI components, hooks, and themes are included for applications built from the template, alongside headless commands and tests.
 
-The UI layer is a **set of defaults, not a required design system**. Downstream applications may remove unused screens, components, hooks, and providers; exclude customized or deleted shared files before opting into upstream sync. Screens can opt out of the shared chrome and global shortcuts, and reusable layout components accept native Ink styling properties. You can also use Ink's `Box` and `Text` directly. See [UI flexibility](docs/ui-framework.md#using-only-what-you-need).
+The UI layer is a **set of defaults, not a required design system**. `defineApp` and `AppRuntime` now allow an application to replace the screen registry and shell without changing the runtime; screens can also selectively hide chrome regions. Built-in input controls share the scoped keyboard dispatcher, and `useAction` can register a shortcut plus its footer hint from one definition. Downstream applications may remove unused screens, components, hooks, and providers; exclude customized or deleted shared files before opting into upstream sync. Screens can opt out of the shared chrome and global shortcuts, and reusable layout components accept native Ink styling properties. You can also use Ink's `Box` and `Text` directly. See [UI flexibility](docs/ui-framework.md#using-only-what-you-need).
 
 ## Commands
 

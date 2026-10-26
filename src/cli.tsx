@@ -2,7 +2,7 @@
 import {render, renderToString} from 'ink';
 import {Command} from '@commander-js/extra-typings';
 import packageJson from '../package.json' with {type: 'json'};
-import {App, PlainView, type AppOptions} from './app';
+import {App, PlainView, defaultApp, type AppOptions} from './app';
 import {runCommand} from './commands';
 import {appConfig, resolveConfig, type Config} from './config';
 import {ConfigSetup} from './demos/ConfigSetup';
@@ -10,7 +10,8 @@ import {APP_NAME, APP_THEME_ENV, loadConfig} from './lib/config';
 import {AppError, toAppError} from './lib/errors';
 import {logger} from './lib/logger';
 import {isInteractive, noColor, supportsUnicode} from './lib/terminal';
-import {isScreenId, screenIds} from './screens';
+const screenIds = defaultApp.screens.map((screen) => screen.id);
+const isScreenId = (id: string) => Boolean(defaultApp.findScreen(id));
 import {isThemeName, resolveThemeName} from './theme/resolve';
 
 const program = new Command()

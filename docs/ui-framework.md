@@ -24,7 +24,85 @@ See [architecture](architecture.md) for entry points, [adding a feature](adding-
 | `src/theme/`               | Semantic colors, symbols and ASCII compatibility                    |
 | `src/features/` (optional) | Domain models and operations independent of Ink                     |
 
-**AppProviders** installs configuration, theme, input capture, keymap, toast, router and error-boundary providers. By default, `App` renders `AppShell` (header, tabs, command menu, toasts, status footer) around a screen. If that structure does not fit your CLI, register a bare screen or compose native Ink UI directly. `ScreenLayout` and `InlineLayout` are optional conveniences.
+**AppProviders** installs configuration, theme, input capture, keymap, action metadata, toast, router and error-boundary providers. By default, `App` renders `AppShell` (header, tabs, command menu, toasts, status footer) around a screen. If that structure does not fit your CLI, register a bare screen or compose native Ink UI directly. `ScreenLayout` and `InlineLayout` are optional conveniences.
+
+## Define a custom application
+
+The starter exposes `defineApp`, `AppRuntime`, and `PlainRuntime` from `src/app.tsx`.
+The existing `App` / `PlainView` wrappers use the default screen registry and remain
+fully compatible. Custom application definitions can supply another registry, brand,
+shell, and named themes without rewriting the provider stack:
+
+```tsx
+import {Text} from 'ink';
+import {AppRuntime, defineApp, type AppOptions} from './app';
+
+const customApp = defineApp({
+  initialScreen: 'dashboard',
+  screens: [
+    {id: 'dashboard', label: 'Dashboard', Component: DashboardScreen},
+    {
+      id: 'wizard',
+      label: 'Wizard',
+      Component: WizardScreen,
+      chrome: {nav: false, footer: false},
+      globalKeys: false,
+    },
+  ],
+  brand: {title: 'my-cli', version: '1.0.0'},
+  // shell: CustomShell, // receives header, nav, footer, showToasts, children
+  // themes: {myTheme: {...baseTheme, name: 'myTheme'}},
+});
+
+export function CustomApp({options}: {options: AppOptions}) {
+  return <AppRuntime definition={customApp} options={options} />;
+}
+```
+
+Import the application's definition in `src/cli.tsx` for CLI screen validation and
+use `PlainRuntime` for its noninteractive path. The bundled CLI already validates
+against `defaultApp`, so replacing that definition updates the valid `--screen`
+values. The `src/screens/index.ts` registry exports remain for existing consumers.
+
+`defineApp` rejects duplicate IDs and invalid initial screens. You can use
+`layout: 'bare'` for a completely independent view or `chrome: {header: false,
+nav: false, footer: false, toasts: false}` to hide individual regions. A custom
+shell receives exactly the normal `AppShellProps`, including `showToasts`.
+
+Custom theme names are supported programmatically through `themes` and
+`AppOptions.theme`; the bundled Commander's `--theme` validation continues to
+accept only built-in theme names until downstream CLI wiring is customized.
+The default mono fallback and existing `NO_COLOR` CLI precedence remain intact.
+
+## Actions and unified input ownership
+
+Prefer `useAction` when a screen shortcut should also appear in the contextual
+footer. It uses the same `useKeymap` dispatcher, so the key and its display label
+are configured together:
+
+```tsx
+useAction({
+  id: 'jobs.refresh',
+  key: 'r',
+  label: 'refresh',
+  scope: 'screen',
+  run: refreshJobs,
+  enabled: !loading,
+});
+```
+
+Registered active screen actions appear in the default shell footer automatically.
+Existing `ScreenDef.hints` remain supported and are deduplicated by key.
+`useAction` also works outside `ActionProvider` as a scoped shortcut without
+the footer metadata. For a custom shell, consume `useActionHints()` explicitly.
+
+Built-in `SearchSelect`, `Confirm`, and `Stepper` use `useManagedInput`.
+It routes raw keyboard input through the shared `KeymapProvider` with
+control > screen > global priority, avoiding competing native Ink listeners.
+A handler can return `false` to allow the next eligible listener to receive an
+unhandled key. With no provider, controls use native Ink input as before.
+Direct Ink `useInput` is still supported for custom controls, but native
+listeners are not arbitrated with the managed dispatcher.
 
 ## Create and register a screen
 
