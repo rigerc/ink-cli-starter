@@ -11,6 +11,8 @@ npm ci
 npm run dev
 ```
 
+For a repository created from this template, set its package, executable and config identity with `npm run init:project -- --name my-cli --description "My CLI"`. Use `--dry-run` to preview changes. See [customization](docs/template/customization.md) for details.
+
 The default app provides **Home, Settings and Help** screens. Reusable UI components, hooks, and themes are included for applications built from the template, alongside headless commands and tests.
 
 The UI layer is a **set of defaults, not a required design system**. Screens can opt out of the shared chrome and global shortcuts, and reusable layout components accept native Ink styling properties. You can also use Ink's `Box` and `Text` directly. See [UI flexibility](docs/ui-framework.md#using-only-what-you-need).
