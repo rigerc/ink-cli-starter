@@ -32,7 +32,7 @@ export function inspectEnvironment(configFile?: string): DoctorReport {
         ? `${path}: ${error}`
         : existsSync(path)
           ? `${path}: valid`
-          : `${path}: not created (defaults in use)`,
+          : `${path}: no saved overrides (node-config files/defaults in use)`,
     },
   ];
 

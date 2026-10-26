@@ -52,7 +52,9 @@ Add screens under `src/screens/`, register them in `src/screens/index.ts`, and p
 
 ## Themes and settings
 
-Themes (`dark`, `light`, `contrast`, `mono`) use semantic tokens and ASCII fallbacks. Configuration uses Zod-validated JSON stored under the application-specific XDG config path. Precedence: defaults < saved file < environment < CLI flags; `NO_COLOR` overrides theme selection.
+Themes (`dark`, `light`, `contrast`, `mono`) use semantic tokens and ASCII fallbacks. Configuration uses [node-config](https://github.com/node-config/node-config) for layered deployment settings, validated with Zod. Add `config/default.json` and optional `config/development.json`, `config/production.json`, or `config/local.json`. Set `NODE_CONFIG_ENV` (or `NODE_ENV`) to select a deployment, and `NODE_CONFIG_DIR` to use another config directory. The template includes `config/default.json`.
+
+The interactive Settings screen and `--setup` continue to write **only** the application-specific XDG JSON file (`~/.config/ink-kit/config.json`, or under `XDG_CONFIG_HOME`). Existing user settings work without migration. Precedence: field defaults < node-config deployment files < saved XDG settings < `NODE_CONFIG` JSON overrides < application environment variables < CLI flags. `NO_COLOR` always overrides theme selection. The existing `--config <path>` flag is an isolated, explicit JSON-file override; it does not load deployment layers or `NODE_CONFIG`.
 
 ```bash
 npm run theme:list

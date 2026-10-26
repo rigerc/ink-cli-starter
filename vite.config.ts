@@ -43,6 +43,7 @@ export default defineConfig({
         'react',
         'ink',
         'commander',
+        'config',
         '@commander-js/extra-typings',
         'zod',
         'string-width',
