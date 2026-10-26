@@ -70,7 +70,15 @@ export function useAction(action: UIAction): KeyHint {
     if (!register) return;
 
     return register(() => latest.current);
-  }, [register, action.id, action.label, action.key, action.enabled, action.scope, action.showInFooter]);
+  }, [
+    register,
+    action.id,
+    action.label,
+    action.key,
+    action.enabled,
+    action.scope,
+    action.showInFooter,
+  ]);
 
   return {key: action.key, label: action.label};
 }

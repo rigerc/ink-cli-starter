@@ -1,12 +1,6 @@
 import {useState} from 'react';
 import {Badge, CommandMenu, Header, StatusBar, Tabs} from '../../components';
-import {
-  useExit,
-  useActionHints,
-  useHasInputCapture,
-  useKeymap,
-  useRouter,
-} from '../../hooks';
+import {useExit, useActionHints, useHasInputCapture, useKeymap, useRouter} from '../../hooks';
 import {getGlobalBindings, getGlobalKeys, type KeyHint} from '../../keys';
 import {useThemeControls} from '../../theme/context';
 import {AppProviders, type AppOptions} from './AppProviders';
@@ -31,12 +25,18 @@ function ActiveScreen({definition}: {definition: UIAppDefinition}) {
   const inputCaptured = useHasInputCapture();
   const actionHints = useActionHints();
   const [commandOpen, setCommandOpen] = useState(false);
-  const screen = definition.findScreen(router.current) ?? definition.findScreen(definition.initialScreen)!;
+  const screen =
+    definition.findScreen(router.current) ?? definition.findScreen(definition.initialScreen)!;
   const navScreens = definition.navScreens;
-  const index = Math.max(0, navScreens.findIndex((item) => item.id === router.current));
+  const index = Math.max(
+    0,
+    navScreens.findIndex((item) => item.id === router.current),
+  );
   const go = (i: number) => {
     if (!navScreens.length) return;
-    router.replace(navScreens[((i % navScreens.length) + navScreens.length) % navScreens.length]!.id);
+    router.replace(
+      navScreens[((i % navScreens.length) + navScreens.length) % navScreens.length]!.id,
+    );
   };
 
   useKeymap(
@@ -67,7 +67,8 @@ function ActiveScreen({definition}: {definition: UIAppDefinition}) {
     : inputCaptured
       ? inputHints
       : contextualHints.filter(
-          (hint, position) => contextualHints.findIndex((item) => item.key === hint.key) === position,
+          (hint, position) =>
+            contextualHints.findIndex((item) => item.key === hint.key) === position,
         );
 
   const Screen = screen.Component;
@@ -106,7 +107,13 @@ function ActiveScreen({definition}: {definition: UIAppDefinition}) {
   );
 }
 
-export function AppRuntime({definition, options}: {definition: UIAppDefinition; options: AppOptions}) {
+export function AppRuntime({
+  definition,
+  options,
+}: {
+  definition: UIAppDefinition;
+  options: AppOptions;
+}) {
   return (
     <AppProviders options={options} themes={definition.themes}>
       <ActiveScreen definition={definition} />
@@ -115,8 +122,15 @@ export function AppRuntime({definition, options}: {definition: UIAppDefinition; 
 }
 
 /** One-frame view for pipes and CI; no interactive navigation or toast host. */
-export function PlainRuntime({definition, options}: {definition: UIAppDefinition; options: AppOptions}) {
-  const screen = definition.findScreen(options.screen) ?? definition.findScreen(definition.initialScreen)!;
+export function PlainRuntime({
+  definition,
+  options,
+}: {
+  definition: UIAppDefinition;
+  options: AppOptions;
+}) {
+  const screen =
+    definition.findScreen(options.screen) ?? definition.findScreen(definition.initialScreen)!;
   const Screen = screen.Component;
   const brand = definition.brand;
 

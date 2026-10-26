@@ -36,21 +36,17 @@ describe('composable UI runtime', () => {
     screens.push({id: 'extra', label: 'Extra', Component: Extra});
     expect(definition.navScreens).toHaveLength(2);
 
-    expect(() =>
-      defineApp({initialScreen: 'missing', screens}),
-    ).toThrow('Unknown initial screen');
+    expect(() => defineApp({initialScreen: 'missing', screens})).toThrow('Unknown initial screen');
 
-    expect(() =>
-      defineApp({initialScreen: 'main', screens: [...screens, screens[0]!]}),
-    ).toThrow('Duplicate or empty screen id');
+    expect(() => defineApp({initialScreen: 'main', screens: [...screens, screens[0]!]})).toThrow(
+      'Duplicate or empty screen id',
+    );
   });
 
   it('renders custom shell and selectively hides individual chrome regions', () => {
     const definition = defineApp({
       initialScreen: 'main',
-      screens: [
-        {id: 'main', label: 'Main', Component: Main, chrome: {nav: false, footer: false}},
-      ],
+      screens: [{id: 'main', label: 'Main', Component: Main, chrome: {nav: false, footer: false}}],
       shell: CustomShell,
       brand: {title: 'test-cli', version: '2.0.0'},
     });

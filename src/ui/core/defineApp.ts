@@ -54,7 +54,8 @@ export function defineApp(options: UIAppOptions): UIAppDefinition {
   const ids = new Set<string>();
 
   for (const screen of options.screens) {
-    if (!screen.id || ids.has(screen.id)) throw new Error(`Duplicate or empty screen id: ${screen.id}`);
+    if (!screen.id || ids.has(screen.id))
+      throw new Error(`Duplicate or empty screen id: ${screen.id}`);
     ids.add(screen.id);
   }
 

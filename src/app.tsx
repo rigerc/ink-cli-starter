@@ -6,7 +6,12 @@ import type {AppOptions} from './ui/core/AppProviders';
 
 export {AppProviders, type AppOptions} from './ui/core/AppProviders';
 export {ScreenFrame} from './ui/layout/ScreenFrame';
-export {defineApp, type ScreenChrome, type ScreenDef, type UIAppDefinition} from './ui/core/defineApp';
+export {
+  defineApp,
+  type ScreenChrome,
+  type ScreenDef,
+  type UIAppDefinition,
+} from './ui/core/defineApp';
 export {AppRuntime, PlainRuntime} from './ui/core/AppRuntime';
 
 /** Defaults only; downstream applications may provide their own definition. */

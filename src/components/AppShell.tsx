@@ -99,13 +99,7 @@ export interface AppShellProps {
   children: ReactNode;
 }
 
-export function AppShell({
-  header,
-  nav,
-  footer,
-  children,
-  showToasts = true,
-}: AppShellProps) {
+export function AppShell({header, nav, footer, children, showToasts = true}: AppShellProps) {
   return (
     <Box flexDirection="column" gap={1}>
       <Box flexDirection="column">

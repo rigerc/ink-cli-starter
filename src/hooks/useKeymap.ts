@@ -172,7 +172,6 @@ export function useKeymap(bindings: Binding[], options: KeymapOptions = {}) {
   );
 }
 
-
 /**
  * Managed raw input for text editors and composite controls. Shares the
  * KeymapProvider dispatcher with useKeymap; standalone controls retain
