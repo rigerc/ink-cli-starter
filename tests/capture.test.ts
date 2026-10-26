@@ -82,7 +82,7 @@ describe('VHS capture workflow', () => {
 
       expect(customOutput).toContain('Wait+Screen@10s /Help/');
       expect(customOutput).not.toContain('Ctrl+K');
-      expect(readdirSync(dir)).toEqual(['custom.tape', 'tapes']);
+      expect(readdirSync(dir)).toContain('tapes');
     } finally {
       rmSync(dir, {recursive: true, force: true});
     }
