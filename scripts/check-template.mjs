@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import {existsSync, readFileSync} from 'node:fs';
-import ts from 'typescript';
+import ts from '@typescript/typescript6';
 
 const templateName = 'ink-kit';
 
