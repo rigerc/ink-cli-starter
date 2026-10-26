@@ -30,7 +30,7 @@ describe('themes', () => {
 describe('resolveThemeName', () => {
   it('uses the shared project default when higher-priority values are absent', () => {
     expect(defaultTheme).toBe(defaults.defaultTheme);
-    expect(appConfig.fields[0]?.defaultValue).toBe(defaultTheme);
+    expect(appConfig.fields.find((field) => field.path === 'theme')?.defaultValue).toBe(defaultTheme);
     const result = resolveThemeName({noColor: false});
     expect(result).toBe(
       defaultTheme === 'auto' ? resolveThemeName({config: 'auto', noColor: false}) : defaultTheme,
