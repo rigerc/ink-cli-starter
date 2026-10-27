@@ -50,7 +50,7 @@ jobs:
       - uses: charmbracelet/vhs-action@v2
         with:
           version: v0.12.1
-          install-fonts: true
+          install-fonts: false
       - run: npm run typecheck
       - run: npm test
       - name: Capture all registered screens
