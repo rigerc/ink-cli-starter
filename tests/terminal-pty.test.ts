@@ -1,10 +1,33 @@
-import * as pty from 'node-pty';
 import {mkdtempSync, rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {afterEach, describe, expect, it} from 'vite-plus/test';
 
-const sessions: {terminal: pty.IPty; directory: string}[] = [];
+/**
+ * node-pty ships prebuilt bindings that can be missing on some machines, so the
+ * module is loaded dynamically and its absence skips the suite instead of
+ * failing it. `REQUIRE_PTY=1` (set in CI on Linux Node 24) turns a skip into a
+ * hard failure so a silent skip cannot hide a regression.
+ */
+type PtyModule = typeof import('node-pty');
+let pty: PtyModule | undefined;
+let skipReason: string | undefined;
+try {
+  pty = await import('node-pty');
+} catch (error) {
+  skipReason = `node-pty could not be loaded: ${error instanceof Error ? error.message : String(error)}`;
+}
+if (!skipReason && process.platform === 'win32')
+  skipReason = 'node-pty interactive tests are not supported on Windows';
+if (skipReason) {
+  if (process.env.REQUIRE_PTY === '1')
+    throw new Error(`PTY tests are required (REQUIRE_PTY=1): ${skipReason}`);
+  console.warn(`Skipping interactive PTY tests: ${skipReason}`);
+}
+
+const sessions: {terminal: import('node-pty').IPty; directory: string}[] = [];
+// SAFETY: the suite below is skipped entirely when node-pty could not be loaded.
+const spawnPty = pty!;
 afterEach(() => {
   for (const {terminal, directory} of sessions.splice(0)) {
     try {
@@ -30,7 +53,7 @@ function start(args: string[] = []) {
       TERM: 'xterm-256color',
     }).filter((entry): entry is [string, string] => entry[1] !== undefined),
   );
-  const terminal = pty.spawn(
+  const terminal = spawnPty.spawn(
     process.execPath,
     ['--import', 'tsx', 'src/cli.tsx', '--ascii', ...args],
     {name: 'xterm-256color', cols: 80, rows: 30, cwd: process.cwd(), env},
@@ -64,7 +87,7 @@ function start(args: string[] = []) {
   return {terminal, exited, waitFor, output: () => output};
 }
 
-describe('real interactive terminal', () => {
+describe.skipIf(Boolean(skipReason))('real interactive terminal', () => {
   it('starts, navigates, quits, and restores the cursor', async () => {
     const session = start();
     await session.waitFor('Build your app');
