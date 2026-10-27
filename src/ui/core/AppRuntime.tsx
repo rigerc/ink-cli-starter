@@ -76,6 +76,10 @@ function ActiveScreen({definition}: {definition: UIAppDefinition}) {
 
   const Screen = screen.Component;
   const brand = definition.brand;
+  const navNode =
+    screen.chrome?.nav === false ? undefined : (
+      <Tabs items={navScreens} activeId={router.current} />
+    );
 
   return (
     <ScreenFrame
@@ -87,11 +91,12 @@ function ActiveScreen({definition}: {definition: UIAppDefinition}) {
           <Header
             title={brand.title}
             version={brand.version}
+            nav={definition.shell ? undefined : navNode}
             right={<Badge tone="accent">{theme.name}</Badge>}
           />
         )
       }
-      nav={<Tabs items={navScreens} activeId={router.current} />}
+      nav={definition.shell || !brand ? navNode : undefined}
       footer={<StatusBar hints={hints} />}
     >
       {commandOpen && (

@@ -80,6 +80,74 @@ describe('application composition', () => {
     expect(output).not.toContain('next screen');
   });
 
+  it('renders the screen tabs inside the header by default', () => {
+    const app = defineApp({
+      initialScreen: 'overview',
+      screens: [
+        {id: 'overview', label: 'Overview', Component: Overview},
+        {id: 'details', label: 'Details', Component: Details},
+      ],
+      brand: {title: 'example-cli', version: '1.2.3'},
+    });
+    const output = renderToString(<AppRuntime definition={app} options={options} />, {columns: 80});
+    const brandLine = output.split('\n').find((line) => line.includes('example-cli'));
+    expect(brandLine).toBeDefined();
+    expect(brandLine).toContain('1 Overview');
+    expect(brandLine).toContain('2 Details');
+    expect(brandLine).not.toContain('Overview body');
+  });
+
+  it('keeps every tab visible when the header wraps at narrow widths', () => {
+    const app = defineApp({
+      initialScreen: 'overview',
+      screens: [
+        {id: 'overview', label: 'Overview', Component: Overview},
+        {id: 'details', label: 'Details', Component: Details},
+      ],
+      brand: {title: 'example-cli', version: '1.2.3'},
+    });
+    const output = renderToString(<AppRuntime definition={app} options={options} />, {columns: 40});
+    expect(output).toContain('1 Overview');
+    expect(output).toContain('2 Details');
+  });
+
+  it('omits the tabs from the header when nav chrome is disabled', () => {
+    const app = defineApp({
+      initialScreen: 'overview',
+      screens: [
+        {
+          id: 'overview',
+          label: 'Alpha',
+          Component: Overview,
+          chrome: {nav: false},
+        },
+        {id: 'details', label: 'Beta', Component: Details},
+      ],
+      brand: {title: 'example-cli', version: '1.2.3'},
+    });
+    const output = renderToString(<AppRuntime definition={app} options={options} />);
+    expect(output).toContain('example-cli');
+    expect(output).not.toContain('1 Alpha');
+    expect(output).not.toContain('2 Beta');
+  });
+
+  it('still passes the tabs to a custom shell as a separate nav region', () => {
+    const app = defineApp({
+      initialScreen: 'overview',
+      screens: [
+        {id: 'overview', label: 'Overview', Component: Overview},
+        {id: 'details', label: 'Details', Component: Details},
+      ],
+      brand: {title: 'example-cli', version: '1.2.3'},
+      shell: Shell,
+    });
+    const output = renderToString(<AppRuntime definition={app} options={options} />, {columns: 80});
+    expect(output).toContain('Custom shell');
+    expect(output).toContain('1 Overview');
+    const brandLine = output.split('\n').find((line) => line.includes('example-cli'));
+    expect(brandLine).not.toContain('1 Overview');
+  });
+
   it('renders bare screens without any supplied shell', () => {
     const app = defineApp({
       initialScreen: 'overview',
