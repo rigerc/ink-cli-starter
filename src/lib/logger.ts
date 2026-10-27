@@ -41,12 +41,35 @@ export function redact(value: unknown, seen = new WeakSet<object>(), depth = 0):
       cause: redact(value.cause, seen, depth + 1),
     };
   if (Array.isArray(value)) return value.map((entry) => redact(entry, seen, depth + 1));
+  if (value instanceof Map)
+    return new Map(
+      [...value.entries()].map(([key, entry]) => [
+        redact(key, seen, depth + 1),
+        sensitive.test(String(key)) ? '[REDACTED]' : redact(entry, seen, depth + 1),
+      ]),
+    );
+  if (value instanceof Set)
+    return new Set([...value].map((entry) => redact(entry, seen, depth + 1)));
   return Object.fromEntries(
     Object.entries(value).map(([key, entry]) => [
       key,
       sensitive.test(key) ? '[REDACTED]' : redact(entry, seen, depth + 1),
     ]),
   );
+}
+
+/** Cut a buffer below limit bytes without splitting a UTF-8 sequence. */
+function utf8SafeSlice(buffer: Buffer, limit: number) {
+  if (buffer.length <= limit) return buffer;
+  let end = limit;
+  // A cut can land inside a multi-byte sequence: back off to its lead byte.
+  for (let back = 1; back <= 4 && back <= end; back++) {
+    const byte = buffer[end - back]!;
+    if ((byte & 0xc0) === 0x80) continue;
+    if (back <= (byte >= 0xf0 ? 3 : byte >= 0xe0 ? 2 : byte >= 0xc0 ? 1 : 0)) end -= back;
+    break;
+  }
+  return buffer.subarray(0, end);
 }
 
 /** One open descriptor, one rotated backup, and a strict byte cap per file. */
@@ -85,7 +108,7 @@ export function createLogger(
       );
       const bounded =
         line.length > maxBytes
-          ? Buffer.concat([line.subarray(0, maxBytes - 1), Buffer.from('\n')])
+          ? Buffer.concat([utf8SafeSlice(line, maxBytes - 1), Buffer.from('\n')])
           : line;
       if (size + bounded.length > maxBytes) {
         close();

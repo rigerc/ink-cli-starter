@@ -70,6 +70,47 @@ describe('cancellable async requests', () => {
 });
 
 describe('route params and leave guards', () => {
+  it('keeps push and replace referentially stable between renders', async () => {
+    type Routes = {list: undefined; detail: {id: string}};
+    let router: ReturnType<typeof useRouter<Routes>> | undefined;
+    function Probe({label}: {label?: string}) {
+      router = useRouter<Routes>();
+      return <Text>{`${router.current}:${label ?? 'initial'}`}</Text>;
+    }
+    const tree = (
+      <RouterProvider initial="list">
+        <InputCaptureProvider>
+          <KeymapProvider>
+            <Probe />
+          </KeymapProvider>
+        </InputCaptureProvider>
+      </RouterProvider>
+    );
+    const app = await mount(tree);
+    const firstPush = router!.push;
+    const firstReplace = router!.replace;
+    // A re-render (changed prop) must not recreate the typed wrappers.
+    app.rerender(
+      <RouterProvider initial="list">
+        <InputCaptureProvider>
+          <KeymapProvider>
+            <Probe label="rerendered" />
+          </KeymapProvider>
+        </InputCaptureProvider>
+      </RouterProvider>,
+    );
+    await flushFrame();
+    expect(router!.push).toBe(firstPush);
+    expect(router!.replace).toBe(firstReplace);
+    expect(app.lastFrame()).toBe('list:rerendered');
+    // The wrappers also survive navigation; only paramsFor tracks route state.
+    router!.push('detail', {id: '7'});
+    await flushFrame();
+    expect(router!.push).toBe(firstPush);
+    expect(router!.replace).toBe(firstReplace);
+    expect(router!.paramsFor('detail')).toEqual({id: '7'});
+  });
+
   it('defers push, replace, back, and quit until explicitly resumed', async () => {
     type Routes = {list: undefined; detail: {id: string}};
     let router: ReturnType<typeof useRouter<Routes>> | undefined;

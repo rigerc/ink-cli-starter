@@ -46,6 +46,9 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y fish zsh
       - name: Tests and coverage
         if: matrix.os == 'ubuntu-latest' && matrix.node == '24'
+        env:
+          # Keep the native PTY suite required here; other runners treat it as optional.
+          REQUIRE_PTY: '1'
         run: npm run test:coverage
       - name: Tests
         if: matrix.os != 'ubuntu-latest' || matrix.node != '24'

@@ -1,11 +1,13 @@
 import {existsSync, readFileSync} from 'node:fs';
+import {spawn} from 'node:child_process';
 import {join} from 'node:path';
 import {describe, expect, it} from 'vite-plus/test';
 import {Command} from '@commander-js/extra-typings';
 import {z} from 'zod';
 import {defineCommand} from '../src/commands';
 import {APP_ASCII_ENV, APP_THEME_ENV} from '../src/lib/identity';
-import {runNode, withWorkspace, writeFixture} from './helpers/fixtures';
+import {exampleItems} from '../src/features/example/items';
+import {runNode, withAsyncWorkspace, withWorkspace, writeFixture} from './helpers/fixtures';
 
 function cli(directory: string, args: string[], env: NodeJS.ProcessEnv = {}, input?: string) {
   return runNode('src/cli.tsx', args, {
@@ -120,7 +122,7 @@ describe('registered headless commands', {timeout: 20_000}, () => {
       expect(JSON.parse(mono.stdout)).toEqual({key: 'theme', value: 'mono', source: 'environment'});
     }));
 
-  it('consumes explicit and implicit pipe input and keeps JSON stdout clean', () =>
+  it('consumes explicit pipe input and keeps JSON stdout clean', () =>
     withWorkspace((directory) => {
       const path = join(directory, 'settings.json');
       expect(
@@ -129,13 +131,58 @@ describe('registered headless commands', {timeout: 20_000}, () => {
       const input = JSON.stringify([
         {id: 'pipe', name: 'Piped item', status: 'ready', description: 'From stdin'},
       ]);
-      for (const args of [['example', '-'], ['example']]) {
-        const result = cli(directory, [...args, '--json', '--verbose'], {}, input);
-        expect(result.status, result.stderr).toBe(0);
-        expect(JSON.parse(result.stdout)).toEqual(JSON.parse(input));
-      }
+      const result = cli(directory, ['example', '-', '--json', '--verbose'], {}, input);
+      expect(result.status, result.stderr).toBe(0);
+      expect(JSON.parse(result.stdout)).toEqual(JSON.parse(input));
+      // Without `-`, piped input is not read; the command prints the default items.
+      const implicit = cli(directory, ['example', '--json'], {}, input);
+      expect(implicit.status, implicit.stderr).toBe(0);
+      expect(JSON.parse(implicit.stdout)).toEqual(exampleItems);
       expect(cli(directory, ['example', '-'], {}, 'bad').status).toBe(2);
       expect(cli(directory, ['example', '-'], {}, '').status).toBe(2);
+    }));
+
+  it('exits promptly when example gets an open stdin without -', async () =>
+    withAsyncWorkspace(async (directory) => {
+      const child = spawn(process.execPath, ['src/cli.tsx', 'example', '--json'], {
+        cwd: process.cwd(),
+        env: {
+          ...process.env,
+          CI: '1',
+          NO_COLOR: '1',
+          XDG_CONFIG_HOME: directory,
+          XDG_STATE_HOME: directory,
+          NODE_OPTIONS: '--import tsx',
+        },
+        stdio: ['pipe', 'pipe', 'ignore'],
+      });
+      // Deliberately keep child.stdin open; the command must not wait on it.
+      const exited = new Promise<{status: number; stdout: string}>((resolve) => {
+        let stdout = '';
+        child.stdout!.on('data', (chunk: Buffer) => (stdout += chunk.toString()));
+        child.on('exit', (code) => resolve({status: code ?? -1, stdout}));
+      });
+      const result = await Promise.race([
+        exited,
+        new Promise<never>((_, reject) => {
+          const timeout = setTimeout(
+            () => reject(new Error('example hung on an open stdin')),
+            12_000,
+          );
+          child.on('exit', () => clearTimeout(timeout));
+        }),
+      ]);
+      child.kill();
+      expect(result.status).toBe(0);
+      expect(JSON.parse(result.stdout)).toEqual(exampleItems);
+    }));
+
+  it('prints group help and exits non-zero for a bare group command', () =>
+    withWorkspace((directory) => {
+      const result = cli(directory, ['config']);
+      expect(result.status).toBe(2);
+      expect(result.stdout).toContain('Usage:');
+      expect(result.stderr).toContain('Missing config subcommand');
     }));
 
   it('reports stacks only in debug mode and writes unexpected failures to the logger', () =>
