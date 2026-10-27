@@ -90,6 +90,10 @@ completed diagnostic command.
 The shipped `example` command and Gallery screen share `listItems` in
 `src/features/example/items.ts`. Try `example --status ready --json` or pipe an
 array of `{id, name, status, description}` records into `example - --json`.
+Headless commands read stdin **only** when the caller passes the explicit `-`
+argument; they never auto-read piped input, so a command exits promptly even
+when a caller leaves stdin open. Model any new piped-input command on `example`
+or `config set` and their `readInput` usage.
 The example is local and removable: remove its screen registrations, command
 registration, feature module, and corresponding tests when replacing it.
 

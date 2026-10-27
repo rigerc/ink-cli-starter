@@ -15,7 +15,8 @@ export const exampleCommand = defineCommand({
   run: async ({args, options, context}) => {
     if (args[0] && args[0] !== '-')
       throw new AppError('Use - to read JSON from stdin', {exitCode: 2});
-    const raw = args[0] === '-' || !process.stdin.isTTY ? await readInput(context.signal) : '';
+    // Read stdin only for the explicit `-` argument; an open stdin must never hang the command.
+    const raw = args[0] === '-' ? await readInput(context.signal) : '';
     let items;
     try {
       items = raw.trim() ? itemsSchema.parse(JSON.parse(raw)) : undefined;
