@@ -28,6 +28,7 @@ opencode.json
 agentsmesh.yaml
 agentsmesh.local.yaml
 .agentsmesh/
+.agents/
 .claude/
 .codex/
 .pi/
