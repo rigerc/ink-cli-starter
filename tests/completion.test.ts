@@ -20,11 +20,15 @@ for (const shell of ['bash', 'zsh', 'fish'] as const) {
       expect(script).toContain('status');
     });
     it.skipIf(!available)('passes the shell syntax checker', () => {
-      const result = spawnSync(shell, ['-n'], {
-        input: generateCompletion(program(), shell),
-        encoding: 'utf8',
-      });
-      expect(result.status, result.stderr).toBe(0);
+      const directory = mkdtempSync(join(tmpdir(), 'ink-syntax-'));
+      try {
+        const path = join(directory, `completion.${shell}`);
+        writeFileSync(path, generateCompletion(program(), shell));
+        const result = spawnSync(shell, ['-n', path], {encoding: 'utf8'});
+        expect(result.status, result.stderr).toBe(0);
+      } finally {
+        rmSync(directory, {recursive: true, force: true});
+      }
     });
   });
 }
