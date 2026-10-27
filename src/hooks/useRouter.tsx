@@ -83,16 +83,33 @@ export function RouterProvider({initial, children}: {initial: string; children: 
 export function useRouter<R extends RouteMap = Record<string, object | undefined>>() {
   const router = useContext(RouterContext);
   if (!router) throw new Error('useRouter must be used inside <RouterProvider>');
-  return {
-    ...router,
-    push: <K extends keyof R & string>(...args: RouteArgs<R, K>) => router.push(args[0], args[1]),
-    replace: <K extends keyof R & string>(...args: RouteArgs<R, K>) =>
-      router.replace(args[0], args[1]),
-    paramsFor: <K extends keyof R & string>(id: K): R[K] | undefined => {
-      // SAFETY: navigation methods constrain params to the application's declared route map.
-      return router.current === id ? (router.params as R[K]) : undefined;
-    },
-  };
+  const {current, params, push, replace} = router;
+  // The typed wrappers are memoized so consumers can use them directly in effect
+  // dependencies; navigation still re-creates the returned object itself.
+  const typedPush = useMemo(
+    () =>
+      <K extends keyof R & string>(...args: RouteArgs<R, K>) =>
+        push(args[0], args[1]),
+    [push],
+  );
+  const typedReplace = useMemo(
+    () =>
+      <K extends keyof R & string>(...args: RouteArgs<R, K>) =>
+        replace(args[0], args[1]),
+    [replace],
+  );
+  const paramsFor = useMemo(
+    () =>
+      <K extends keyof R & string>(id: K): R[K] | undefined => {
+        // SAFETY: navigation methods constrain params to the application's declared route map.
+        return current === id ? (params as R[K]) : undefined;
+      },
+    [current, params],
+  );
+  return useMemo(
+    () => ({...router, push: typedPush, replace: typedReplace, paramsFor}),
+    [router, typedPush, typedReplace, paramsFor],
+  );
 }
 
 export function useLeaveGuard(guard: LeaveGuard, enabled = true) {
