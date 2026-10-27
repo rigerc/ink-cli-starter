@@ -23,7 +23,7 @@ export const screens: ScreenDef[] = [
       {key: 'w', label: 'wizard'},
     ],
   },
-  {id: 'help', label: 'Help', Component: HelpScreen},
+  {id: 'help', label: 'Help', Component: HelpScreen, hints: [{key: '↑/↓', label: 'topic'}]},
   {
     id: 'gallery',
     label: 'Gallery',
