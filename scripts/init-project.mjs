@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-import {readFileSync, writeFileSync} from 'node:fs';
+import {existsSync, readdirSync, readFileSync, writeFileSync} from 'node:fs';
+import {join} from 'node:path';
 import {parseArgs} from 'node:util';
 
 const TEMPLATE_NAME = 'ink-kit';
@@ -8,6 +9,27 @@ const TEMPLATE_DESCRIPTION =
   'GitHub template for an Ink 8, React 19 and TypeScript terminal application';
 
 const paths = ['package.json', 'package-lock.json'];
+const changesetDirectory = '.changeset';
+
+/** Pending changesets name the package they release; README.md is documentation. */
+function changesetPaths() {
+  if (!existsSync(changesetDirectory)) return [];
+
+  return readdirSync(changesetDirectory)
+    .filter((file) => file.endsWith('.md') && file !== 'README.md')
+    .sort()
+    .map((file) => join(changesetDirectory, file));
+}
+
+/**
+ * Rename only the template's package key inside YAML frontmatter. The key is always
+ * quoted so scoped names (`@scope/name`) remain valid YAML.
+ */
+function renameChangesetPackage(text, name) {
+  return text.replace(/^---\r?\n[\s\S]*?\r?\n---/, (frontmatter) =>
+    frontmatter.replace(/^(['"]?)ink-kit\1(?=[ \t]*:)/gm, () => `'${name}'`),
+  );
+}
 
 function ensureExpected(value, expected, location) {
   if (value !== TEMPLATE_NAME && value !== expected) {
@@ -104,17 +126,23 @@ function main() {
     'package-lock.json',
   );
 
-  const updates = [JSON.stringify(pkg, null, 2) + '\n', JSON.stringify(lock, null, 2) + '\n'];
+  const files = [
+    {path: paths[0], original: originals[0], updated: JSON.stringify(pkg, null, 2) + '\n'},
+    {path: paths[1], original: originals[1], updated: JSON.stringify(lock, null, 2) + '\n'},
+    ...changesetPaths().map((path) => {
+      const original = readFileSync(path, 'utf8');
+
+      return {path, original, updated: renameChangesetPackage(original, name)};
+    }),
+  ];
 
   let changed = 0;
 
-  for (const [index, path] of paths.entries()) {
-    const content = updates[index];
-
-    if (content === originals[index]) continue;
+  for (const {path, original, updated} of files) {
+    if (updated === original) continue;
     changed++;
 
-    if (!values['dry-run']) writeFileSync(path, content);
+    if (!values['dry-run']) writeFileSync(path, updated);
     console.log(`${values['dry-run'] ? 'Would update' : 'Updated'} ${path}`);
   }
 

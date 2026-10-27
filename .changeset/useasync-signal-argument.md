@@ -1,5 +1,5 @@
 ---
-'ink-kit': major
+'ink-kit': minor
 ---
 
 **Breaking change:** the `useAsync` callback now receives an `AbortSignal` before the run arguments — `fn(signal, ...args)` instead of `fn(...args)`. Update callbacks to accept the signal and pass it to cancellable I/O.

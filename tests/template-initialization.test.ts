@@ -64,6 +64,40 @@ describe('template identity initialization', () => {
       }),
   );
 
+  it('renames the package in pending changesets so changeset version keeps working', () =>
+    fixture((directory) => {
+      const changeset = (name: string, bump: string) =>
+        `---\n'${name}': ${bump}\n---\n\nMentions ink-kit in prose, which stays untouched.\n`;
+      writeFixture(directory, '.changeset/one.md', changeset('ink-kit', 'patch'));
+      writeFixture(
+        directory,
+        '.changeset/two.md',
+        changeset('ink-kit', 'minor').replaceAll("'", '"'),
+      );
+      writeFixture(directory, '.changeset/other.md', changeset('another-package', 'patch'));
+      writeFixture(directory, '.changeset/README.md', '# Changesets\n\nink-kit docs.\n');
+
+      const preview = runNode(initializer, ['--name', '@acme/my-cli', '--dry-run'], {
+        cwd: directory,
+      });
+      expect(preview.status, preview.stderr).toBe(0);
+      expect(preview.stdout).toContain('Would update .changeset');
+      expect(readFileSync(join(directory, '.changeset/one.md'), 'utf8')).toContain("'ink-kit'");
+
+      const result = runNode(initializer, ['--name', '@acme/my-cli'], {cwd: directory});
+      expect(result.status, result.stderr).toBe(0);
+      const read = (file: string) => readFileSync(join(directory, '.changeset', file), 'utf8');
+      expect(read('one.md')).toContain("'@acme/my-cli': patch");
+      expect(read('two.md')).toContain("'@acme/my-cli': minor");
+      expect(read('one.md')).toContain('Mentions ink-kit in prose');
+      expect(read('other.md')).toContain("'another-package': patch");
+      expect(read('README.md')).toContain('ink-kit docs');
+
+      const again = runNode(initializer, ['--name', '@acme/my-cli'], {cwd: directory});
+      expect(again.status, again.stderr).toBe(0);
+      expect(again.stdout).toContain('Already initialized');
+    }));
+
   it('refuses to overwrite pre-customized identity', () =>
     fixture((directory) => {
       const pkg = readJson(directory, 'package.json');

@@ -82,10 +82,13 @@ export async function getUpdateNotice(options: {
         cache = {checkedAt: Date.now(), latest: release.version};
         persist(cache);
       } catch (error) {
+        // An interrupted check says nothing about the registry; record nothing.
+        if (options.signal.aborted) return;
         // Offline launches must not pay the one-second timeout on every start.
-        persist({checkedAt: Date.now(), error: true});
+        // Keep the last known release so a pending update is still announced.
+        cache = {checkedAt: Date.now(), latest: cache?.latest, error: true};
+        persist(cache);
         logger.debug('Update check failed', error);
-        return;
       }
     }
     if (cache?.latest && newer(cache.latest, options.currentVersion))

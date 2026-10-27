@@ -149,6 +149,57 @@ describe('optional update notification', () => {
         latest: '1.2.0',
       });
     }));
+
+  it('records nothing when the user interrupts a check', async () =>
+    withAsyncWorkspace(async (directory) => {
+      const controller = new AbortController();
+      const fetcher = vi.fn<typeof fetch>().mockImplementation(async () => {
+        controller.abort();
+        throw new DOMException('This operation was aborted', 'AbortError');
+      });
+      const notice = await getUpdateNotice({
+        enabled: true,
+        packageName: '@acme/example',
+        currentVersion: '1.0.0',
+        signal: controller.signal,
+        env: {},
+        isTTY: true,
+        stateDirectory: directory,
+        fetcher,
+      });
+      expect(notice).toBeUndefined();
+      expect(fetcher).toHaveBeenCalledTimes(1);
+      // An interruption is not a registry failure, so no retry-suppressing marker exists.
+      expect(existsSync(join(directory, 'update.json'))).toBe(false);
+    }));
+
+  it('keeps announcing the last known release when a refresh fails', async () =>
+    withAsyncWorkspace(async (directory) => {
+      writeFixture(
+        directory,
+        'update.json',
+        JSON.stringify({checkedAt: Date.now() - 2 * 24 * 60 * 60 * 1000, latest: '1.2.0'}),
+      );
+      const fetcher = vi.fn<typeof fetch>().mockRejectedValue(new Error('offline'));
+      const options = {
+        enabled: true,
+        packageName: '@acme/example',
+        currentVersion: '1.0.0',
+        signal: new AbortController().signal,
+        env: {},
+        isTTY: true,
+        stateDirectory: directory,
+        fetcher,
+      };
+      expect(await getUpdateNotice(options)).toContain('1.0.0 → 1.2.0');
+      expect(JSON.parse(readFileSync(join(directory, 'update.json'), 'utf8'))).toMatchObject({
+        latest: '1.2.0',
+        error: true,
+      });
+      // The failure marker suppresses an immediate retry yet the notice persists.
+      expect(await getUpdateNotice(options)).toContain('1.0.0 → 1.2.0');
+      expect(fetcher).toHaveBeenCalledTimes(1);
+    }));
 });
 
 describe('documented environment help', () => {
