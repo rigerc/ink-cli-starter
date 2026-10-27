@@ -61,6 +61,12 @@ tests/consistent-ui.test.tsx
 tests/screens.test.tsx
 tests/theme.test.ts
 tests/features/
+# Replacement application-facing regression suites.
+tests/cli.behavior.test.ts
+tests/configuration.test.ts
+tests/app-runtime.test.tsx
+tests/keyboard-and-controls.test.tsx
+tests/themes-and-keys.test.ts
 # Add downstream feature tests stored outside tests/features/ explicitly.
 
 # Repository automation, pending changesets and release setup require manual review.
