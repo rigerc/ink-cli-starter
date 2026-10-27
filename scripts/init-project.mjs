@@ -7,7 +7,7 @@ const TEMPLATE_NAME = 'ink-kit';
 const TEMPLATE_DESCRIPTION =
   'GitHub template for an Ink 8, React 19 and TypeScript terminal application';
 
-const paths = ['package.json', 'package-lock.json', 'src/lib/config.ts', 'src/config/store.ts'];
+const paths = ['package.json', 'package-lock.json'];
 
 function ensureExpected(value, expected, location) {
   if (value !== TEMPLATE_NAME && value !== expected) {
@@ -15,22 +15,6 @@ function ensureExpected(value, expected, location) {
       `${location} is already customized (${JSON.stringify(value)}); refusing to overwrite it`,
     );
   }
-}
-
-function rewriteAssignments(source, path, pattern, count, value) {
-  let found = 0;
-
-  const updated = source.replace(pattern, (_match, prefix, quote, current) => {
-    ensureExpected(current, value, path);
-    found++;
-
-    return `${prefix}${quote}${value}${quote}`;
-  });
-
-  if (found !== count)
-    throw new Error(`${path}: expected ${count} identity declarations, found ${found}`);
-
-  return updated;
 }
 
 function changeBin(bin, current, target, path) {
@@ -120,18 +104,7 @@ function main() {
     'package-lock.json',
   );
 
-  const updates = [
-    JSON.stringify(pkg, null, 2) + '\n',
-    JSON.stringify(lock, null, 2) + '\n',
-    rewriteAssignments(
-      originals[2],
-      paths[2],
-      /(\bexport\s+const\s+APP_NAME\s*=\s*)(['"])([^'"]+)\2/g,
-      1,
-      command,
-    ),
-    rewriteAssignments(originals[3], paths[3], /(\bappName\s*=\s*)(['"])([^'"]+)\2/g, 2, command),
-  ];
+  const updates = [JSON.stringify(pkg, null, 2) + '\n', JSON.stringify(lock, null, 2) + '\n'];
 
   let changed = 0;
 

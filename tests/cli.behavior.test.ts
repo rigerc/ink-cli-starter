@@ -5,7 +5,13 @@ import {runNode, withWorkspace} from './helpers/fixtures';
 
 function cli(args: string[], home: string) {
   return runNode('src/cli.tsx', args, {
-    env: {CI: '1', NO_COLOR: '1', XDG_CONFIG_HOME: home, NODE_OPTIONS: '--import tsx'},
+    env: {
+      CI: '1',
+      NO_COLOR: '1',
+      XDG_CONFIG_HOME: home,
+      XDG_STATE_HOME: home,
+      NODE_OPTIONS: '--import tsx',
+    },
   });
 }
 

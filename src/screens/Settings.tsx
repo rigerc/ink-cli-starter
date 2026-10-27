@@ -4,7 +4,8 @@ import {Panel, ScreenLayout, Stack, StatusMessage} from '../components';
 import {ConfigSectionEditor, ConfigWizard} from '../components/config';
 import {appConfig, configSections, resolveConfig} from '../config';
 import {useConfigRuntime} from '../config/context';
-import {useKeymap} from '../hooks';
+import {useKeymap, useLeaveGuard, useInputCapture, useRouter} from '../hooks';
+import {Select} from '../components/Select';
 import {useConfigDraft} from '../hooks/useConfigDraft';
 import {useToast} from '../hooks/useToast';
 import {toAppError} from '../lib/errors';
@@ -12,12 +13,19 @@ import {useTheme} from '../theme/context';
 
 function SettingsEditor({onWizard}: {onWizard: () => void}) {
   const {path, flags} = useConfigRuntime();
+  const router = useRouter();
   const draft = useConfigDraft(path);
   const theme = useTheme();
   const toast = useToast();
   const sections = configSections(appConfig.fields);
   const [sectionIndex, setSectionIndex] = useState(0);
   const [editing, setEditing] = useState(false);
+  const [pendingLeave, setPendingLeave] = useState<(() => void) | undefined>(undefined);
+  useInputCapture(Boolean(pendingLeave));
+  useLeaveGuard((resume) => {
+    setPendingLeave(() => resume);
+    return false;
+  }, draft.changed);
   const section = sections[sectionIndex] ?? 'Appearance';
   const sources = resolveConfig(appConfig.fields, draft.draft, {flags}).sources;
 
@@ -37,10 +45,39 @@ function SettingsEditor({onWizard}: {onWizard: () => void}) {
       {key: 'enter', run: () => setEditing(true)},
       {key: 's', run: save},
       {key: 'd', run: draft.discard},
-      {key: 'w', run: onWizard},
+      {key: 'w', run: () => router.requestLeave(onWizard)},
     ],
-    {isActive: !editing, scope: 'screen'},
+    {isActive: !editing && !pendingLeave, scope: 'screen'},
   );
+
+  if (pendingLeave)
+    return (
+      <Panel title="Unsaved settings">
+        <Select
+          items={[
+            {value: 'cancel', label: 'Cancel'},
+            {value: 'save', label: 'Save and leave'},
+            {value: 'discard', label: 'Discard and leave'},
+          ]}
+          allowWhenCaptured
+          onSelect={(choice) => {
+            if (choice === 'cancel') {
+              setPendingLeave(undefined);
+              return;
+            }
+            try {
+              if (choice === 'save') draft.save();
+              else draft.discard();
+              const resume = pendingLeave;
+              setPendingLeave(undefined);
+              resume();
+            } catch (error) {
+              toast.push(`Could not save: ${toAppError(error).message}`, 'warn');
+            }
+          }}
+        />
+      </Panel>
+    );
 
   return (
     <Stack gap={1}>

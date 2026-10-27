@@ -16,7 +16,7 @@ export function ProgressBar({
   const filled = Math.round(v * width);
 
   return (
-    <Text>
+    <Text aria-label={`Progress: ${Math.round(v * 100)}%`}>
       <Text {...useTone(tone)}>{t.symbols.barFull.repeat(filled)}</Text>
       <Text {...useTone('muted')}>{t.symbols.barEmpty.repeat(width - filled)}</Text>
       <Text> {String(Math.round(v * 100)).padStart(3)}%</Text>

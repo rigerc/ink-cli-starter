@@ -1,3 +1,5 @@
+import {join} from 'node:path';
+import {tmpdir} from 'node:os';
 import {Box, Text, renderToString} from 'ink';
 import {describe, expect, it} from 'vite-plus/test';
 import {AppRuntime, PlainRuntime, defineApp} from '../src/app';
@@ -9,7 +11,7 @@ const options = {
   theme: 'mono',
   ascii: true,
   debug: false,
-  configFile: '/tmp/ink-cli-starter-test-absent-config.json',
+  configFile: join(tmpdir(), 'ink-cli-starter-test-absent-config.json'),
 };
 
 const Overview = () => <Text>Overview body</Text>;

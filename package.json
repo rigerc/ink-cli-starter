@@ -3,11 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "description": "GitHub template for an Ink 8, React 19 and TypeScript terminal application",
+  "license": "Apache-2.0",
   "bin": {
     "ink-kit": "./dist/cli.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "NOTICE"
   ],
   "type": "module",
   "scripts": {
@@ -19,6 +21,8 @@
     "check": "npm run check:template && vp check",
     "check:template": "node scripts/check-template.mjs",
     "test": "vp test run",
+    "test:coverage": "vp test run --coverage",
+    "test:pty": "vp test run tests/terminal-pty.test.ts",
     "screenshot": "node --import tsx scripts/screenshot.tsx",
     "start": "node dist/cli.js",
     "prepare": "vp config",
@@ -47,7 +51,9 @@
     "@types/node": "^26.6.5",
     "@types/react": "^19.3.0",
     "@typescript/typescript6": "6.0.2",
+    "@vitest/coverage-v8": "^5.0.5",
     "ink-testing-library": "^4.0.0",
+    "node-pty": "^1.1.0",
     "oxlint": "1.89.0",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",

@@ -7,39 +7,50 @@ type State<T> =
   | {status: 'success'; data: T}
   | {status: 'error'; error: AppError};
 
-/** Run an async function; ignores results after unmount or when superseded. */
-export function useAsync<T, A extends unknown[]>(fn: (...args: A) => Promise<T>) {
+/** Cancellable work, latest-result ownership, and explicit retry of the last arguments. */
+export function useAsync<T, A extends unknown[]>(
+  fn: (signal: AbortSignal, ...args: A) => Promise<T>,
+) {
   const [state, setState] = useState<State<T>>({status: 'idle'});
   const alive = useRef(true);
-  const runId = useRef(0);
+  const controller = useRef<AbortController | undefined>(undefined);
+  const lastArgs = useRef<A | undefined>(undefined);
   const fnRef = useRef(fn);
   fnRef.current = fn;
-
   useEffect(() => {
     alive.current = true;
-
     return () => {
       alive.current = false;
+      controller.current?.abort();
     };
   }, []);
-
+  const cancel = useCallback(() => {
+    controller.current?.abort();
+    controller.current = undefined;
+    if (alive.current) setState({status: 'idle'});
+  }, []);
   const run = useCallback(async (...args: A): Promise<T | undefined> => {
-    const id = ++runId.current;
-    const current = () => alive.current && id === runId.current;
+    controller.current?.abort();
+    if (!alive.current) return undefined;
+    const request = new AbortController();
+    controller.current = request;
+    lastArgs.current = args;
+    const current = () =>
+      alive.current && controller.current === request && !request.signal.aborted;
     setState({status: 'loading'});
-
     try {
-      const data = await fnRef.current(...args);
-
-      if (current()) setState({status: 'success', data});
-
+      const data = await fnRef.current(request.signal, ...args);
+      if (!current()) return undefined;
+      setState({status: 'success', data});
       return data;
     } catch (error) {
       if (current()) setState({status: 'error', error: toAppError(error)});
-
       return undefined;
     }
   }, []);
-
-  return {...state, run};
+  const refetch = useCallback(
+    () => (lastArgs.current ? run(...lastArgs.current) : Promise.resolve(undefined)),
+    [run],
+  );
+  return {...state, run, cancel, refetch};
 }

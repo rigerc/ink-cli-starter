@@ -1,3 +1,4 @@
+import {APP_ASCII_ENV} from '../src/lib/identity';
 import {spawnSync} from 'node:child_process';
 import {mkdir, mkdtemp, readFile, rm, stat, writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
@@ -126,6 +127,8 @@ Requires VHS 0.12.1+, ttyd, FFmpeg and Chromium. See docs/recording.md.`);
     throw new Error('Unknown format. Choose: ' + formats.join(', '));
 
   delete process.env.NO_COLOR;
+  delete process.env[APP_ASCII_ENV];
+  delete process.env.CLI_ASCII;
   process.env.FORCE_COLOR = '3';
   process.env.CI = '1';
   process.env.XDG_CONFIG_HOME = path.join(tmpdir(), `${pkg.name}-screenshots`);
@@ -195,7 +198,7 @@ Requires VHS 0.12.1+, ttyd, FFmpeg and Chromium. See docs/recording.md.`);
             // Ink treats CI as noninteractive even in a PTY. Explicit flags and an
             // isolated config prevent the recording from reading/writing user settings.
             command =
-              `stty cols ${columns} rows ${rows}; printf '\\033[2J\\033[H'; exec env -u CI -u NO_COLOR -u CLI_ASCII FORCE_COLOR=3 TERM=xterm-256color ` +
+              `stty cols ${columns} rows ${rows}; printf '\\033[2J\\033[H'; exec env -u CI -u NO_COLOR -u CLI_ASCII -u ${APP_ASCII_ENV} FORCE_COLOR=3 TERM=xterm-256color ` +
               [
                 process.execPath,
                 '--import',

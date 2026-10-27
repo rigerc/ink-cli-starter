@@ -1,11 +1,8 @@
 import {z} from 'zod';
-import pkg from '../../package.json';
+import {APP_THEME_ENV, APP_ASCII_ENV} from '../lib/identity';
 import {themeNames} from '../theme/tokens';
 import {defaultTheme} from '../theme/resolve';
 import {defineConfig} from './definition';
-
-// A scoped npm package still exposes an unscoped executable and environment prefix.
-const executableName = Object.keys(pkg.bin)[0] ?? pkg.name.split('/').at(-1) ?? pkg.name;
 
 /** Loose parsing retains application-specific extension keys during edits. */
 export const configSchema = z.looseObject({
@@ -27,7 +24,7 @@ export const appConfig = defineConfig({
       kind: 'select',
       description: 'Auto detects light/dark; NO_COLOR always forces mono.',
       defaultValue: defaultTheme,
-      env: `${executableName.replaceAll('-', '_').toUpperCase()}_THEME`,
+      env: APP_THEME_ENV,
       options: [
         {value: 'auto', label: 'Auto (terminal default)'},
         ...themeNames.map((value) => ({value, label: value})),
@@ -40,7 +37,8 @@ export const appConfig = defineConfig({
       kind: 'toggle',
       description: 'Use ASCII-only symbols and borders.',
       defaultValue: false,
-      env: 'CLI_ASCII',
+      env: APP_ASCII_ENV,
+      envAliases: ['CLI_ASCII'],
     },
   ],
 });

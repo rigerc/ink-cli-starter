@@ -1,10 +1,11 @@
+import {fileURLToPath} from 'node:url';
 import {join} from 'node:path';
 import {describe, expect, it} from 'vite-plus/test';
 import {copyFromRepo, readJson, runNode, withWorkspace, writeFixture} from './helpers/fixtures';
 
-const checker = new URL('../scripts/check-template.mjs', import.meta.url).pathname;
-const preflight = new URL('../scripts/release-preflight.mjs', import.meta.url).pathname;
-const themeScript = new URL('../scripts/theme.mjs', import.meta.url).pathname;
+const checker = fileURLToPath(new URL('../scripts/check-template.mjs', import.meta.url));
+const preflight = fileURLToPath(new URL('../scripts/release-preflight.mjs', import.meta.url));
+const themeScript = fileURLToPath(new URL('../scripts/theme.mjs', import.meta.url));
 
 describe('template and publishing checks', () => {
   it('warns on uncustomized identity without failing a template checkout', () =>
@@ -67,7 +68,9 @@ describe('template and publishing checks', () => {
 });
 
 describe('sync changelog input validation', () => {
-  const changelog = new URL('../scripts/template-sync-changelog.mjs', import.meta.url).pathname;
+  const changelog = fileURLToPath(
+    new URL('../scripts/template-sync-changelog.mjs', import.meta.url),
+  );
 
   it('skips cleanly when no sync PR was created', () => {
     const result = runNode(changelog, [], {env: {SYNC_PR_NUMBER: ''}});

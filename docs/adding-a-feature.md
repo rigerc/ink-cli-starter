@@ -56,31 +56,42 @@ A `bare` screen bypasses the app header, tabs, toasts and footer (including in `
 
 ## Minimal headless command
 
-In `runCommand()` of `src/commands/index.ts`:
+Define the command once, then add it to `commands` in `src/commands/index.ts`:
 
 ```ts
-if (name === 'example') {
-  if (args.length) throw new AppError('example takes no arguments', {exitCode: 2});
-  console.log('Example command');
-  return true;
-}
+import {z} from 'zod';
+import {defineCommand} from './definition';
+
+export const exampleCommand = defineCommand({
+  name: 'example',
+  description: 'Run the example',
+  options: [{flags: '--limit <count>', description: 'Maximum results'}],
+  schema: z.object({limit: z.coerce.number().int().positive().default(10)}),
+  run: async ({options, context}) => {
+    const result = await loadResults(context.signal, options.limit);
+    context.output(context.flags.json ? JSON.stringify(result) : result.join('\n'));
+  },
+});
 ```
 
-Also register the subcommand in `src/cli.tsx` so Commander recognizes it and
-lists it in `--help`:
+The schema gives the handler typed options and validates Commander output.
+`arguments: '<id>'` declares positional arguments; handlers receive `args`.
+Use `defineCommandGroup` for nested commands. The CLI loops over the registry;
+no entry-point edit is needed. Completion scripts derive from that same tree.
+Headless commands load without React or Ink.
 
-```ts
-program
-  .command('example')
-  .description('Run the example')
-  .action(() => {
-    runCommand('example', [], {});
-  });
-```
+`context.output()` writes results to stdout, including under `--quiet`.
+`context.notice()` writes human notices to stderr unless quiet or JSON output is
+selected. `context.flags` contains shared options such as `config`, `json`, and
+`verbose`; `context.signal` aborts on SIGINT/SIGTERM. Avoid direct process exits:
+throw `AppError` with an appropriate exit code, or set `process.exitCode` for a
+completed diagnostic command.
 
-A real command should call a pure feature operation. Import that same operation
-from an Ink screen when interactive access is useful. Do not couple business
-logic to React hooks or terminal rendering.
+The shipped `example` command and Gallery screen share `listItems` in
+`src/features/example/items.ts`. Try `example --status ready --json` or pipe an
+array of `{id, name, status, description}` records into `example - --json`.
+The example is local and removable: remove its screen registrations, command
+registration, feature module, and corresponding tests when replacing it.
 
 ## UI conventions for features
 

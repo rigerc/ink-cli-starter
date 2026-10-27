@@ -3,6 +3,7 @@ export type {ScreenDef} from '../ui/core/defineApp';
 import {HelpScreen} from './Help';
 import {HomeScreen} from './Home';
 import {SettingsScreen} from './Settings';
+import {GalleryScreen, GalleryDetailScreen} from './Gallery';
 
 /** Compatibility alias for existing callers. */
 export type {ScreenLayoutMode} from '../ui/core/defineApp';
@@ -23,6 +24,17 @@ export const screens: ScreenDef[] = [
     ],
   },
   {id: 'help', label: 'Help', Component: HelpScreen},
+  {
+    id: 'gallery',
+    label: 'Gallery',
+    Component: GalleryScreen,
+    hints: [
+      {key: 'f', label: 'filter'},
+      {key: 'r', label: 'reload'},
+      {key: 'enter', label: 'details'},
+    ],
+  },
+  {id: 'gallery-detail', label: 'Details', Component: GalleryDetailScreen, showInNav: false},
 ];
 
 export const navScreens = screens.filter((screen) => screen.showInNav !== false);

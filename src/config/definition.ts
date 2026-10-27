@@ -24,6 +24,7 @@ export interface ConfigField {
   options?: readonly {value: string; label: string; hint?: string}[];
   defaultValue?: ConfigValue;
   env?: string;
+  envAliases?: readonly string[];
   visibleWhen?: (values: FieldValues) => boolean;
 }
 
@@ -90,4 +91,21 @@ export function setAtPath<T extends object>(values: T, path: string, value: Conf
 
 export function configSections(fields: readonly ConfigField[]): string[] {
   return [...new Set(fields.map((field) => field.section))];
+}
+
+/** Remove an override without changing its siblings or retained extension keys. */
+export function deleteAtPath<T extends object>(values: T, path: string): T {
+  const segments = path.split('.');
+  // Validate paths using the same rules as updates.
+  setAtPath({}, path, null);
+  const root = structuredClone(values);
+  // SAFETY: configuration documents contain JSON objects; traversal narrows each child.
+  let node = root as RawConfig;
+  for (const segment of segments.slice(0, -1)) {
+    const child = node[segment];
+    if (!isObjectConfigValue(child)) return root;
+    node = child;
+  }
+  delete node[segments.at(-1)!];
+  return root;
 }

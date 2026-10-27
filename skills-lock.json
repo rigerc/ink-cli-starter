@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "agentsmesh-authoring": {
+      "source": "rigerc/my-skills",
+      "sourceType": "github",
+      "skillPath": "skills/agentsmesh-authoring/SKILL.md",
+      "computedHash": "5c14441c960b428755bb6c0e015dfa9c048c029d5942dc41f1fe092377adb42a"
+    },
+    "fix-anti-slop": {
+      "source": "rigerc/my-skills",
+      "sourceType": "github",
+      "skillPath": "skills/fix-anti-slop/SKILL.md",
+      "computedHash": "83564e941602e6d71677df77137874924270449b7cdd2f4fd11da05dbc8e52e7"
+    }
+  }
+}

@@ -4,6 +4,8 @@ import {basename, dirname, extname, isAbsolute, join, resolve} from 'node:path';
 import type {ConfigDefinition, ConfigValue, RawConfig} from './definition';
 import {toErrorMessage} from '../lib/errors';
 import {z} from 'zod';
+import {APP_NAME} from '../lib/identity';
+import {deleteAtPath} from './definition';
 
 export interface ConfigRead<T extends object> {
   config: T;
@@ -11,7 +13,7 @@ export interface ConfigRead<T extends object> {
   path: string;
 }
 
-export function configFilePath(override?: string, appName = 'ink-kit'): string {
+export function configFilePath(override?: string, appName = APP_NAME): string {
   if (override) return resolve(override);
   const base = process.env.XDG_CONFIG_HOME || join(homedir(), '.config');
 
@@ -66,7 +68,7 @@ export function mergeConfig<T extends object>(base: T, patch: DeepPartial<T>): T
 
 export function createConfigStore<T extends object>(
   definition: ConfigDefinition<T>,
-  appName = 'ink-kit',
+  appName = APP_NAME,
 ) {
   const pathFor = (override?: string) => configFilePath(override, appName);
   const versionSchema = z.number().int().nonnegative();
@@ -162,5 +164,15 @@ export function createConfigStore<T extends object>(
     return next;
   }
 
-  return {pathFor, read, write, validate, definition};
+  function reset(paths: readonly string[], override?: string): T {
+    const {config, error, path} = read(override);
+    if (error) throw new Error(error);
+    let next = config;
+    for (const key of paths) next = deleteAtPath(next, key);
+    next = validate({...next, version: definition.version});
+    open(path).store = next as RawConfig;
+    return next;
+  }
+
+  return {pathFor, read, write, reset, validate, definition};
 }

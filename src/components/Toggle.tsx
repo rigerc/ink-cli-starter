@@ -1,4 +1,4 @@
-import {Text} from 'ink';
+import {Box, Text} from 'ink';
 import {useState} from 'react';
 import {useKeymap} from '../hooks/useKeymap';
 import {useTheme} from '../theme/context';
@@ -45,9 +45,15 @@ export function Toggle({
   );
 
   return (
-    <Text color={isActive ? t.color.primary : t.color.text} bold={isActive} wrap="truncate-end">
-      {isActive ? t.symbols.pointer : ' '} [{enabled ? 'x' : ' '}] {label}:{' '}
-      {enabled ? onLabel : offLabel}
-    </Text>
+    <Box
+      aria-role="checkbox"
+      aria-label={label}
+      aria-state={{checked: enabled, disabled: !isActive}}
+    >
+      <Text color={isActive ? t.color.primary : t.color.text} bold={isActive} wrap="truncate-end">
+        {isActive ? t.symbols.pointer : ' '} [{enabled ? 'x' : ' '}] {label}:{' '}
+        {enabled ? onLabel : offLabel}
+      </Text>
+    </Box>
   );
 }

@@ -15,7 +15,8 @@ export function HomeScreen() {
         <Panel title="Build your app">
           <Text>Add a screen in src/screens/ and register it in src/screens/index.ts.</Text>
           <Text>Add headless commands in src/commands/.</Text>
-          <Text>See docs/adding-a-feature.md for an example.</Text>
+          <Text>Open Gallery for a list/detail example.</Text>
+          <Text>See docs/adding-a-feature.md to adapt it.</Text>
         </Panel>
       </Stack>
     </ScreenLayout>

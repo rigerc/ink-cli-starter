@@ -21,7 +21,12 @@ export function HelpScreen() {
           <Text>--theme dark|light|contrast|mono|auto</Text>
           <Text>{`--screen ${screenIds.join('|')}`}</Text>
           <Text>--setup --config path --plain --ascii --debug</Text>
-          <Text>doctor [--json] Environment and configuration checks</Text>
+          <Text>--quiet --verbose --no-color</Text>
+          <Text>--screen-reader --alternate-screen</Text>
+          <Text>doctor [--json] Environment checks</Text>
+          <Text>config get|set|list|path|reset</Text>
+          <Text>example [input] [--json]</Text>
+          <Text>completion bash|zsh|fish</Text>
         </Panel>
       </Stack>
     </ScreenLayout>

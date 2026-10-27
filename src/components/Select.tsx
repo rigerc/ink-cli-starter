@@ -51,12 +51,23 @@ export function Select<T extends string>({
   );
 
   return (
-    <Box flexDirection="column">
+    <Box
+      flexDirection="column"
+      aria-role="listbox"
+      aria-label="Choose an option"
+      aria-state={{disabled: !isActive}}
+    >
       {items.map((item, i) => {
         const active = i === index;
 
         return (
-          <Box key={item.value} gap={1}>
+          <Box
+            key={item.value}
+            gap={1}
+            aria-role="option"
+            aria-label={item.label}
+            aria-state={{selected: active}}
+          >
             <Text {...primary}>{active ? t.symbols.pointer : ' '}</Text>
             <Text bold={active} {...(active ? primary : {})}>
               {item.label}

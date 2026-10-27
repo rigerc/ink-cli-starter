@@ -168,7 +168,29 @@ The screen registry is the source of truth for launch IDs, tabs and capture IDs.
 
 The visible screen order in `src/screens/index.ts` determines Tab order and the first nine `1`–`9` shortcuts. Additional visible screens remain navigable with Tab and the command menu. Hidden screens are valid `--screen` targets and are included in `--all` screenshots. The default global shortcuts come from `src/keys.ts`; do not register a second implementation of the same key without an explicit reason.
 
-For navigation within a custom screen, `useRouter()` (inside `AppProviders`) exposes `current`, `push(id)`, `replace(id)`, `pop()` and `canGoBack`. Pass screen IDs from the registry. `push` keeps history, `replace` changes the current entry, and `pop` returns to the previous entry if present. A bare screen with global keys disabled should provide its own exit and navigation controls (or document Ctrl+C).
+For navigation within a custom screen, `useRouter()` (inside `AppProviders`) exposes `current`, `push(id, params?)`, `replace(id, params?)`, `pop()` and `canGoBack`. Pass screen IDs from the registry. `push` keeps history, `replace` changes the current entry, and `pop` returns to the previous entry if present. A bare screen with global keys disabled should provide its own exit and navigation controls (or document Ctrl+C).
+
+For typed route params, declare a route map and use it consistently in the
+application's screens:
+
+```tsx
+type Routes = {gallery: undefined; detail: {id: string}};
+const router = useRouter<Routes>();
+router.push('detail', {id: 'build'});
+const itemId = router.paramsFor('detail')?.id;
+```
+
+`current` remains a string for compatibility. `paramsFor(id)` returns params only
+when that route is active. Params belong to history entries and are restored by
+`pop()`. The Gallery/detail screens are a working example.
+
+`useLeaveGuard((resume) => boolean, enabled)` lets the active screen defer a
+transition by returning false. Show a confirmation and call `resume()` once the
+user saves or discards; canceling simply leaves it uncalled. Push, replace, back,
+and shell `q` all use the guard. Custom quit buttons should call
+`router.requestLeave(exit)`. Settings demonstrates Save/Discard/Cancel and keeps
+drafts mounted while the command menu is open. Forced process signals bypass
+prompts and never save drafts automatically.
 
 **Prefer the shared shell** for several related views with conventional navigation. Use a **bare screen** for a self-contained flow, a focused prompt or a full-width visualization. In either case, native Ink `Box` and `Text` remain available, and you do not have to keep unused sample components in a downstream project.
 
@@ -271,12 +293,12 @@ Use `ink-testing-library` (see `tests/keymap-routing.test.tsx` and `tests/collec
 
 ## Async states and notifications
 
-`useAsync(fn)` returns `run` and a state with `status` (`idle`, `loading`, `success`, `error`); it ignores stale results after unmount or superseding runs. Start operations from an event or effect, **not during render**. `ScreenState` renders loading, empty, error and success views, but the caller determines whether a successful result is empty.
+`useAsync(fn)` calls `fn(signal, ...args)` and returns `run`, `refetch`, `cancel`, and a state with `status` (`idle`, `loading`, `success`, `error`). Each new run aborts the previous signal; unmount also aborts. Operations must pass the signal to their I/O to cancel actual work. Stale results remain ignored even when an operation does not honor cancellation. `refetch()` repeats the last arguments; before the first run it does nothing. `cancel()` returns to idle without showing an error. Retries are explicit, including for operations that mutate data. Start operations from an event or effect, **not during render**. `ScreenState` renders loading, empty, error and success views, but the caller determines whether a successful result is empty.
 
 ```tsx
 // Inside a screen with useEffect, Text, useAsync, ScreenState imported.
 // loadJobs is a domain operation returning records with id and name.
-const jobs = useAsync(loadJobs);
+const jobs = useAsync((signal) => loadJobs(signal));
 useEffect(() => {
   void jobs.run();
 }, [jobs.run]);
@@ -359,3 +381,21 @@ A practical new-screen checklist:
 - When changing a framework convention, update this guide, the feature documentation, and regression tests.
 
 For the next implementation step, consult [adding a feature](adding-a-feature.md).
+
+## Gallery and terminal modes
+
+Run `npm run dev -- --screen gallery` for Table, PaginatedList, MultiSelect,
+route params, and async states in a local list/detail example. Enter opens the
+selected item, Escape returns, `f` opens the status filter, `r` reloads, `e`
+shows an empty result and `x` simulates an error. Only the filter owns input while
+it is open. The initial frame uses deterministic local records in plain mode.
+
+`--screen-reader` (or Ink's `INK_SCREEN_READER=true`) enables Ink's built-in
+accessible renderer in interactive sessions. Shared selectors expose roles,
+labels and states; custom controls should do the same. `--plain` remains a
+synchronous static frame and does not use Ink's screen-reader renderer.
+
+`--alternate-screen` opts into Ink's alternate buffer in interactive sessions;
+Ink restores the primary buffer at exit. The default remains inline. Both flags
+are runtime rendering options, not saved settings. See
+[Ink's rendering options](https://github.com/vadimdemedes/ink#rendertree-options).

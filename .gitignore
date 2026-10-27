@@ -15,3 +15,5 @@ agentsmesh.local.yaml
 .agentsmeshcache
 .agentsmesh/.lock.tmp
 .agentsmesh/packs/
+
+coverage/

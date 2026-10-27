@@ -81,7 +81,7 @@ export function Table({
   );
 
   return (
-    <Box flexDirection="column">
+    <Box flexDirection="column" aria-role="table">
       {renderRow('header', (c) => (
         <Text bold wrap="truncate-end" color={t.color.text}>
           {c.header}

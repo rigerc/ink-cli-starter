@@ -1,10 +1,17 @@
-import {appendFileSync, mkdirSync} from 'node:fs';
+import {
+  closeSync,
+  existsSync,
+  mkdirSync,
+  openSync,
+  renameSync,
+  rmSync,
+  statSync,
+  writeSync,
+} from 'node:fs';
 import {homedir} from 'node:os';
 import {dirname, join} from 'node:path';
 import {inspect} from 'node:util';
-import {APP_NAME} from './config';
-
-let enabled = false;
+import {APP_NAME} from './identity';
 
 export const logPath = (): string =>
   join(
@@ -12,28 +19,103 @@ export const logPath = (): string =>
     APP_NAME,
     `${APP_NAME}.log`,
   );
+const levels = {debug: 0, info: 1, warn: 2, error: 3, off: 4} as const;
+export type LogLevel = keyof typeof levels;
+const sensitive = /password|passwd|secret|token|authorization|cookie|api[-_]?key/i;
 
-function write(level: string, args: unknown[]) {
-  if (!enabled) return;
-
-  try {
-    mkdirSync(dirname(logPath()), {recursive: true});
-
-    const line = args
-      .map((value) => (value instanceof Object ? inspect(value) : String(value)))
-      .join(' ');
-
-    appendFileSync(logPath(), `${new Date().toISOString()} ${level} ${line}\n`);
-  } catch {
-    // Logging must never break the UI.
-  }
+/** Redact before formatting, including Error causes; circular objects remain safe. */
+export function redact(value: unknown, seen = new WeakSet<object>(), depth = 0): unknown {
+  if (typeof value === 'string')
+    return value
+      .replace(/(Bearer\s+)[\w.-]+/gi, '$1[REDACTED]')
+      .replace(/((?:password|secret|token|api[_-]?key)=)[^\s&]+/gi, '$1[REDACTED]')
+      .replace(/(https?:\/\/)[^\s/@]+:[^\s/@]+@/gi, '$1[REDACTED]@');
+  if (!(value instanceof Object)) return value;
+  if (seen.has(value) || depth > 8) return '[Circular or truncated]';
+  seen.add(value);
+  if (value instanceof Error)
+    return {
+      name: value.name,
+      message: redact(value.message, seen, depth + 1),
+      stack: redact(value.stack, seen, depth + 1),
+      cause: redact(value.cause, seen, depth + 1),
+    };
+  if (Array.isArray(value)) return value.map((entry) => redact(entry, seen, depth + 1));
+  return Object.fromEntries(
+    Object.entries(value).map(([key, entry]) => [
+      key,
+      sensitive.test(key) ? '[REDACTED]' : redact(entry, seen, depth + 1),
+    ]),
+  );
 }
 
-/** File logger. Never use console.log while Ink is rendering. */
-export const logger = {
-  setDebug(value: boolean) {
-    enabled = value;
-  },
-  debug: (...args: unknown[]) => write('DEBUG', args),
-  error: (...args: unknown[]) => write('ERROR', args),
-};
+/** One open descriptor, one rotated backup, and a strict byte cap per file. */
+export function createLogger(
+  options: {path?: () => string; maxBytes?: number; level?: LogLevel} = {},
+) {
+  let level: LogLevel = options.level ?? 'error';
+  let descriptor: number | undefined;
+  let path: string | undefined;
+  let size = 0;
+  const maxBytes = Math.max(256, options.maxBytes ?? 1024 * 1024);
+  const close = () => {
+    if (descriptor !== undefined) {
+      closeSync(descriptor);
+      descriptor = undefined;
+    }
+  };
+  const write = (severity: Exclude<LogLevel, 'off'>, args: unknown[]) => {
+    if (levels[severity] < levels[level]) return;
+    try {
+      const target = (options.path ?? logPath)();
+      if (path !== target) {
+        close();
+        path = target;
+      }
+      if (descriptor === undefined) {
+        mkdirSync(dirname(target), {recursive: true});
+        size = existsSync(target) ? statSync(target).size : 0;
+        descriptor = openSync(target, 'a', 0o600);
+      }
+      const content = args
+        .map((value) => inspect(redact(value), {depth: 8, breakLength: Infinity}))
+        .join(' ');
+      const line = Buffer.from(
+        `${new Date().toISOString()} ${severity.toUpperCase()} ${content}\n`,
+      );
+      const bounded =
+        line.length > maxBytes
+          ? Buffer.concat([line.subarray(0, maxBytes - 1), Buffer.from('\n')])
+          : line;
+      if (size + bounded.length > maxBytes) {
+        close();
+        rmSync(`${target}.1`, {force: true});
+        renameSync(target, `${target}.1`);
+        descriptor = openSync(target, 'a', 0o600);
+        size = 0;
+      }
+      size += writeSync(descriptor, bounded);
+    } catch {
+      // Diagnostics must never break the application.
+      try {
+        close();
+      } catch {
+        descriptor = undefined;
+      }
+    }
+  };
+  return {
+    setLevel(next: LogLevel) {
+      level = next;
+    },
+    setDebug(enabled: boolean) {
+      level = enabled ? 'debug' : 'error';
+    },
+    debug: (...args: unknown[]) => write('debug', args),
+    info: (...args: unknown[]) => write('info', args),
+    warn: (...args: unknown[]) => write('warn', args),
+    error: (...args: unknown[]) => write('error', args),
+    close,
+  };
+}
+export const logger = createLogger();

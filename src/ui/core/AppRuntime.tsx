@@ -1,3 +1,4 @@
+import {Box} from 'ink';
 import {useState} from 'react';
 import {Badge, CommandMenu, Header, StatusBar, Tabs} from '../../components';
 import {useExit, useActionHints, useHasInputCapture, useKeymap, useRouter} from '../../hooks';
@@ -51,7 +52,7 @@ function ActiveScreen({definition}: {definition: UIAppDefinition}) {
         help: () => {
           if (definition.findScreen('help')) router.replace('help');
         },
-        quit: exit,
+        quit: () => router.requestLeave(exit),
       },
       go,
       {help: hasHelp},
@@ -93,7 +94,7 @@ function ActiveScreen({definition}: {definition: UIAppDefinition}) {
       nav={<Tabs items={navScreens} activeId={router.current} />}
       footer={<StatusBar hints={hints} />}
     >
-      {commandOpen ? (
+      {commandOpen && (
         <CommandMenu
           items={navScreens.map((item) => ({id: item.id, label: item.label, hint: 'Go to screen'}))}
           onSelect={(id) => {
@@ -102,9 +103,10 @@ function ActiveScreen({definition}: {definition: UIAppDefinition}) {
           }}
           onCancel={() => setCommandOpen(false)}
         />
-      ) : (
-        <Screen />
       )}
+      <Box display={commandOpen ? 'none' : 'flex'} flexDirection="column">
+        <Screen key={router.current} />
+      </Box>
     </ScreenFrame>
   );
 }

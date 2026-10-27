@@ -2,8 +2,8 @@ import {appConfig, createConfigStore, type Config} from '../config';
 
 export type {Config} from '../config';
 
-export const APP_NAME = 'ink-kit';
-export const APP_THEME_ENV = `${APP_NAME.replaceAll('-', '_').toUpperCase()}_THEME`;
+import {APP_NAME} from './identity';
+export {APP_NAME, APP_THEME_ENV, APP_ASCII_ENV} from './identity';
 
 export const configStore = createConfigStore(appConfig, APP_NAME);
 

@@ -1,3 +1,4 @@
+import {fileURLToPath} from 'node:url';
 import {readFileSync} from 'node:fs';
 import {join} from 'node:path';
 import {describe, expect, it} from 'vite-plus/test';
@@ -9,7 +10,7 @@ const sourceFiles = [
   'src/lib/config.ts',
   'src/config/store.ts',
 ];
-const initializer = new URL('../scripts/init-project.mjs', import.meta.url).pathname;
+const initializer = fileURLToPath(new URL('../scripts/init-project.mjs', import.meta.url));
 
 function fixture<T>(run: (directory: string) => T) {
   return withWorkspace((directory) => {
@@ -44,12 +45,6 @@ describe('template identity initialization', () => {
       expect(readJson(directory, 'package-lock.json').packages[''].bin).toEqual({
         'my-cli': 'dist/cli.js',
       });
-      expect(readFileSync(join(directory, 'src/lib/config.ts'), 'utf8')).toContain(
-        "APP_NAME = 'my-cli'",
-      );
-      expect(readFileSync(join(directory, 'src/config/store.ts'), 'utf8')).toContain(
-        "appName = 'my-cli'",
-      );
 
       const again = runNode(initializer, ['--name', '@acme/my-cli', '--description', 'My CLI'], {
         cwd: directory,
@@ -71,8 +66,9 @@ describe('template identity initialization', () => {
 
   it('refuses to overwrite pre-customized identity', () =>
     fixture((directory) => {
-      const original = readFileSync(join(directory, 'src/lib/config.ts'), 'utf8');
-      writeFixture(directory, 'src/lib/config.ts', original.replace("'ink-kit'", "'other-cli'"));
+      const pkg = readJson(directory, 'package.json');
+      pkg.bin = {'other-cli': './dist/cli.js'};
+      writeFixture(directory, 'package.json', JSON.stringify(pkg));
       const before = readFileSync(join(directory, 'package.json'), 'utf8');
       const result = runNode(initializer, ['--name', 'my-cli'], {cwd: directory});
       expect(result.status).toBe(1);

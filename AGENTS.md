@@ -26,16 +26,16 @@ This repository is a **GitHub template that directly contains the application**.
 Reuse framework components and demos when helpful. Downstream applications may remove unused screens, components, hooks, themes, and providers. Before any upstream sync, read [the full sync ownership policy](.agentsmesh/rules/template-sync.md), preserve application-owned files, and add customized or intentionally deleted shared paths to `.templatesyncignore`.
 
 <!-- agentsmesh:embedded-rules:start -->
-<!-- agentsmesh:embedded-rule:start {"source":"rules/cli-architecture.md","description":"Application boundaries, screen registration, and headless CLI behavior","globs":["src/cli.tsx","src/app.tsx","src/screens/**","src/commands/**","src/features/**","tests/cli.test.ts","tests/commands.test.ts","tests/screens.test.tsx","docs/architecture.md","docs/adding-a-feature.md"],"targets":[]} -->
+<!-- agentsmesh:embedded-rule:start {"source":"rules/cli-architecture.md","description":"Application boundaries, screen registration, and headless CLI behavior","globs":["src/cli.tsx","src/lib/program.ts","src/lib/render-app.tsx","src/app.tsx","src/screens/**","src/commands/**","src/features/**","tests/cli.test.ts","tests/commands.test.ts","tests/screens.test.tsx","docs/architecture.md","docs/adding-a-feature.md"],"targets":[]} -->
 ## Application boundaries, screen registration, and headless CLI behavior
 # CLI architecture
 
 When adding features or changing application composition, follow `docs/architecture.md` and `docs/adding-a-feature.md` (paths are relative to the repository root).
 
-- `src/cli.tsx` owns CLI flags and decides between headless commands, `--plain` output, and an interactive Ink session. `src/app.tsx` owns the providers, app shell, and global navigation.
+- `src/cli.tsx` owns process cancellation and error handling. `src/lib/program.ts` owns CLI flags and registry wiring; `src/lib/render-app.tsx` handles `--plain` output and interactive Ink sessions through a lazy import. `src/app.tsx` owns the providers, app shell, and global navigation.
 - Keep business models and operations independent of Ink and React, under `src/features/<feature>/` when needed. Screens and headless commands should call the same operation rather than duplicate business logic.
 - Register screens in `src/screens/index.ts`; use this registry for screen IDs, tabs, launch targets, and capture IDs. Keep global shortcut definitions in `src/keys.ts`.
-- Register headless commands in `src/commands/index.ts` and wire their Commander subcommands in `src/cli.tsx`. Headless commands must work without a TTY and must not import Ink or depend on React rendering.
+- Define headless commands with `defineCommand` and register them in `src/commands/index.ts`; the Commander adapter wires the registry automatically. Keep arguments, options, schemas, and handlers in the definitions so help and completions share one source. Headless commands must work without a TTY and must not import Ink or depend on React rendering.
 - Keep `--plain` output deterministic and meaningful as one static frame without keyboard input. Do not rely on effects or delayed async updates for essential plain output; use a headless command when an operation needs to complete before producing output.
 - Do not write directly to stdout while Ink is rendering. Use the existing logger for diagnostics and keep headless command output separate from the interactive session.
 - When changing flags, command dispatch, or screen registration, update the relevant CLI, command, and screen regression tests and documentation. Preserve both interactive and noninteractive entry paths.

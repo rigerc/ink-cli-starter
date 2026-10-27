@@ -27,6 +27,12 @@ export default defineConfig({
   test: {
     include: ['tests/**/*.test.{ts,tsx}'],
     exclude: ['node_modules/**', 'build/**', 'dist/**', 'tttt/**'],
+    coverage: {
+      provider: 'v8',
+      include: ['src/**/*.{ts,tsx}'],
+      reporter: ['text', 'json-summary', 'lcov'],
+      thresholds: {statements: 60, branches: 50, functions: 58, lines: 63},
+    },
   },
   pack: {
     entry: ['src/cli.tsx'],

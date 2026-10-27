@@ -15,7 +15,9 @@ export interface ResolvedConfig<T extends object> {
 }
 
 function fromEnvironment(field: ConfigField, env: NodeJS.ProcessEnv): ConfigValue | undefined {
-  const raw = field.env ? env[field.env] : undefined;
+  const raw = [field.env, ...(field.envAliases ?? [])]
+    .map((name) => (name ? env[name] : undefined))
+    .find((value) => value !== undefined && value !== '');
 
   if (raw === undefined || raw === '') return undefined;
 

@@ -47,8 +47,9 @@ focused rules; this skill is a task workflow, not an override.
    `src/screens/index.ts`. Registration controls screen IDs, navigation,
    `--screen`, and capture targets. For a custom UI, consider
    `layout: 'bare'`; `globalKeys: false` separately disables global keys.
-3. For noninteractive operations, update `src/commands/index.ts` and wire
-   the Commander subcommand in `src/cli.tsx`. Headless commands must not
+3. For noninteractive operations, define a command with `defineCommand` and add
+   it to `src/commands/index.ts`. Commander wiring and completions derive from
+   the registry; no CLI entry-point edit is needed. Headless commands must not
    depend on a TTY, import Ink, or require React rendering.
 4. Use scoped `useKeymap` or `useAction` for keyboard actions. Ensure a
    single input owner for text editing, and release input capture on exit.

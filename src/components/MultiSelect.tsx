@@ -78,22 +78,33 @@ export function MultiSelect<T extends string>({
   const {start, end} = listWindow(index, items.length, listSize(maxVisible, 6));
 
   return (
-    <Box flexDirection="column">
+    <Box
+      flexDirection="column"
+      aria-role="listbox"
+      aria-label="Choose options"
+      aria-state={{multiselectable: true, disabled: !isActive}}
+    >
       {items.length === 0 && <Muted>{emptyMessage}</Muted>}
       {items.slice(start, end).map((item, offset) => {
         const focused = isActive && start + offset === index;
 
         return (
-          <Text
+          <Box
             key={item.value}
-            bold={focused}
-            color={focused ? t.color.primary : t.color.text}
-            wrap="truncate-end"
+            aria-role="checkbox"
+            aria-label={item.label}
+            aria-state={{checked: selected.has(item.value), selected: focused}}
           >
-            {focused ? t.symbols.pointer : ' '} [{selected.has(item.value) ? 'x' : ' '}]{' '}
-            {item.label}
-            {item.hint ? ` - ${item.hint}` : ''}
-          </Text>
+            <Text
+              bold={focused}
+              color={focused ? t.color.primary : t.color.text}
+              wrap="truncate-end"
+            >
+              {focused ? t.symbols.pointer : ' '} [{selected.has(item.value) ? 'x' : ' '}]{' '}
+              {item.label}
+              {item.hint ? ` - ${item.hint}` : ''}
+            </Text>
+          </Box>
         );
       })}
       {items.length > 0 && (

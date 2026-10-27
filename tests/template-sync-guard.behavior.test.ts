@@ -42,6 +42,7 @@ function project(
       );
 
     git('init', '-q', '-b', 'main');
+    git('config', 'core.autocrlf', 'false');
     git('config', 'user.name', 'Sync guard test');
     git('config', 'user.email', 'sync@example.invalid');
     write('README.md', 'downstream documentation\n');

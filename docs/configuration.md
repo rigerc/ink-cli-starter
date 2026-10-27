@@ -24,7 +24,7 @@ A missing file is normal: built-in defaults apply until the first save. `--setup
 | Initialized as `my-cli`                           | `~/.config/my-cli/config.json` (or `$XDG_CONFIG_HOME/my-cli/config.json`) |
 | Explicit `--config ./local.json`                  | `local.json` in the current working directory                             |
 
-`--config` accepts a file path, not a directory. Relative paths resolve against the process's working directory. The default `APP_NAME` comes from `src/lib/config.ts`; the `init:project` script also adjusts the fallback identity in `src/config/store.ts`. On changing identity, old config files are **not moved**: copy the JSON intentionally if you want to retain settings, or continue passing the old file to `--config`. The values shown above describe the default Unix/XDG path construction implemented by the application.
+`--config` accepts a file path, not a directory. Relative paths resolve against the process's working directory. The default `APP_NAME` is derived from the package executable name in `src/lib/identity.ts`; `init:project` updates package and lockfile metadata only. On changing identity, old config files are **not moved**: copy the JSON intentionally if you want to retain settings, or continue passing the old file to `--config`. The values shown above describe the default Unix/XDG path construction implemented by the application.
 
 ### JSON format
 
@@ -45,6 +45,37 @@ A valid example (create the parent directory first if editing manually):
 
 The application uses `conf` to atomically replace a **validated** document on save, with restricted file permissions where supported. It does not silently erase malformed JSON, arrays used as the root, schema-invalid values or unsupported future versions. Back up and fix the file yourself if validation fails; the Settings editor/wizard cannot repair an invalid document in place.
 
+## Headless settings
+
+```bash
+npm run dev -- config path
+npm run dev -- config list --json
+npm run dev -- config get theme
+npm run dev -- config get theme --stored --json
+npm run dev -- config set theme light
+npm run dev -- config set ascii true --quiet
+printf 'true\n' | npm run dev -- config set ascii -
+npm run dev -- config reset ascii
+npm run dev -- config reset --config ./local.json
+```
+
+`get` and `list` show effective registered values and, in JSON/list output, their
+sources. Theme resolution includes `auto` detection and `NO_COLOR`/`--no-color`.
+`--stored` reads saved overrides only; absent values have source `unset` and JSON
+value `null`. Reads do not create a file or persist migrations. `path` works even
+when the selected file is invalid.
+
+`set` accepts plain strings for text/select fields, JSON booleans for toggles,
+JSON numbers for number fields, and JSON string arrays for multi-select fields.
+`-` reads the value from stdin (up to 1 MiB). Unknown fields and invalid values
+fail without writing. The complete resulting document is schema-validated.
+
+`reset [key]` removes the selected registered override, or all registered
+overrides if no key is given. It preserves extension keys and records the current
+schema version. It refuses invalid files, including unsupported future versions;
+it is not a file-repair operation. All mutations use atomic validated writes,
+and neither `set` nor `reset` persists environment or launch overrides.
+
 ## Precedence and runtime behavior
 
 For registered settings, the general order is **CLI flag > environment > saved file > project default**. A runtime override is not automatically written back to the saved file.
@@ -52,7 +83,7 @@ For registered settings, the general order is **CLI flag > environment > saved f
 | Setting          | CLI                        | Environment                                          | Saved key          | Project fallback                             |
 | ---------------- | -------------------------- | ---------------------------------------------------- | ------------------ | -------------------------------------------- |
 | Theme            | `--theme light`            | `INK_KIT_THEME=light` (renamed after init)           | `"theme": "light"` | `src/theme/defaults.json` (`auto` initially) |
-| ASCII symbols    | `--ascii` (enables)        | `CLI_ASCII=1` (enables; `0` disables)                | `"ascii": true`    | `false`                                      |
+| ASCII symbols    | `--ascii` (enables)        | `INK_KIT_ASCII=1` (legacy `CLI_ASCII` alias)         | `"ascii": true`    | `false`                                      |
 | Config file path | `--config ./settings.json` | `XDG_CONFIG_HOME` selects the default base directory | —                  | `~/.config/<app-name>/config.json`           |
 
 **Special case:** any nonempty `NO_COLOR` forces the `mono` theme even if `--theme` is present; `NO_COLOR=0` still counts as set. `NO_COLOR` does not itself select ASCII glyphs. `--ascii` can enable ASCII, but the command has no corresponding `--no-ascii` flag. `auto` theme uses a best-effort terminal light/dark check (`COLORFGBG`, defaulting to dark). Unknown theme overrides are ignored by theme selection; use a documented theme value.
@@ -60,11 +91,11 @@ For registered settings, the general order is **CLI flag > environment > saved f
 ```bash
 INK_KIT_THEME=contrast npm run dev -- --plain
 NO_COLOR=1 npm run dev -- --plain
-CLI_ASCII=1 npm run dev -- --screen home
+INK_KIT_ASCII=1 npm run dev -- --screen home
 npm run dev -- --theme light --ascii --plain
 ```
 
-After `npm run init:project -- --name my-cli`, use `MY_CLI_THEME`, not `INK_KIT_THEME`; `CLI_ASCII` and `NO_COLOR` remain unchanged. `npm run theme:default -- light` modifies the **project's source-level default**, not a user's JSON file. `npm run theme:token -- dark primary '#ff80aa'` edits theme palette source; neither script is a substitute for saving runtime settings.
+After `npm run init:project -- --name my-cli`, use `MY_CLI_THEME`, not `INK_KIT_THEME`; `MY_CLI_ASCII` replaces `INK_KIT_ASCII`; `CLI_ASCII` remains a lower-priority compatibility alias and `NO_COLOR` remains unchanged. `npm run theme:default -- light` modifies the **project's source-level default**, not a user's JSON file. `npm run theme:token -- dark primary '#ff80aa'` edits theme palette source; neither script is a substitute for saving runtime settings.
 
 ## Using the Settings screen and wizard
 
@@ -116,13 +147,13 @@ For breaking stored changes, increment `appConfig.version` and provide `migratio
 
 ## Troubleshooting
 
-| Symptom                                            | Check / remedy                                                                                                                                      |
-| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--setup` reports that a TTY is required           | Run in an interactive terminal, without `--plain` or `CI`; otherwise edit JSON directly                                                             |
-| Config won't open or save                          | Run `npm run dev -- doctor --config ./local.json --json`; check reported path, JSON syntax, field types and version; preserve a copy before editing |
-| Settings seem ignored                              | Check `--config` path, `NO_COLOR`, `INK_KIT_THEME`/renamed theme variable, `CLI_ASCII` and explicit flags; restart after save                       |
-| Settings disappeared after project rename          | Config is under the new command directory; migrate the old JSON intentionally, or pass `--config`                                                   |
-| Invalid schema after adding a field                | Ensure `configSchema` and `appConfig.fields` agree and update any data consumers; run typechecking and config tests                                 |
-| Don't want personal settings affecting screenshots | Use the capture runner in [recording](recording.md); it isolates settings and forces selected theme/width                                           |
+| Symptom                                            | Check / remedy                                                                                                                                       |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--setup` reports that a TTY is required           | Run in an interactive terminal, without `--plain` or `CI`; otherwise edit JSON directly                                                              |
+| Config won't open or save                          | Run `npm run dev -- doctor --config ./local.json --json`; check reported path, JSON syntax, field types and version; preserve a copy before editing  |
+| Settings seem ignored                              | Check `--config` path, `NO_COLOR`, `INK_KIT_THEME`/renamed theme variable, `INK_KIT_ASCII`/legacy `CLI_ASCII` and explicit flags; restart after save |
+| Settings disappeared after project rename          | Config is under the new command directory; migrate the old JSON intentionally, or pass `--config`                                                    |
+| Invalid schema after adding a field                | Ensure `configSchema` and `appConfig.fields` agree and update any data consumers; run typechecking and config tests                                  |
+| Don't want personal settings affecting screenshots | Use the capture runner in [recording](recording.md); it isolates settings and forces selected theme/width                                            |
 
 Run `npm run typecheck && npm test` after changes. For a focused addition, see [adding a feature](adding-a-feature.md); for layout and keyboard conventions, see the [UI guide](ui-framework.md).
