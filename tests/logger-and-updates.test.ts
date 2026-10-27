@@ -34,6 +34,37 @@ describe('bounded diagnostic logging', () => {
         message: 'token=[REDACTED]',
         cause: {apiKey: '[REDACTED]'},
       });
+      expect(
+        redact(
+          new Map<unknown, unknown>([
+            ['token', 'private-secret'],
+            ['plain', 'visible'],
+          ]),
+        ),
+      ).toEqual(
+        new Map([
+          ['token', '[REDACTED]'],
+          ['plain', 'visible'],
+        ]),
+      );
+      expect(redact(new Set(['token=abc', 'plain']))).toEqual(
+        new Set(['token=[REDACTED]', 'plain']),
+      );
+    }));
+
+  it('truncates oversized lines at UTF-8 boundaries and writes valid UTF-8', () =>
+    withWorkspace((directory) => {
+      const path = join(directory, 'log');
+      const logger = createLogger({path: () => path, maxBytes: 256, level: 'error'});
+      // With the fixed prefix, the byte cap lands inside the 4-byte emoji so a
+      // naive byte cut would produce replacement characters.
+      logger.error(`${'x'.repeat(221)}\u{1F389}${'y'.repeat(100)}`);
+      logger.close();
+      const stored = readFileSync(path, 'utf8');
+      // Node decodes without replacement characters, so the line round-trips.
+      expect(stored).not.toContain('\uFFFD');
+      const line = stored.replace(/\n$/, '');
+      expect(Buffer.from(`${line}\n`, 'utf8').length).toBeLessThanOrEqual(256);
     }));
 });
 
@@ -125,7 +156,7 @@ describe('documented environment help', () => {
     const program = createProgram(new AbortController().signal);
     let help = '';
     const write = vi.spyOn(process.stdout, 'write').mockImplementation((chunk) => {
-      help += typeof chunk === 'string' ? chunk : String(chunk);
+      help += chunk.toString();
       return true;
     });
     try {

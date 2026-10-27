@@ -1,5 +1,6 @@
 import {Command, Option, type CommandUnknownOpts} from '@commander-js/extra-typings';
 import {z} from 'zod';
+import {AppError} from '../lib/errors';
 
 export const globalOptions = z.object({
   config: z.string().optional(),
@@ -82,7 +83,10 @@ export function defineCommandGroup(definition: {
         .description(definition.description);
       for (const child of definition.commands) child.register(group, context);
       group.action(() => {
-        group.help();
+        // A bare group invocation completes no operation: print help but exit non-zero
+        // so scripted consumers cannot mistake a help dump for success.
+        group.outputHelp();
+        throw new AppError(`Missing ${definition.name} subcommand`, {exitCode: 2});
       });
       parent.addCommand(group);
     },

@@ -295,6 +295,17 @@ Use `ink-testing-library` (see `tests/keymap-routing.test.tsx` and `tests/collec
 
 `useAsync(fn)` calls `fn(signal, ...args)` and returns `run`, `refetch`, `cancel`, and a state with `status` (`idle`, `loading`, `success`, `error`). Each new run aborts the previous signal; unmount also aborts. Operations must pass the signal to their I/O to cancel actual work. Stale results remain ignored even when an operation does not honor cancellation. `refetch()` repeats the last arguments; before the first run it does nothing. `cancel()` returns to idle without showing an error. Retries are explicit, including for operations that mutate data. Start operations from an event or effect, **not during render**. `ScreenState` renders loading, empty, error and success views, but the caller determines whether a successful result is empty.
 
+When upgrading from a version whose callback received only the run arguments
+(`fn(...args)`), add the abort signal as the first callback parameter and pass it
+to your I/O:
+
+```tsx
+// Before
+const jobs = useAsync((query: string) => loadJobs(query));
+// After
+const jobs = useAsync((signal: AbortSignal, query: string) => loadJobs(query, signal));
+```
+
 ```tsx
 // Inside a screen with useEffect, Text, useAsync, ScreenState imported.
 // loadJobs is a domain operation returning records with id and name.

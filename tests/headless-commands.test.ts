@@ -177,6 +177,14 @@ describe('registered headless commands', {timeout: 20_000}, () => {
       expect(JSON.parse(result.stdout)).toEqual(exampleItems);
     }));
 
+  it('prints group help and exits non-zero for a bare group command', () =>
+    withWorkspace((directory) => {
+      const result = cli(directory, ['config']);
+      expect(result.status).toBe(2);
+      expect(result.stdout).toContain('Usage:');
+      expect(result.stderr).toContain('Missing config subcommand');
+    }));
+
   it('reports stacks only in debug mode and writes unexpected failures to the logger', () =>
     withWorkspace((directory) => {
       const basic = cli(directory, ['--screen', 'missing']);

@@ -59,6 +59,9 @@ npm run dev -- config reset ascii
 npm run dev -- config reset --config ./local.json
 ```
 
+Running `config` without a subcommand prints its help on stdout and exits with
+code 2: it completes no operation, so scripts must not treat it as success.
+
 `get` and `list` show effective registered values and, in JSON/list output, their
 sources. Theme resolution includes `auto` detection and `NO_COLOR`/`--no-color`.
 `--stored` reads saved overrides only; absent values have source `unset` and JSON
