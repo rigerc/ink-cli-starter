@@ -62,6 +62,7 @@ Redaction is a fallback: applications should avoid logging secrets.
 
 Update checks are disabled by default. Published downstream apps can opt in with
 `<PREFIX>_UPDATE_NOTIFIER=1`; private packages, CI, non-TTY output and
-`NO_UPDATE_NOTIFIER` skip checks. Checks have a one-second timeout and a 24-hour
-state-directory cache. Notifications are printed before rendering and never
-modify command results.
+`NO_UPDATE_NOTIFIER` skip checks. Checks have a one-second timeout, a 24-hour
+state-directory cache and a one-hour failure marker, so offline launches do not
+repeat the timeout on every start. Notifications are printed before rendering
+and never modify command results.

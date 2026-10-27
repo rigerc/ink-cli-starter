@@ -5,8 +5,18 @@ import {z} from 'zod';
 import {APP_NAME} from './identity';
 import {logger} from './logger';
 
-const cacheSchema = z.object({checkedAt: z.number(), latest: z.string()});
+const cacheSchema = z.object({
+  checkedAt: z.number(),
+  latest: z.string().optional(),
+  error: z.boolean().optional(),
+});
 const releaseSchema = z.object({version: z.string().regex(/^\d+\.\d+\.\d+$/)});
+const SUCCESS_RETRY_MS = 24 * 60 * 60 * 1000;
+const FAILURE_RETRY_MS = 60 * 60 * 1000;
+function stale(cache: z.infer<typeof cacheSchema> | undefined, now: number) {
+  if (!cache || cache.checkedAt > now) return true;
+  return now - cache.checkedAt > (cache.error ? FAILURE_RETRY_MS : SUCCESS_RETRY_MS);
+}
 function newer(candidate: string, current: string) {
   if (!/^\d+\.\d+\.\d+$/.test(current)) return false;
   const left = candidate.split('.').map(Number);
@@ -43,6 +53,13 @@ export async function getUpdateNotice(options: {
     options.stateDirectory ??
     join(env.XDG_STATE_HOME || join(homedir(), '.local', 'state'), APP_NAME);
   const path = join(directory, 'update.json');
+  // Atomic best-effort cache write; persistence failures fall through to the outer handler.
+  const persist = (value: z.infer<typeof cacheSchema>) => {
+    mkdirSync(directory, {recursive: true});
+    const temporary = `${path}.${process.pid}.tmp`;
+    writeFileSync(temporary, JSON.stringify(value), {mode: 0o600});
+    renameSync(temporary, path);
+  };
   try {
     let cache: z.infer<typeof cacheSchema> | undefined;
     try {
@@ -50,28 +67,28 @@ export async function getUpdateNotice(options: {
     } catch {
       /* A missing or invalid cache simply triggers a fresh check. */
     }
-    if (
-      !cache ||
-      cache.checkedAt > Date.now() ||
-      Date.now() - cache.checkedAt > 24 * 60 * 60 * 1000
-    ) {
-      const response = await (options.fetcher ?? fetch)(
-        `https://registry.npmjs.org/${encodeURIComponent(options.packageName)}/latest`,
-        {signal: AbortSignal.any([options.signal, AbortSignal.timeout(1000)]), redirect: 'error'},
-      );
-      if (!response.ok) return;
-      const declaredSize = Number(response.headers.get('content-length'));
-      if (declaredSize > 256 * 1024) return;
-      const text = await response.text();
-      if (Buffer.byteLength(text) > 256 * 1024) return;
-      const release = releaseSchema.parse(JSON.parse(text));
-      cache = {checkedAt: Date.now(), latest: release.version};
-      mkdirSync(directory, {recursive: true});
-      const temporary = `${path}.${process.pid}.tmp`;
-      writeFileSync(temporary, JSON.stringify(cache), {mode: 0o600});
-      renameSync(temporary, path);
+    if (stale(cache, Date.now())) {
+      try {
+        const response = await (options.fetcher ?? fetch)(
+          `https://registry.npmjs.org/${encodeURIComponent(options.packageName)}/latest`,
+          {signal: AbortSignal.any([options.signal, AbortSignal.timeout(1000)]), redirect: 'error'},
+        );
+        if (!response.ok) throw new Error(`Registry responded with ${response.status}`);
+        const declaredSize = Number(response.headers.get('content-length'));
+        if (declaredSize > 256 * 1024) return;
+        const text = await response.text();
+        if (Buffer.byteLength(text) > 256 * 1024) return;
+        const release = releaseSchema.parse(JSON.parse(text));
+        cache = {checkedAt: Date.now(), latest: release.version};
+        persist(cache);
+      } catch (error) {
+        // Offline launches must not pay the one-second timeout on every start.
+        persist({checkedAt: Date.now(), error: true});
+        logger.debug('Update check failed', error);
+        return;
+      }
     }
-    if (newer(cache.latest, options.currentVersion))
+    if (cache?.latest && newer(cache.latest, options.currentVersion))
       return `Update available: ${options.packageName} ${options.currentVersion} → ${cache.latest}`;
   } catch (error) {
     logger.debug('Update check skipped', error);

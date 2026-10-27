@@ -3,7 +3,9 @@ import {join} from 'node:path';
 import {describe, expect, it, vi} from 'vite-plus/test';
 import {createLogger, redact} from '../src/lib/logger';
 import {getUpdateNotice} from '../src/lib/updates';
-import {withWorkspace, withAsyncWorkspace} from './helpers/fixtures';
+import {createProgram} from '../src/lib/program';
+import {APP_ASCII_ENV, APP_ENV_PREFIX, APP_THEME_ENV} from '../src/lib/identity';
+import {withWorkspace, withAsyncWorkspace, writeFixture} from './helpers/fixtures';
 
 describe('bounded diagnostic logging', () => {
   it('filters levels, redacts nested credentials and error causes, and caps rotation', () =>
@@ -82,4 +84,82 @@ describe('optional update notification', () => {
         await getUpdateNotice({...options, stateDirectory: join(directory, 'offline')}),
       ).toBeUndefined();
     }));
+
+  it('caches a failed check and retries only after an hour', async () =>
+    withAsyncWorkspace(async (directory) => {
+      const fetcher = vi.fn<typeof fetch>().mockRejectedValue(new Error('offline'));
+      const options = {
+        enabled: true,
+        packageName: '@acme/example',
+        currentVersion: '1.0.0',
+        signal: new AbortController().signal,
+        env: {},
+        isTTY: true,
+        stateDirectory: directory,
+        fetcher,
+      };
+      expect(await getUpdateNotice(options)).toBeUndefined();
+      expect(fetcher).toHaveBeenCalledTimes(1);
+      // The failure marker prevents an immediate second fetch on the next launch.
+      expect(await getUpdateNotice(options)).toBeUndefined();
+      expect(fetcher).toHaveBeenCalledTimes(1);
+      const marker = JSON.parse(readFileSync(join(directory, 'update.json'), 'utf8'));
+      expect(marker.error).toBe(true);
+      // After the failure marker ages past the one-hour retry window, the check retries.
+      writeFixture(
+        directory,
+        'update.json',
+        JSON.stringify({checkedAt: Date.now() - 2 * 60 * 60 * 1000, error: true}),
+      );
+      fetcher.mockResolvedValue(new Response('{"version":"1.2.0"}'));
+      expect(await getUpdateNotice(options)).toContain('1.0.0 → 1.2.0');
+      expect(fetcher).toHaveBeenCalledTimes(2);
+      expect(JSON.parse(readFileSync(join(directory, 'update.json'), 'utf8'))).toMatchObject({
+        latest: '1.2.0',
+      });
+    }));
+});
+
+describe('documented environment help', () => {
+  it('lists opt-in and opt-out update variables with columns padded from the longest name', () => {
+    const program = createProgram(new AbortController().signal);
+    let help = '';
+    const write = vi.spyOn(process.stdout, 'write').mockImplementation((chunk) => {
+      help += typeof chunk === 'string' ? chunk : String(chunk);
+      return true;
+    });
+    try {
+      program.outputHelp();
+    } finally {
+      write.mockRestore();
+    }
+    const optIn = `${APP_ENV_PREFIX}_UPDATE_NOTIFIER`;
+    for (const name of [
+      'NO_COLOR',
+      APP_THEME_ENV,
+      APP_ASCII_ENV,
+      'INK_SCREEN_READER',
+      optIn,
+      'NO_UPDATE_NOTIFIER',
+    ])
+      expect(help).toContain(name);
+    // Columns align on the longest name; assert the pad width rather than a snapshot.
+    const longest = Math.max(
+      'NO_COLOR'.length,
+      APP_THEME_ENV.length,
+      APP_ASCII_ENV.length,
+      'INK_SCREEN_READER'.length,
+      optIn.length,
+      'NO_UPDATE_NOTIFIER'.length,
+    );
+    expect(help).toMatch(
+      new RegExp(`NO_COLOR {${longest - 'NO_COLOR'.length + 2}}Force the mono theme`),
+    );
+    expect(help).toMatch(new RegExp(`${optIn} {2}Set to 1 to opt in to update checks`));
+    expect(help).toMatch(
+      new RegExp(
+        `NO_UPDATE_NOTIFIER {${longest - 'NO_UPDATE_NOTIFIER'.length + 2}}Opt out of update checks`,
+      ),
+    );
+  });
 });

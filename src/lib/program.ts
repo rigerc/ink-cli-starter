@@ -2,9 +2,18 @@ import {Command, Option} from '@commander-js/extra-typings';
 import pkg from '../../package.json' with {type: 'json'};
 import {commands} from '../commands';
 import {globalOptions, type CommandContext} from '../commands/definition';
-import {APP_NAME, APP_THEME_ENV, APP_ASCII_ENV} from './identity';
+import {APP_ENV_PREFIX, APP_NAME, APP_THEME_ENV, APP_ASCII_ENV} from './identity';
 import {AppError} from './errors';
 import {logger} from './logger';
+
+/** Environment help with columns padded from the longest variable name. */
+function environmentHelp(entries: readonly [string, string][]) {
+  const width = Math.max(...entries.map(([name]) => name.length));
+  const rows = entries
+    .map(([name, description]) => `  ${name.padEnd(width)}  ${description}`)
+    .join('\n');
+  return `\nEnvironment:\n${rows}\n`;
+}
 
 /** A headless Commander tree, also used as the sole source of shell completions. */
 export function createProgram(signal: AbortSignal) {
@@ -37,7 +46,14 @@ export function createProgram(signal: AbortSignal) {
     .option('--alternate-screen', 'Use the alternate terminal screen buffer')
     .addHelpText(
       'after',
-      `\nEnvironment:\n  NO_COLOR           Force the mono theme\n  ${APP_THEME_ENV}    Default theme\n  ${APP_ASCII_ENV}    ASCII symbols (CLI_ASCII is a legacy alias)\n  INK_SCREEN_READER  Set to true for screen-reader output\n  NO_UPDATE_NOTIFIER Disable update checks\n`,
+      environmentHelp([
+        ['NO_COLOR', 'Force the mono theme'],
+        [APP_THEME_ENV, 'Default theme'],
+        [APP_ASCII_ENV, 'ASCII symbols (CLI_ASCII is a legacy alias)'],
+        ['INK_SCREEN_READER', 'Set to true for screen-reader output'],
+        [`${APP_ENV_PREFIX}_UPDATE_NOTIFIER`, 'Set to 1 to opt in to update checks'],
+        ['NO_UPDATE_NOTIFIER', 'Opt out of update checks'],
+      ]),
     );
 
   const context = (): CommandContext => {
