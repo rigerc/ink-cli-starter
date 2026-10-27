@@ -9,10 +9,12 @@ import {Divider, Kbd, Muted} from './typography';
 export function Header({
   title,
   version,
+  nav,
   right,
 }: {
   title: string;
   version: string;
+  nav?: ReactNode;
   right?: ReactNode;
 }) {
   const t = useTheme();
@@ -21,8 +23,8 @@ export function Header({
   const colors = isHex(primary) && isHex(accent) ? gradient(chars.length, primary, accent) : null;
 
   return (
-    <Box justifyContent="space-between" paddingX={1}>
-      <Box gap={1}>
+    <Box justifyContent="space-between" columnGap={2} paddingX={1}>
+      <Box gap={1} flexShrink={1} flexWrap="wrap">
         <Text bold color={primary}>
           {t.mono ? '*' : '◆'}
         </Text>
@@ -34,8 +36,11 @@ export function Header({
           ))}
         </Text>
         <Muted>v{version}</Muted>
+        {nav && <Box flexShrink={1}>{nav}</Box>}
       </Box>
-      <Box gap={1}>{right}</Box>
+      <Box gap={1} flexShrink={0}>
+        {right}
+      </Box>
     </Box>
   );
 }
@@ -90,7 +95,11 @@ export function ToastHost() {
   );
 }
 
-/** Header, nav, body, toasts, status bar: in that order, inline (no alt screen). */
+/**
+ * Header, nav, body, toasts, status bar: in that order, inline (no alt screen).
+ * The default runtime passes the screen nav into `Header`; a `nav` node supplied
+ * here still renders below the header for direct composition and custom shells.
+ */
 export interface AppShellProps {
   header?: ReactNode;
   nav?: ReactNode;

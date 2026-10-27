@@ -24,7 +24,7 @@ See [architecture](architecture.md) for entry points, [adding a feature](adding-
 | `src/theme/`               | Semantic colors, symbols and ASCII compatibility                    |
 | `src/features/` (optional) | Domain models and operations independent of Ink                     |
 
-**AppProviders** installs configuration, theme, input capture, keymap, action metadata, toast, router and error-boundary providers. By default, `App` renders `AppShell` (header, tabs, command menu, toasts, status footer) around a screen. If that structure does not fit your CLI, register a bare screen or compose native Ink UI directly. `ScreenLayout` and `InlineLayout` are optional conveniences.
+**AppProviders** installs configuration, theme, input capture, keymap, action metadata, toast, router and error-boundary providers. By default, `App` renders `AppShell` (header with inline screen tabs, command menu, toasts, status footer) around a screen. If that structure does not fit your CLI, register a bare screen or compose native Ink UI directly. `ScreenLayout` and `InlineLayout` are optional conveniences.
 
 ## Define a custom application
 
@@ -67,7 +67,9 @@ values. The `src/screens/index.ts` registry exports remain for existing consumer
 `defineApp` rejects duplicate IDs and invalid initial screens. You can use
 `layout: 'bare'` for a completely independent view or `chrome: {header: false,
 nav: false, footer: false, toasts: false}` to hide individual regions. A custom
-shell receives exactly the normal `AppShellProps`, including `showToasts`.
+shell receives exactly the normal `AppShellProps`, including `showToasts`. The
+default shell renders the screen tabs inside the header, to the right of the
+brand; a custom shell receives them through `nav` and decides where they go.
 
 Custom theme names are supported programmatically through `themes` and
 `AppOptions.theme`; the bundled Commander's `--theme` validation continues to
@@ -160,7 +162,7 @@ The screen registry is the source of truth for launch IDs, tabs and capture IDs.
 
 | `ScreenDef` option         | Interactive behavior                                                       | `--plain` behavior                                                 |
 | -------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Default (`layout` omitted) | Shared shell (header, tabs, footer, toasts)                                | App header and one static screen frame; no interactive tabs/footer |
+| Default (`layout` omitted) | Shared shell (header with inline tabs, footer, toasts)                     | App header and one static screen frame; no interactive tabs/footer |
 | `layout: 'bare'`           | Screen renders without app-provided chrome or toast host                   | Only the screen's own content                                      |
 | `globalKeys: false`        | Disables built-in Tab, 1–9, Ctrl+K, `t`, `?`, `q` shortcuts on that screen | No impact: there are no keyboard events                            |
 | `showInNav: false`         | Omitted from tabs, numbered shortcuts and command palette                  | Still addressable with `--screen <id>`                             |
@@ -234,7 +236,7 @@ Each screen entry may choose how much framework UI to use. Without extra options
 </ScreenLayout>
 ```
 
-`AppShell` can also be used directly with no header and with `showToasts={false}` if you want only part of the shared chrome. These options are additive; existing screens do not need migration.
+`AppShell` can also be used directly with no header and with `showToasts={false}` if you want only part of the shared chrome; a `nav` node passed directly to `AppShell` renders below the header. These options are additive; existing screens do not need migration.
 
 ## Keyboard routing and focus
 
