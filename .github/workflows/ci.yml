@@ -41,6 +41,14 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: npm
       - run: npm ci
+      # node-pty 1.1.0 publishes macOS spawn-helper without the executable bit.
+      - name: Restore node-pty macOS spawn-helper permissions
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          if [ -d node_modules/node-pty/prebuilds ]; then
+            find node_modules/node-pty/prebuilds -type f -name spawn-helper -exec chmod +x {} +
+          fi
       - name: Install completion shells
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y fish zsh
