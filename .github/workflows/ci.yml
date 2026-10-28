@@ -1,6 +1,8 @@
 name: CI
 
 on:
+  push:
+    branches: [main]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -31,8 +33,12 @@ jobs:
         run: |
           node --test tests/skill-accuracy.test.mjs
           node scripts/check-skill-accuracy.mjs
-      - run: npm run check
-      - run: npm run typecheck
+      - name: List files selected for linting
+        run: npm run lint -- --debug=files
+      - name: Check formatting, lint (including anti-slop), and template configuration
+        run: npm run check
+      - name: Check TypeScript types
+        run: npm run typecheck -- --diagnostics
 
   tests:
     name: ${{ matrix.os }} / Node 24
@@ -40,7 +46,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: ${{ fromJSON(github.ref == 'refs/heads/main' && '["ubuntu-latest", "macos-latest", "windows-latest"]' || '["ubuntu-latest"]') }}
     steps:
       - uses: actions/checkout@v7
         with:

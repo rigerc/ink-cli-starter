@@ -62,7 +62,7 @@ For token authentication, add an `NPM_TOKEN` secret containing a granular access
 - `changesets/action@v2` no longer writes `~/.npmrc` automatically. The workflow points npm at a dedicated userconfig to keep token fallback separate from OIDC.
 - Hardening for later: the action's v2 README recommends its individual sub-actions (version, publish) when using trusted publishing, so the publish job alone gets `id-token: write`. Verify both tag-only and npm-publish flows in a downstream opt-in repository; upstream template CI intentionally skips releases.
 - Merge the version PR through your normal review and branch-protection process. The workflow does not enable automatic merging.
-- Trusted publishing requires npm >= 11.5.1 and Node >= 22.14.0. The release job uses Node 24 and updates npm; regular CI stays on Node 22.
+- Trusted publishing requires npm >= 11.5.1 and Node >= 22.14.0. The release job uses Node 24 and updates npm; CI also uses Node 24.
 - `.templatesyncignore` excludes `release.yml` and `.changeset/config.json` from template-sync updates so downstream customization is preserved. See the [template-sync ignore documentation](https://github.com/AndreasAugustin/actions-template-sync#templatesyncignore).
 - To get PR links in the changelog, switch `changelog` in `.changeset/config.json` to `["@changesets/changelog-github", {"repo": "OWNER/REPO"}]` and install that package.
 
