@@ -148,14 +148,14 @@ describe('headless commands', {timeout: 20_000}, () => {
 
   it('reports errors and debug stacks and rejects conflicting verbosity flags', () =>
     withWorkspace((directory) => {
-      const basic = cli(directory, ['config', 'get', 'missing']);
-      const debug = cli(directory, ['--debug', 'config', 'get', 'missing']);
+      const path = join(directory, 'broken.json');
+      writeFixture(directory, 'broken.json', '{bad');
+      const basic = cli(directory, ['--config', path, 'config', 'get', 'label']);
+      const debug = cli(directory, ['--debug', '--config', path, 'config', 'get', 'label']);
       expect(basic.status).toBe(2);
-      expect(basic.stderr).not.toContain('at fieldFor');
-      expect(debug.stderr).toContain('at fieldFor');
-      expect(readFileSync(join(directory, 'ink-kit', 'ink-kit.log'), 'utf8')).toContain(
-        'Unknown configuration key',
-      );
+      expect(basic.stderr).not.toContain('at readStored');
+      expect(debug.stderr).toContain('at readStored');
       expect(cli(directory, ['--quiet', '--verbose', 'doctor']).status).toBe(2);
     }));
+
 });

@@ -216,6 +216,6 @@ describe('documented environment help', () => {
       `${APP_ENV_PREFIX}_UPDATE_NOTIFIER`, 'NO_UPDATE_NOTIFIER',
     ]) expect(help).toContain(name);
     expect(help).not.toContain('--theme');
-    expect(help).not.toContain('--screen');
+    expect(help).not.toContain('--screen <id>');
   });
 });

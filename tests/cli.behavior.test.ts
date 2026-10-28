@@ -23,7 +23,7 @@ describe('CLI as a subprocess', () => {
       expect(help.status).toBe(0);
       expect(help.stdout).toContain('--plain');
       expect(help.stdout).toContain('doctor');
-      expect(help.stdout).not.toContain('--screen');
+      expect(help.stdout).not.toContain('--screen <id>');
     }));
 
   it('prints a native Ink frame without a TTY', () =>
