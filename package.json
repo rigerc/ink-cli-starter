@@ -34,7 +34,9 @@
     "changeset": "changeset",
     "version-packages": "changeset version && npm install --package-lock-only",
     "release": "npm run build && changeset publish",
-    "release:tag": "changeset git-tag"
+    "release:tag": "changeset git-tag",
+    "contracts:generate": "node --import tsx scripts/generate-contracts.ts",
+    "contracts:check": "node --import tsx scripts/generate-contracts.ts --check"
   },
   "dependencies": {
     "@commander-js/extra-typings": "^15.0.0",

@@ -58,6 +58,10 @@ The built executable uses Commander with inferred option types via `@commander-j
 
 Add screens under `src/screens/`, register them in `src/screens/index.ts`, and put domain operations in `src/features/` as needed. Define headless operations with `defineCommand` in `src/commands/` and add them to the registry in `src/commands/index.ts`; Commander registration and completions follow automatically. Keep domain operations independent of Ink rendering.
 
+## Machine-readable contracts
+
+The `contracts/` directory contains JSON Schemas for configuration, example work-item JSON, and the `doctor --json` response. Run `npm run contracts:generate` to regenerate them from Zod source schemas or `npm run contracts:check` to detect drift. See [contract documentation](contracts/README.md) for scope and usage.
+
 ## Themes and settings
 
 Themes (`dark`, `light`, `contrast`, `mono`) use semantic tokens and ASCII

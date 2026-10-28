@@ -1,16 +1,21 @@
 import {existsSync} from 'node:fs';
+import {z} from 'zod';
 import {configPath, loadConfig} from '../lib/config';
 
-export interface DoctorCheck {
-  name: string;
-  ok: boolean;
-  detail: string;
-}
+/** Machine-readable contract for `doctor --json`. */
+export const doctorCheckSchema = z.object({
+  name: z.string(),
+  ok: z.boolean(),
+  detail: z.string(),
+});
 
-export interface DoctorReport {
-  ok: boolean;
-  checks: DoctorCheck[];
-}
+export const doctorReportSchema = z.object({
+  ok: z.boolean(),
+  checks: z.array(doctorCheckSchema),
+});
+
+export type DoctorCheck = z.infer<typeof doctorCheckSchema>;
+export type DoctorReport = z.infer<typeof doctorReportSchema>;
 
 /** Headless diagnostics without Ink, prompts, or external I/O. */
 export function inspectEnvironment(configFile?: string): DoctorReport {

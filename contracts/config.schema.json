@@ -1,0 +1,24 @@
+{
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "integer",
+      "exclusiveMinimum": 0
+    },
+    "theme": {
+      "type": "string",
+      "enum": [
+        "auto",
+        "dark",
+        "light",
+        "contrast",
+        "mono"
+      ]
+    },
+    "ascii": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": {},
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}
