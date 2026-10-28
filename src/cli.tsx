@@ -33,7 +33,8 @@ try {
   await program.parseAsync(process.argv);
 } catch (cause: unknown) {
   if (cause instanceof CommanderError) {
-    process.exitCode = cause.exitCode === 0 ? 0 : 2;
+    // A Commander exit must not overwrite SIGINT/SIGTERM's conventional exit status.
+    if (!controller.signal.aborted) process.exitCode = cause.exitCode === 0 ? 0 : 2;
   } else if (!controller.signal.aborted) {
     const error =
       cause instanceof z.ZodError

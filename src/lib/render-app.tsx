@@ -46,12 +46,11 @@ export async function runApp(
   signal.throwIfAborted();
 
   const instance = render(<App label={label} onInterrupt={onInterrupt} />, {
-      interactive: true,
-      exitOnCtrlC: false,
-      isScreenReaderEnabled: flags.screenReader || process.env.INK_SCREEN_READER === 'true',
-      alternateScreen: flags.alternateScreen,
-    },
-  );
+    interactive: true,
+    exitOnCtrlC: false,
+    isScreenReaderEnabled: flags.screenReader || process.env.INK_SCREEN_READER === 'true',
+    alternateScreen: flags.alternateScreen,
+  });
   const abort = () => instance.unmount();
   signal.addEventListener('abort', abort, {once: true});
   try {
