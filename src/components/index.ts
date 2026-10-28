@@ -10,8 +10,6 @@ export * from './KeyValue';
 
 export * from './Panel';
 
-export * from './ProgressBar';
-
 export * from './Select';
 
 export * from './Spinner';
@@ -23,8 +21,6 @@ export * from './Status';
 export * from './Table';
 
 export * from './Tabs';
-
-export * from './TaskList';
 
 export * from './typography';
 

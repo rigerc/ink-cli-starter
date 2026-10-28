@@ -59,6 +59,25 @@ describe('application composition', () => {
     expect(app.navScreens.map((item) => item.id)).toEqual(['overview']);
   });
 
+  it('shows contextual screen hints in the footer', () => {
+    const app = defineApp({
+      initialScreen: 'overview',
+      screens: [
+        {
+          id: 'overview',
+          label: 'Overview',
+          Component: Overview,
+          hints: [{key: 'r', label: 'refresh'}],
+        },
+      ],
+    });
+    const output = renderToString(<AppRuntime definition={app} options={options} />, {
+      columns: 80,
+    });
+    expect(output).toContain('[r]');
+    expect(output).toContain('refresh');
+  });
+
   it('renders a custom shell while honoring individual chrome switches', () => {
     const app = defineApp({
       initialScreen: 'overview',

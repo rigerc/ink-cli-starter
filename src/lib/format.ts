@@ -3,15 +3,6 @@ import type {ConfigValue} from '../config/definition';
 
 export const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
-export function formatDuration(ms: number): string {
-  if (ms < 1000) return `${Math.round(ms)}ms`;
-  const s = ms / 1000;
-
-  if (s < 60) return `${s.toFixed(1)}s`;
-
-  return `${Math.floor(s / 60)}m ${Math.round(s % 60)}s`;
-}
-
 export function formatBytes(bytes: number): string {
   const units = ['B', 'KB', 'MB', 'GB', 'TB'];
   let value = bytes;

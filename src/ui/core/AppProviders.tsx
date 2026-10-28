@@ -4,7 +4,6 @@ import {ConfigRuntimeProvider} from '../../config/context';
 import {ErrorBoundary} from '../../components/ErrorPanel';
 import {
   InputCaptureProvider,
-  ActionProvider,
   KeymapProvider,
   RouterProvider,
   ToastProvider,
@@ -36,13 +35,11 @@ export function AppProviders({
       <ThemeProvider name={options.theme} ascii={options.ascii} registry={themes}>
         <InputCaptureProvider>
           <KeymapProvider>
-            <ActionProvider>
-              <ToastProvider>
-                <RouterProvider initial={options.screen}>
-                  <ErrorBoundary debug={options.debug}>{children}</ErrorBoundary>
-                </RouterProvider>
-              </ToastProvider>
-            </ActionProvider>
+            <ToastProvider>
+              <RouterProvider initial={options.screen}>
+                <ErrorBoundary debug={options.debug}>{children}</ErrorBoundary>
+              </RouterProvider>
+            </ToastProvider>
           </KeymapProvider>
         </InputCaptureProvider>
       </ThemeProvider>

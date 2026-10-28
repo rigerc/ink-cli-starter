@@ -76,27 +76,12 @@ Custom theme names are supported programmatically through `themes` and
 accept only built-in theme names until downstream CLI wiring is customized.
 The default mono fallback and existing `NO_COLOR` CLI precedence remain intact.
 
-## Actions and unified input ownership
+## Keyboard shortcuts and input ownership
 
-Prefer `useAction` when a screen shortcut should also appear in the contextual
-footer. It uses the same `useKeymap` dispatcher, so the key and its display label
-are configured together:
-
-```tsx
-useAction({
-  id: 'jobs.refresh',
-  key: 'r',
-  label: 'refresh',
-  scope: 'screen',
-  run: refreshJobs,
-  enabled: !loading,
-});
-```
-
-Registered active screen actions appear in the default shell footer automatically.
-Existing `ScreenDef.hints` remain supported and are deduplicated by key.
-`useAction` also works outside `ActionProvider` as a scoped shortcut without
-the footer metadata. For a custom shell, consume `useActionHints()` explicitly.
+Use `useKeymap` to register a screen shortcut and `ScreenDef.hints` to label it
+in the footer. Keeping handlers in the screen and the footer's display labels
+in the screen registry avoids an additional action-registration provider.
+The `hints` field is presentation-only: registering a hint does not bind a key.
 
 Built-in `SearchSelect`, `Confirm`, and `Stepper` use `useManagedInput`.
 It routes raw keyboard input through the shared `KeymapProvider` with
@@ -204,8 +189,8 @@ prompts and never save drafts automatically.
 | Screen structure   | `ScreenLayout`, `ScreenHeader`                                                          |
 | Grouping           | `Panel`, `Card`, `Divider`                                                              |
 | Text and key hints | `Heading`, `Label`, `Muted`, `Code`, `Kbd`, `Icon`                                      |
-| Status             | `Badge`, `StatusMessage`, `Alert`, `Spinner`, `ProgressBar`, `EmptyState`, `ErrorPanel` |
-| Data               | `KeyValue`, `Table`, `TaskList`, `PaginatedList`                                        |
+| Status             | `Badge`, `StatusMessage`, `Alert`, `Spinner`, `EmptyState`, `ErrorPanel` |
+| Data               | `KeyValue`, `Table`, `PaginatedList`                                        |
 | Result states      | `ScreenState`                                                                           |
 | Input              | `Select`, `MultiSelect`, `SearchSelect`, `Toggle`, `Confirm`                            |
 | Wizards            | `Stepper`, `Step`, `StepperProgress`, `StepperNavigation`, `InlineLayout`               |

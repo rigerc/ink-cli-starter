@@ -102,7 +102,7 @@ copying template examples or restoring removed code.
    parseable and do not send diagnostics to it. Read piped stdin only when the
    command explicitly accepts `-`. The original starter's `example`
    command illustrates this if the downstream app still includes it.
-5. For UI interactions, use scoped `useKeymap` or `useAction` and activate
+5. For UI interactions, use scoped `useKeymap` and activate
    only the control that owns input. Use `useInputCapture` for custom
    free-form text editing, then release capture on finish/cancel. Managed
    controls already coordinate input; avoid competing native `useInput`

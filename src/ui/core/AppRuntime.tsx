@@ -1,7 +1,7 @@
 import {Box} from 'ink';
 import {useState} from 'react';
 import {Badge, CommandMenu, Header, StatusBar, Tabs} from '../../components';
-import {useExit, useActionHints, useHasInputCapture, useKeymap, useRouter} from '../../hooks';
+import {useExit, useHasInputCapture, useKeymap, useRouter} from '../../hooks';
 import {getGlobalBindings, getGlobalKeys, type KeyHint} from '../../keys';
 import {useThemeControls} from '../../theme/context';
 import {AppProviders, type AppOptions} from './AppProviders';
@@ -24,7 +24,6 @@ function ActiveScreen({definition}: {definition: UIAppDefinition}) {
   const exit = useExit();
   const {theme, cycleTheme} = useThemeControls();
   const inputCaptured = useHasInputCapture();
-  const actionHints = useActionHints();
   const [commandOpen, setCommandOpen] = useState(false);
   const screen =
     definition.findScreen(router.current) ?? definition.findScreen(definition.initialScreen)!;
@@ -62,7 +61,6 @@ function ActiveScreen({definition}: {definition: UIAppDefinition}) {
 
   const contextualHints = [
     ...(screen.hints ?? []),
-    ...actionHints,
     ...(screen.globalKeys === false ? [] : getGlobalKeys(navScreens.length, {help: hasHelp})),
   ];
   const hints = commandOpen

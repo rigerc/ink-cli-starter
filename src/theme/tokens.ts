@@ -28,8 +28,6 @@ export interface Symbols {
   pending: string;
   ellipsis: string;
   line: string;
-  barFull: string;
-  barEmpty: string;
 }
 
 export interface Theme {
@@ -52,8 +50,6 @@ export const unicodeSymbols: Symbols = {
   pending: '○',
   ellipsis: '…',
   line: '─',
-  barFull: '█',
-  barEmpty: '░',
 };
 
 export const asciiSymbols: Symbols = {
@@ -66,8 +62,6 @@ export const asciiSymbols: Symbols = {
   pending: 'o',
   ellipsis: '...',
   line: '-',
-  barFull: '#',
-  barEmpty: '-',
 };
 
 export const unicodeSpinner = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
