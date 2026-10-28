@@ -189,8 +189,8 @@ prompts and never save drafts automatically.
 | Screen structure   | `ScreenLayout`, `ScreenHeader`                                                          |
 | Grouping           | `Panel`, `Card`, `Divider`                                                              |
 | Text and key hints | `Heading`, `Label`, `Muted`, `Code`, `Kbd`, `Icon`                                      |
-| Status             | `Badge`, `StatusMessage`, `Alert`, `Spinner`, `EmptyState`, `ErrorPanel` |
-| Data               | `KeyValue`, `Table`, `PaginatedList`                                        |
+| Status             | `Badge`, `StatusMessage`, `Alert`, `Spinner`, `EmptyState`, `ErrorPanel`                |
+| Data               | `KeyValue`, `Table`, `PaginatedList`                                                    |
 | Result states      | `ScreenState`                                                                           |
 | Input              | `Select`, `MultiSelect`, `SearchSelect`, `Toggle`, `Confirm`                            |
 | Wizards            | `Stepper`, `Step`, `StepperProgress`, `StepperNavigation`, `InlineLayout`               |
