@@ -8,7 +8,10 @@ const begin = '<!-- BEGIN GENERATED REPOSITORY CONTEXT -->';
 const end = '<!-- END GENERATED REPOSITORY CONTEXT -->';
 const tick = String.fromCharCode(96);
 const inline = (value) =>
-  String(value).replaceAll('|', '\\|').replaceAll(tick, '\\' + tick).replaceAll('\n', ' ');
+  String(value)
+    .replaceAll('|', '\\|')
+    .replaceAll(tick, '\\' + tick)
+    .replaceAll('\n', ' ');
 const code = (value) => tick + inline(value) + tick;
 
 function generate() {
@@ -25,15 +28,23 @@ function generate() {
     '',
     '## Live repository reference (generated)',
     '',
-    'This section is generated from the current codebase with ' + code('npm run update:agents') + '.',
+    'This section is generated from the current codebase with ' +
+      code('npm run update:agents') +
+      '.',
     'Keep the guidance above human-authored. Regenerate this section after projecting agent rules.',
     '',
     '- **Package:** ' + code(pkg.name) + ' v' + code(pkg.version),
-    '- **Runtime:** Node ' + code(pkg.engines?.node ?? 'unspecified') + ', ' +
+    '- **Runtime:** Node ' +
+      code(pkg.engines?.node ?? 'unspecified') +
+      ', ' +
       (pkg.type === 'module' ? 'ES modules' : 'CommonJS/default modules'),
-    '- **CLI binary:** ' + (Object.keys(pkg.bin ?? {}).map(code).join(', ') || 'none'),
+    '- **CLI binary:** ' +
+      (Object.keys(pkg.bin ?? {})
+        .map(code)
+        .join(', ') || 'none'),
     '- **Command modules:** ' + modules.length + ' files in ' + code('src/commands/') + '.',
-    '- **Entry points:** ' + ['src/cli.tsx', 'src/app.tsx', 'src/lib/program.ts'].map(code).join(', '),
+    '- **Entry points:** ' +
+      ['src/cli.tsx', 'src/app.tsx', 'src/lib/program.ts'].map(code).join(', '),
     '',
     '### Available npm scripts',
     '',
@@ -49,7 +60,7 @@ function replaceGenerated(document, generated) {
   const start = document.indexOf(begin);
   const stop = document.indexOf(end);
   if (
-    (start < 0) !== (stop < 0) ||
+    start < 0 !== stop < 0 ||
     (start >= 0 &&
       (start >= stop ||
         document.indexOf(begin, start + begin.length) !== -1 ||
