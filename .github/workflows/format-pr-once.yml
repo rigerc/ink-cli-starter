@@ -22,7 +22,7 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Format using repository tooling
-        run: vp check --fix
+        run: npm run check -- --fix
       - name: Commit formatted updater scripts
         shell: bash
         run: |
