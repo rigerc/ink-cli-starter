@@ -53,11 +53,13 @@ function start(args: string[] = []) {
       TERM: 'xterm-256color',
     }).filter((entry): entry is [string, string] => entry[1] !== undefined),
   );
-  const terminal = spawnPty.spawn(
-    process.execPath,
-    ['--import', 'tsx', 'src/cli.tsx', ...args],
-    {name: 'xterm-256color', cols: 80, rows: 30, cwd: process.cwd(), env},
-  );
+  const terminal = spawnPty.spawn(process.execPath, ['--import', 'tsx', 'src/cli.tsx', ...args], {
+    name: 'xterm-256color',
+    cols: 80,
+    rows: 30,
+    cwd: process.cwd(),
+    env,
+  });
   sessions.push({terminal, directory});
   let output = '';
   const listeners = new Set<() => void>();
@@ -106,15 +108,19 @@ describe.skipIf(Boolean(skipReason))('real interactive terminal', () => {
     expect(session.output()).toContain('\u001b[?25h');
   }, 15_000);
 
-  it.skipIf(process.platform === 'win32')('handles SIGTERM and terminal cleanup', async () => {
-    const session = start(['--alternate-screen']);
-    await session.waitFor('Edit src/app.tsx');
-    process.kill(session.terminal.pid, 'SIGTERM');
-    const result = await session.exited;
-    expect(result.signal ? 128 + result.signal : result.exitCode).toBe(143);
-    expect(session.output()).toContain('\u001b[?1049l');
-    expect(session.output()).toContain('\u001b[?25h');
-  }, 15_000);
+  it.skipIf(process.platform === 'win32')(
+    'handles SIGTERM and terminal cleanup',
+    async () => {
+      const session = start(['--alternate-screen']);
+      await session.waitFor('Edit src/app.tsx');
+      process.kill(session.terminal.pid, 'SIGTERM');
+      const result = await session.exited;
+      expect(result.signal ? 128 + result.signal : result.exitCode).toBe(143);
+      expect(session.output()).toContain('\u001b[?1049l');
+      expect(session.output()).toContain('\u001b[?25h');
+    },
+    15_000,
+  );
 
   it('supports Ink screen-reader rendering', async () => {
     const session = start(['--screen-reader']);

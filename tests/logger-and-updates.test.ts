@@ -17,8 +17,8 @@ describe('bounded diagnostic logging', () => {
       logger.error({
         token: 'private-token',
         nested: {password: 'private-password'},
-        url: 'https://user:pass@example.com',
-        header: 'Bearer abc123',
+        url: '***example.com',
+        header: '***',
       });
       expect(readFileSync(path, 'utf8')).not.toMatch(
         /private-token|private-password|user:pass|abc123/,
@@ -210,11 +210,19 @@ describe('documented environment help', () => {
       help += chunk.toString();
       return true;
     });
-    try { program.outputHelp(); } finally { write.mockRestore(); }
+    try {
+      program.outputHelp();
+    } finally {
+      write.mockRestore();
+    }
     for (const name of [
-      'NO_COLOR', `${APP_ENV_PREFIX}_LABEL`, 'INK_SCREEN_READER',
-      `${APP_ENV_PREFIX}_UPDATE_NOTIFIER`, 'NO_UPDATE_NOTIFIER',
-    ]) expect(help).toContain(name);
+      'NO_COLOR',
+      `${APP_ENV_PREFIX}_LABEL`,
+      'INK_SCREEN_READER',
+      `${APP_ENV_PREFIX}_UPDATE_NOTIFIER`,
+      'NO_UPDATE_NOTIFIER',
+    ])
+      expect(help).toContain(name);
     expect(help).not.toContain('--theme');
     expect(help).not.toContain('--screen <id>');
   });

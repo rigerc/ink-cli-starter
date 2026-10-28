@@ -51,8 +51,6 @@ describe('template and publishing checks', () => {
     expect(result.stderr).toContain('private');
     expect(result.stderr).toContain('repository');
   });
-
-
 });
 
 describe('sync changelog input validation', () => {

@@ -81,21 +81,17 @@ describe('configuration persistence with isolated files', () => {
       });
     }));
 
-  it.each([
-    '{broken json',
-    '[]',
-    '{"label":17}',
-    '{"version":999}',
-    '{"plugin":{"value":1e400}}',
-  ])('never overwrites invalid configuration: %s', (contents) =>
-    withWorkspace((directory) => {
-      const path = join(directory, 'settings.json');
-      writeFixture(directory, 'settings.json', contents);
-      const store = createConfigStore(appConfig);
-      expect(store.read(path).error).toBeTruthy();
-      expect(() => store.write({label: 'Hello'}, path)).toThrow();
-      expect(readFileSync(path, 'utf8')).toBe(contents);
-    }),
+  it.each(['{broken json', '[]', '{"label":17}', '{"version":999}', '{"plugin":{"value":1e400}}'])(
+    'never overwrites invalid configuration: %s',
+    (contents) =>
+      withWorkspace((directory) => {
+        const path = join(directory, 'settings.json');
+        writeFixture(directory, 'settings.json', contents);
+        const store = createConfigStore(appConfig);
+        expect(store.read(path).error).toBeTruthy();
+        expect(() => store.write({label: 'Hello'}, path)).toThrow();
+        expect(readFileSync(path, 'utf8')).toBe(contents);
+      }),
   );
 
   it('applies migrations in memory and persists the new version only on save', () =>

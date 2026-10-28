@@ -45,13 +45,7 @@ export default defineConfig({
     fixedExtension: false,
     // Keep runtime deps external; they are installed alongside the package.
     deps: {
-      neverBundle: [
-        'react',
-        'ink',
-        'commander',
-        '@commander-js/extra-typings',
-        'zod',
-      ],
+      neverBundle: ['react', 'ink', 'commander', '@commander-js/extra-typings', 'zod'],
     },
     dts: false,
   },

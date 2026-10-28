@@ -61,7 +61,8 @@ describe('CLI as a subprocess', () => {
       const result = cli(args, home);
       expect(result.status).toBe(2);
       expect(result.stderr).toContain(message);
-    }));
+    }),
+  );
 
   it('rejects unknown commands', () =>
     withWorkspace((home) => {

@@ -1,5 +1,5 @@
 import pkg from '../../package.json' with {type: 'json'};
-import {render, renderToString, useInput} from 'ink';
+import {render, renderToString} from 'ink';
 import {App, PlainView} from '../app';
 import {appConfig, resolveConfig} from '../config';
 import {APP_ENV_PREFIX} from './identity';
@@ -9,13 +9,6 @@ import {AppError} from './errors';
 import {logger} from './logger';
 import {isInteractive} from './terminal';
 import type {createProgram} from './program';
-
-function TerminalInterrupt({onInterrupt}: {onInterrupt: () => void}) {
-  useInput((input, key) => {
-    if (key.ctrl && input === 'c') onInterrupt();
-  });
-  return null;
-}
 
 /** Run the same native Ink view interactively or render a single static frame. */
 export async function runApp(
@@ -52,12 +45,7 @@ export async function runApp(
   if (notice) process.stderr.write(`${notice}\n`);
   signal.throwIfAborted();
 
-  const instance = render(
-    <>
-      <TerminalInterrupt onInterrupt={onInterrupt} />
-      <App label={label} />
-    </>,
-    {
+  const instance = render(<App label={label} onInterrupt={onInterrupt} />, {
       interactive: true,
       exitOnCtrlC: false,
       isScreenReaderEnabled: flags.screenReader || process.env.INK_SCREEN_READER === 'true',

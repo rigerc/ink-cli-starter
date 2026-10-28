@@ -3,6 +3,7 @@ import pkg from '../package.json' with {type: 'json'};
 
 export interface AppProps {
   label?: string;
+  onInterrupt?: () => void;
 }
 
 /** A single native Ink view. Add your own components only when you need them. */
@@ -16,9 +17,13 @@ function Content({label = pkg.name}: AppProps) {
 }
 
 /** Interactive application: no custom component library, shell, or providers. */
-export function App(props: AppProps) {
+export function App({onInterrupt, ...props}: AppProps) {
   const {exit} = useApp();
   useInput((input, key) => {
+    if (key.ctrl && input === 'c') {
+      onInterrupt?.();
+      return;
+    }
     if (input === 'q' || key.escape) exit();
   });
   return <Content {...props} />;

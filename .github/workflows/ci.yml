@@ -31,23 +31,6 @@ jobs:
         run: |
           node --test tests/skill-accuracy.test.mjs
           node scripts/check-skill-accuracy.mjs
-      - name: Temporary formatting diagnostics
-        run: |
-          npm exec -- vp check --fix || true
-          node <<'NODE'
-          const {execFileSync} = require('node:child_process');
-          const {readFileSync} = require('node:fs');
-          const files = execFileSync('git', ['diff', '--name-only'], {encoding: 'utf8'})
-            .trim().split('\n').filter(Boolean);
-          for (const path of files) {
-            const value = readFileSync(path, 'utf8');
-            for (let i = 0; i < value.length; i += 2500) {
-              console.log('FMT_JSON ' + path + ' ' + (i / 2500) + ' ' +
-                JSON.stringify(value.slice(i, i + 2500)));
-            }
-          }
-          NODE
-          exit 1
       - run: npm run check
       - run: npm run typecheck
 

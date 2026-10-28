@@ -62,7 +62,9 @@ describe('headless commands', {timeout: 20_000}, () => {
       const path = join(directory, 'settings.json');
       writeFixture(directory, 'settings.json', '{"label":"Original","plugin":{"enabled":true}}');
       const args = ['--config', path];
-      expect(cli(directory, [...args, 'config', 'set', 'label', 'Changed', '--quiet']).status).toBe(0);
+      expect(cli(directory, [...args, 'config', 'set', 'label', 'Changed', '--quiet']).status).toBe(
+        0,
+      );
       const env = {[`${APP_ENV_PREFIX}_LABEL`]: 'From environment'};
       const value = cli(directory, [...args, 'config', 'get', 'label', '--json'], env);
       expect(JSON.parse(value.stdout)).toEqual({
@@ -157,5 +159,4 @@ describe('headless commands', {timeout: 20_000}, () => {
       expect(debug.stderr).toContain('at readStored');
       expect(cli(directory, ['--quiet', '--verbose', 'doctor']).status).toBe(2);
     }));
-
 });

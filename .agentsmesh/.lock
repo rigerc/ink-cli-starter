@@ -9,7 +9,7 @@ checksums:
   rules/_root.md: sha256:0bf25992c975c71034c92f1944b481143975342e0659578eb70637755a5221ad
   rules/cli-architecture.md: sha256:b0066e35fc069aa114709523a3ac805595b1f562d54da3808468527c69f69c5d
   rules/configuration.md: sha256:3ea3cd56fd2a657721ec44f9b0484344fa6c80af7757d50bf4bf92e62d8a2d4c
-  rules/template-sync.md: sha256:40fc3c47a0c4da070387caa4a01b0624f6dfa6e297395ea03e721dcc1707e180
+  rules/template-sync.md: sha256:d8ff42b497022a8aaa730a8c336f606359f95496370c189955a5d8e5e23153c5
   rules/terminal-ui.md: sha256:d47120be2708fe38bcc7db045467d66b450ec15134cb23d2032e4c5c28c5e453
 extends: {}
 packs: {}
@@ -17,7 +17,7 @@ outputs:
   CLAUDE.md: sha256:dbb1feb9b4e2056639dd37e251e90784a3d8e950c862ea83103106f5e72633a2
   .claude/rules/cli-architecture.md: sha256:b0066e35fc069aa114709523a3ac805595b1f562d54da3808468527c69f69c5d
   .claude/rules/configuration.md: sha256:3ea3cd56fd2a657721ec44f9b0484344fa6c80af7757d50bf4bf92e62d8a2d4c
-  .claude/rules/template-sync.md: sha256:40fc3c47a0c4da070387caa4a01b0624f6dfa6e297395ea03e721dcc1707e180
+  .claude/rules/template-sync.md: sha256:d8ff42b497022a8aaa730a8c336f606359f95496370c189955a5d8e5e23153c5
   .claude/rules/terminal-ui.md: sha256:d47120be2708fe38bcc7db045467d66b450ec15134cb23d2032e4c5c28c5e453
   AGENTS.md: sha256:dbb1feb9b4e2056639dd37e251e90784a3d8e950c862ea83103106f5e72633a2
   src/AGENTS.md: sha256:74236c986f31d3e77e22abf995fe3ab63b50de9c70102e878a7e652561aa4c32
@@ -25,7 +25,7 @@ outputs:
   .github/workflows/AGENTS.md: sha256:de167a4c3de3d90d63d17bf3e0f398e2d60c01ca0980e7e47c9172934c796f34
   .opencode/rules/cli-architecture.md: sha256:b0066e35fc069aa114709523a3ac805595b1f562d54da3808468527c69f69c5d
   .opencode/rules/configuration.md: sha256:3ea3cd56fd2a657721ec44f9b0484344fa6c80af7757d50bf4bf92e62d8a2d4c
-  .opencode/rules/template-sync.md: sha256:40fc3c47a0c4da070387caa4a01b0624f6dfa6e297395ea03e721dcc1707e180
+  .opencode/rules/template-sync.md: sha256:d8ff42b497022a8aaa730a8c336f606359f95496370c189955a5d8e5e23153c5
   .opencode/rules/terminal-ui.md: sha256:d47120be2708fe38bcc7db045467d66b450ec15134cb23d2032e4c5c28c5e453
   .claude/settings.json: sha256:13fcf13fa18e64e9db35d1eb5c3945bdb3924d28727d1367e1efe7ceecf7d9dd
   .codex/hooks.json: sha256:13fcf13fa18e64e9db35d1eb5c3945bdb3924d28727d1367e1efe7ceecf7d9dd
