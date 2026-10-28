@@ -45,6 +45,13 @@ export async function runApp(
   if (notice) process.stderr.write(`${notice}\n`);
   signal.throwIfAborted();
 
+  // Catch raw Ctrl-C before Ink processes the key. Ink may otherwise exit
+  // the render loop with code 0 without dispatching a useInput handler.
+  const onRawInput = (data: Buffer | string) => {
+    if (typeof data === 'string' ? data.includes('\u0003') : data.includes(3)) onInterrupt();
+  };
+  process.stdin.prependListener('data', onRawInput);
+
   const instance = render(<App label={label} onInterrupt={onInterrupt} />, {
     interactive: true,
     exitOnCtrlC: false,
@@ -56,6 +63,7 @@ export async function runApp(
   try {
     await instance.waitUntilExit();
   } finally {
+    process.stdin.off('data', onRawInput);
     signal.removeEventListener('abort', abort);
     instance.unmount();
   }
