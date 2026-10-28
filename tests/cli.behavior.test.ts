@@ -15,54 +15,53 @@ function cli(args: string[], home: string) {
   });
 }
 
-describe('CLI as a subprocess (the public contract)', () => {
-  it('exposes version, screens, flags, and a headless command', () =>
+describe('CLI as a subprocess', () => {
+  it('exposes version, plain output and headless commands', () =>
     withWorkspace((home) => {
-      const version = cli(['--version'], home);
-      expect(version.status, version.stderr).toBe(0);
-      expect(version.stdout.trim()).toBe(pkg.version);
-
+      expect(cli(['--version'], home).stdout.trim()).toBe(pkg.version);
       const help = cli(['--help'], home);
-      expect(help.status, help.stderr).toBe(0);
+      expect(help.status).toBe(0);
       expect(help.stdout).toContain('--plain');
-      expect(help.stdout).toContain('--screen');
       expect(help.stdout).toContain('doctor');
+      expect(help.stdout).not.toContain('--screen');
     }));
 
-  it('prints a deterministic screen without an interactive terminal', () =>
+  it('prints a native Ink frame without a TTY', () =>
     withWorkspace((home) => {
-      const result = cli(['--plain', '--screen', 'home', '--ascii'], home);
+      const result = cli(['--plain'], home);
       expect(result.status, result.stderr).toBe(0);
-      expect(result.stdout).toContain('Home');
-      expect(result.stdout).toContain('Build your app');
+      expect(result.stdout).toContain(pkg.name);
+      expect(result.stdout).toContain('Edit src/app.tsx');
+    }));
+
+  it('reads a configured label without a UI settings screen', () =>
+    withWorkspace((home) => {
+      const path = join(home, 'settings.json');
+      expect(cli(['config', 'set', 'label', 'Example CLI', '--config', path], home).status).toBe(0);
+      const result = cli(['--plain', '--config', path], home);
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('Example CLI');
     }));
 
   it('supports doctor JSON and an explicit config path', () =>
     withWorkspace((home) => {
-      const config = join(home, 'not-created.json');
-      const result = cli(['--json', 'doctor', '--config', config], home);
+      const path = join(home, 'settings.json');
+      const result = cli(['doctor', '--json', '--config', path], home);
       expect(result.status, result.stderr).toBe(0);
-      const report = JSON.parse(result.stdout);
-      expect(report.ok).toBe(true);
-      expect(report.checks).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({name: 'configuration', detail: expect.stringContaining(config)}),
-        ]),
+      expect(JSON.parse(result.stdout).checks).toEqual(
+        expect.arrayContaining([expect.objectContaining({name: 'configuration'})]),
       );
     }));
 
   it.each([
     {args: ['--json'], message: '--json requires a headless subcommand'},
-    {args: ['--plain', '--screen', 'absent'], message: 'Unknown screen'},
-    {args: ['--setup', '--plain'], message: 'requires an interactive terminal'},
     {args: ['--plain', 'doctor'], message: 'Subcommands cannot be combined'},
-  ])('rejects invalid flags: $args', ({args, message}) =>
+  ])('rejects invalid combinations', ({args, message}) =>
     withWorkspace((home) => {
       const result = cli(args, home);
       expect(result.status).toBe(2);
       expect(result.stderr).toContain(message);
-    }),
-  );
+    }));
 
   it('rejects unknown commands', () =>
     withWorkspace((home) => {

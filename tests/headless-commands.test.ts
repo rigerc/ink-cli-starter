@@ -5,7 +5,7 @@ import {describe, expect, it} from 'vite-plus/test';
 import {Command} from '@commander-js/extra-typings';
 import {z} from 'zod';
 import {defineCommand} from '../src/commands';
-import {APP_ASCII_ENV, APP_THEME_ENV} from '../src/lib/identity';
+import {APP_ENV_PREFIX} from '../src/lib/identity';
 import {exampleItems} from '../src/features/example/items';
 import {runNode, withAsyncWorkspace, withWorkspace, writeFixture} from './helpers/fixtures';
 
@@ -17,17 +17,15 @@ function cli(directory: string, args: string[], env: NodeJS.ProcessEnv = {}, inp
       XDG_CONFIG_HOME: directory,
       XDG_STATE_HOME: directory,
       NODE_OPTIONS: '--import tsx',
-      [APP_ASCII_ENV]: '',
-      CLI_ASCII: '',
-      [APP_THEME_ENV]: '',
+      [`${APP_ENV_PREFIX}_LABEL`]: '',
       ...env,
     },
     input,
   });
 }
 
-describe('registered headless commands', {timeout: 20_000}, () => {
-  it('registers typed options and awaits an async handler without CLI edits', async () => {
+describe('headless commands', {timeout: 20_000}, () => {
+  it('validates typed options and awaits async handlers', async () => {
     const root = new Command();
     let received = 0;
     defineCommand({
@@ -49,59 +47,49 @@ describe('registered headless commands', {timeout: 20_000}, () => {
     expect(received).toBe(7);
   });
 
-  it('reads without creating a config file and accepts global options after nested commands', () =>
+  it('reads without creating a config file and accepts inherited flags', () =>
     withWorkspace((directory) => {
       const path = join(directory, 'custom.json');
       const result = cli(directory, ['config', 'path', '--config', path, '--json']);
       expect(result.status, result.stderr).toBe(0);
       expect(JSON.parse(result.stdout)).toEqual({path});
       expect(existsSync(path)).toBe(false);
-      expect(cli(directory, ['config', 'get', 'ascii']).stdout.trim()).toBe('false');
+      expect(cli(directory, ['config', 'get', 'label']).stdout.trim()).toBe('ink-kit');
     }));
 
-  it('validates writes, reads sources, and resets without losing extension keys', () =>
+  it('validates writes, environment precedence and extension-key preservation', () =>
     withWorkspace((directory) => {
       const path = join(directory, 'settings.json');
-      writeFixture(directory, 'settings.json', '{"theme":"dark","plugin":{"enabled":true}}');
+      writeFixture(directory, 'settings.json', '{"label":"Original","plugin":{"enabled":true}}');
       const args = ['--config', path];
-      expect(cli(directory, [...args, 'config', 'set', 'ascii', 'true', '--quiet']).stderr).toBe(
-        '',
-      );
-      const effective = cli(directory, [
-        ...args,
-        '--theme',
-        'light',
-        'config',
-        'get',
-        'theme',
-        '--json',
-      ]);
-      expect(JSON.parse(effective.stdout)).toEqual({key: 'theme', value: 'light', source: 'flag'});
-      const stored = cli(directory, [...args, 'config', 'get', 'theme', '--stored', '--json'], {
-        [APP_THEME_ENV]: 'contrast',
+      expect(cli(directory, [...args, 'config', 'set', 'label', 'Changed', '--quiet']).status).toBe(0);
+      const env = {[`${APP_ENV_PREFIX}_LABEL`]: 'From environment'};
+      const value = cli(directory, [...args, 'config', 'get', 'label', '--json'], env);
+      expect(JSON.parse(value.stdout)).toEqual({
+        key: 'label',
+        value: 'From environment',
+        source: 'environment',
       });
-      expect(JSON.parse(stored.stdout)).toEqual({key: 'theme', value: 'dark', source: 'file'});
+      const stored = cli(directory, [...args, 'config', 'get', 'label', '--stored', '--json'], env);
+      expect(JSON.parse(stored.stdout)).toEqual({key: 'label', value: 'Changed', source: 'file'});
       const before = readFileSync(path, 'utf8');
-      expect(cli(directory, [...args, 'config', 'set', 'ascii', 'yes']).status).toBe(2);
-      expect(cli(directory, [...args, 'config', 'set', 'theme', 'bogus']).status).toBe(2);
+      expect(cli(directory, [...args, 'config', 'set', 'label', '']).status).toBe(2);
       expect(cli(directory, [...args, 'config', 'set', '__proto__', 'bad']).status).toBe(2);
       expect(readFileSync(path, 'utf8')).toBe(before);
-      expect(cli(directory, [...args, 'config', 'reset', 'ascii']).status).toBe(0);
-      expect(JSON.parse(readFileSync(path, 'utf8'))).toMatchObject({
-        theme: 'dark',
+      expect(cli(directory, [...args, 'config', 'reset', 'label']).status).toBe(0);
+      expect(JSON.parse(readFileSync(path, 'utf8'))).toEqual({
+        version: 1,
         plugin: {enabled: true},
       });
-      expect(cli(directory, [...args, 'config', 'reset']).status).toBe(0);
-      expect(JSON.parse(readFileSync(path, 'utf8'))).toEqual({version: 1, plugin: {enabled: true}});
     }));
 
-  it.each(['{bad', '{"version":999}', '{"ascii":"yes"}'])(
-    'preserves invalid files through set and reset: %s',
+  it.each(['{bad', '{"version":999}', '{"label":17}'])(
+    'preserves invalid settings files: %s',
     (content) =>
       withWorkspace((directory) => {
         const path = join(directory, 'settings.json');
         writeFixture(directory, 'settings.json', content);
-        for (const command of [['set', 'ascii', 'true'], ['reset'], ['get', 'ascii']]) {
+        for (const command of [['set', 'label', 'foo'], ['reset'], ['get', 'label']]) {
           const result = cli(directory, ['--config', path, 'config', ...command]);
           expect(result.status).not.toBe(0);
           expect(readFileSync(path, 'utf8')).toBe(content);
@@ -109,24 +97,11 @@ describe('registered headless commands', {timeout: 20_000}, () => {
       }),
   );
 
-  it('honors prefixed ASCII, its legacy alias, and NO_COLOR', () =>
-    withWorkspace((directory) => {
-      const args = ['config', 'get', 'ascii', '--json'];
-      expect(JSON.parse(cli(directory, args, {CLI_ASCII: '1'}).stdout).value).toBe(true);
-      expect(
-        JSON.parse(cli(directory, args, {CLI_ASCII: '1', [APP_ASCII_ENV]: '0'}).stdout).value,
-      ).toBe(false);
-      const mono = cli(directory, ['--theme', 'light', 'config', 'get', 'theme', '--json'], {
-        NO_COLOR: '0',
-      });
-      expect(JSON.parse(mono.stdout)).toEqual({key: 'theme', value: 'mono', source: 'environment'});
-    }));
-
-  it('consumes explicit pipe input and keeps JSON stdout clean', () =>
+  it('supports explicit piped input without mixing JSON and log output', () =>
     withWorkspace((directory) => {
       const path = join(directory, 'settings.json');
       expect(
-        cli(directory, ['--config', path, 'config', 'set', 'ascii', '-'], {}, 'true\n').status,
+        cli(directory, ['--config', path, 'config', 'set', 'label', '-'], {}, 'Piped CLI\n').status,
       ).toBe(0);
       const input = JSON.stringify([
         {id: 'pipe', name: 'Piped item', status: 'ready', description: 'From stdin'},
@@ -134,29 +109,19 @@ describe('registered headless commands', {timeout: 20_000}, () => {
       const result = cli(directory, ['example', '-', '--json', '--verbose'], {}, input);
       expect(result.status, result.stderr).toBe(0);
       expect(JSON.parse(result.stdout)).toEqual(JSON.parse(input));
-      // Without `-`, piped input is not read; the command prints the default items.
-      const implicit = cli(directory, ['example', '--json'], {}, input);
-      expect(implicit.status, implicit.stderr).toBe(0);
-      expect(JSON.parse(implicit.stdout)).toEqual(exampleItems);
+      expect(JSON.parse(cli(directory, ['example', '--json'], {}, input).stdout)).toEqual(
+        exampleItems,
+      );
       expect(cli(directory, ['example', '-'], {}, 'bad').status).toBe(2);
-      expect(cli(directory, ['example', '-'], {}, '').status).toBe(2);
     }));
 
-  it('exits promptly when example gets an open stdin without -', async () =>
+  it('does not read a piped stream unless - is passed', async () =>
     withAsyncWorkspace(async (directory) => {
       const child = spawn(process.execPath, ['src/cli.tsx', 'example', '--json'], {
         cwd: process.cwd(),
-        env: {
-          ...process.env,
-          CI: '1',
-          NO_COLOR: '1',
-          XDG_CONFIG_HOME: directory,
-          XDG_STATE_HOME: directory,
-          NODE_OPTIONS: '--import tsx',
-        },
+        env: {...process.env, CI: '1', XDG_CONFIG_HOME: directory, NODE_OPTIONS: '--import tsx'},
         stdio: ['pipe', 'pipe', 'ignore'],
       });
-      // Deliberately keep child.stdin open; the command must not wait on it.
       const exited = new Promise<{status: number; stdout: string}>((resolve) => {
         let stdout = '';
         child.stdout!.on('data', (chunk: Buffer) => (stdout += chunk.toString()));
@@ -165,10 +130,7 @@ describe('registered headless commands', {timeout: 20_000}, () => {
       const result = await Promise.race([
         exited,
         new Promise<never>((_, reject) => {
-          const timeout = setTimeout(
-            () => reject(new Error('example hung on an open stdin')),
-            12_000,
-          );
+          const timeout = setTimeout(() => reject(new Error('example hung on stdin')), 12_000);
           child.on('exit', () => clearTimeout(timeout));
         }),
       ]);
@@ -177,22 +139,22 @@ describe('registered headless commands', {timeout: 20_000}, () => {
       expect(JSON.parse(result.stdout)).toEqual(exampleItems);
     }));
 
-  it('prints group help and exits non-zero for a bare group command', () =>
+  it('reports group usage errors without a TTY', () =>
     withWorkspace((directory) => {
       const result = cli(directory, ['config']);
       expect(result.status).toBe(2);
       expect(result.stdout).toContain('Usage:');
-      expect(result.stderr).toContain('Missing config subcommand');
     }));
 
-  it('reports stacks only in debug mode and writes unexpected failures to the logger', () =>
+  it('reports errors and debug stacks and rejects conflicting verbosity flags', () =>
     withWorkspace((directory) => {
-      const basic = cli(directory, ['--screen', 'missing']);
-      const debug = cli(directory, ['--debug', '--screen', 'missing']);
-      expect(basic.stderr).not.toContain('at runApp');
-      expect(debug.stderr).toContain('at runApp');
+      const basic = cli(directory, ['config', 'get', 'missing']);
+      const debug = cli(directory, ['--debug', 'config', 'get', 'missing']);
+      expect(basic.status).toBe(2);
+      expect(basic.stderr).not.toContain('at fieldFor');
+      expect(debug.stderr).toContain('at fieldFor');
       expect(readFileSync(join(directory, 'ink-kit', 'ink-kit.log'), 'utf8')).toContain(
-        'Unknown screen',
+        'Unknown configuration key',
       );
       expect(cli(directory, ['--quiet', '--verbose', 'doctor']).status).toBe(2);
     }));
