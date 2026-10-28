@@ -60,8 +60,8 @@ describe('configuration persistence with isolated files', () => {
       const path = join(directory, 'settings.json');
       const store = createConfigStore(appConfig);
       expect(store.read(path).config).toEqual({});
-      expect(store.write({label: 'Hello'}, path)).toMatchObject({version: 1, ascii: true});
-      expect(JSON.parse(readFileSync(path, 'utf8'))).toMatchObject({version: 1, ascii: true});
+      expect(store.write({label: 'Hello'}, path)).toMatchObject({version: 1, label: 'Hello'});
+      expect(JSON.parse(readFileSync(path, 'utf8'))).toMatchObject({version: 1, label: 'Hello'});
       expect(configFilePath(path)).toBe(path);
     }));
 

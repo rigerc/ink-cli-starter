@@ -2,7 +2,7 @@ import pkg from '../../package.json' with {type: 'json'};
 import {render, renderToString, useInput} from 'ink';
 import {App, PlainView} from '../app';
 import {appConfig, resolveConfig} from '../config';
-import {APP_ENV_PREFIX, APP_NAME} from './identity';
+import {APP_ENV_PREFIX} from './identity';
 import {getUpdateNotice} from './updates';
 import {loadConfig} from './config';
 import {AppError} from './errors';
@@ -31,7 +31,9 @@ export async function runApp(
   const label = resolveConfig(appConfig.fields, config).values.label ?? pkg.name;
 
   if (flags.plain || !isInteractive()) {
-    console.log(renderToString(<PlainView label={label} />, {columns: process.stdout.columns || 80}));
+    console.log(
+      renderToString(<PlainView label={label} />, {columns: process.stdout.columns || 80}),
+    );
     return;
   }
   if (!process.stdin.isTTY)
