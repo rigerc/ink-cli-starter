@@ -61,11 +61,17 @@ Edit `src/app.tsx` for interactive behavior. Use Ink's `Box`, `Text`,
 only when the application needs them. Keep operations that also need headless
 access outside the React component tree.
 
-For ready-made terminal components, you can optionally install
-[`@rigerc/ink-ui`](https://github.com/rigerc/ink-ui) in a downstream app.
+For ready-made terminal components, you can optionally install the published
+[`@rigerc/ink-ui` npm package](https://www.npmjs.com/package/@rigerc/ink-ui)
+in a downstream app:
+
+```sh
+npm install @rigerc/ink-ui
+```
+
 See the [optional ink-ui integration guide](docs/integrations/ink-ui.md) for
-installation, a native Ink example and input ownership. The starter does not
-install or require this UI library.
+a native Ink example and input ownership. The starter does not install or
+require this UI library.
 
 - [Architecture](docs/architecture.md)
 - [Add functionality](docs/adding-a-feature.md)

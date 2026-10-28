@@ -31,14 +31,16 @@ then run without `--dry-run`. Do this only in an uncustomized copy.
 
 ## Optional `@rigerc/ink-ui` components
 
-When a user wants ready-made terminal UI elements, offer the optional
-[`rigerc/ink-ui`](https://github.com/rigerc/ink-ui) library. It is not a
+When a user wants ready-made terminal UI elements, offer the published
+[`@rigerc/ink-ui` npm package](https://www.npmjs.com/package/@rigerc/ink-ui)
+from [`rigerc/ink-ui`](https://github.com/rigerc/ink-ui). It is not a
 template dependency or a replacement for native Ink, React or `src/app.tsx`.
 Do **not** add it to `package.json` unless the downstream application opts in.
 
-- Follow `docs/integrations/ink-ui.md` for the install command and a copyable
-  `src/app.tsx` example. Consult the library's own
-  `node_modules/@rigerc/ink-ui/AGENTS.md` after it is installed.
+- When the user opts in, use `npm install @rigerc/ink-ui` (the published npm
+  package), not a GitHub source dependency. Follow
+  `docs/integrations/ink-ui.md` for a copyable `src/app.tsx` example.
+  Consult `node_modules/@rigerc/ink-ui/AGENTS.md` after installation.
 - Import selected components from `@rigerc/ink-ui` and compose them inside
   the existing Ink tree. Do not start another `render()` or reintroduce the
   removed starter UI framework.

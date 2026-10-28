@@ -1,25 +1,27 @@
 # Optional `@rigerc/ink-ui` integration
 
 The starter intentionally uses native Ink 8 and React 19 rather than a bundled
-component framework. [`rigerc/ink-ui`](https://github.com/rigerc/ink-ui)
-provides ready-made terminal components when a downstream application needs
-them. **It is opt-in:** the starter runs without it, and no dependency or
-provider is added to the template by default.
+component framework. The published
+[`@rigerc/ink-ui` npm package](https://www.npmjs.com/package/@rigerc/ink-ui)
+([source](https://github.com/rigerc/ink-ui)) provides ready-made terminal
+components when a downstream application needs them. **It is opt-in:** the
+starter runs without it, and no dependency or provider is added to the template
+by default.
 
 ## Install in a downstream application
 
-From your project created with this template:
+From your project created with this template, install the published package
+from npm:
 
 ```sh
-npm install github:rigerc/ink-ui#main
+npm install @rigerc/ink-ui
 ```
 
-The library's [README](https://github.com/rigerc/ink-ui#install) also documents
-the `@rigerc/ink-ui` npm package name. When that scoped package is available,
-you can use `npm install @rigerc/ink-ui` instead. A GitHub install builds the
-package using its `prepare` script. Commit the updated `package.json` and
-`package-lock.json`; for repeatable Git-based installs, pin a commit SHA
-instead of `#main`.
+The package is available on [npm](https://www.npmjs.com/package/@rigerc/ink-ui).
+The command records the dependency in your downstream `package.json` and
+updates `package-lock.json`; commit both files so subsequent `npm ci`
+installs use the locked version. No GitHub source checkout, Git URL or build
+step is needed for normal installation.
 
 The template already depends on `ink` and `react`, which satisfy the
 library's Ink 7+/React 19+ peer requirements. Do not add another copy of React

@@ -31,10 +31,11 @@ step, custom component library, or theme API. For larger applications, add
 your own files and abstractions as needed.
 
 For ready-made status, layout, selection and input components, you can opt in
-to [`@rigerc/ink-ui`](https://github.com/rigerc/ink-ui) rather than writing
-every component yourself. The starter has no additional UI dependency by
-default. See the [optional integration guide](integrations/ink-ui.md) for
-installation, an `src/app.tsx` example and input handling precautions.
+to the published [`@rigerc/ink-ui` npm package](https://www.npmjs.com/package/@rigerc/ink-ui)
+with `npm install @rigerc/ink-ui` rather than writing every component
+yourself. The starter has no additional UI dependency by default. See the
+[optional integration guide](integrations/ink-ui.md) for a `src/app.tsx`
+example and input handling precautions.
 
 If a task also needs headless operation, put its model and operation under
 `src/features/` and have both Ink and the command call it.
