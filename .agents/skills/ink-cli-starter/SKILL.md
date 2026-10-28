@@ -52,6 +52,12 @@ Do **not** add it to `package.json` unless the downstream application opts in.
   visual tokens; check glyph and palette fallbacks for your application.
 
 
+## Generated project reference
+
+For current command modules, extension exports, runtime dependencies and npm
+scripts, see the [generated starter reference](references/generated-api.md).
+It is derived from source; keep the workflow guidance above human-authored.
+
 ## Verify
 
 ```sh

@@ -1,0 +1,49 @@
+name: Update AGENTS.md context
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'AGENTS.md'
+      - 'CLAUDE.md'
+      - '.agentsmesh/rules/**'
+      - 'package.json'
+      - 'src/commands/**'
+      - 'scripts/update-agents-md.mjs'
+      - '.github/workflows/update-agents.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-agents-main
+  cancel-in-progress: false
+
+jobs:
+  update:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - name: Regenerate factual agent context
+        run: npm run update:agents
+      - name: Verify deterministic output
+        run: npm run check:agents
+      - name: Commit only changed instruction files
+        shell: bash
+        run: |
+          if git diff --quiet -- AGENTS.md CLAUDE.md; then
+            echo "Agent context is current."
+            exit 0
+          fi
+          git diff --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add AGENTS.md CLAUDE.md
+          git commit -m 'docs: refresh generated agent context'
+          git push origin HEAD:main

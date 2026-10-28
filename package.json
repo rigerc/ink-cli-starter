@@ -28,7 +28,11 @@
     "changeset": "changeset",
     "version-packages": "changeset version && npm install --package-lock-only",
     "release": "npm run build && changeset publish",
-    "release:tag": "changeset git-tag"
+    "release:tag": "changeset git-tag",
+    "update:agents": "node scripts/update-agents-md.mjs --write",
+    "check:agents": "node scripts/update-agents-md.mjs --check",
+    "update:skill": "node scripts/sync-skill.mjs --write",
+    "check:skill": "node scripts/sync-skill.mjs --check"
   },
   "dependencies": {
     "@commander-js/extra-typings": "^15.0.0",
