@@ -1,30 +1,30 @@
-import pkg from '../package.json';
-import {AppRuntime, PlainRuntime} from './ui/core/AppRuntime';
-import {defineApp} from './ui/core/defineApp';
-import {screens} from './screens';
-import type {AppOptions} from './ui/core/AppProviders';
+import {Box, Text, useApp, useInput} from 'ink';
+import pkg from '../package.json' with {type: 'json'};
 
-export {AppProviders, type AppOptions} from './ui/core/AppProviders';
-export {ScreenFrame} from './ui/layout/ScreenFrame';
-export {
-  defineApp,
-  type ScreenChrome,
-  type ScreenDef,
-  type UIAppDefinition,
-} from './ui/core/defineApp';
-export {AppRuntime, PlainRuntime} from './ui/core/AppRuntime';
+export interface AppProps {
+  label?: string;
+}
 
-/** Defaults only; downstream applications may provide their own definition. */
-export const defaultApp = defineApp({
-  screens,
-  initialScreen: 'home',
-  brand: {title: pkg.name, version: pkg.version},
-});
+/** A single native Ink view. Add your own components only when you need them. */
+function Content({label = pkg.name}: AppProps) {
+  return (
+    <Box flexDirection="column">
+      <Text bold>{label}</Text>
+      <Text>Your CLI is ready. Edit src/app.tsx to build your application.</Text>
+    </Box>
+  );
+}
 
-export const App = ({options}: {options: AppOptions}) => (
-  <AppRuntime definition={defaultApp} options={options} />
-);
+/** Interactive application: no custom component library, shell, or providers. */
+export function App(props: AppProps) {
+  const {exit} = useApp();
+  useInput((input, key) => {
+    if (input === 'q' || key.escape) exit();
+  });
+  return <Content {...props} />;
+}
 
-export const PlainView = ({options}: {options: AppOptions}) => (
-  <PlainRuntime definition={defaultApp} options={options} />
-);
+/** Static, side-effect-free frame for pipes and CI. */
+export function PlainView(props: AppProps) {
+  return <Content {...props} />;
+}

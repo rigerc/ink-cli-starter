@@ -51,7 +51,6 @@ export default defineConfig({
         'commander',
         '@commander-js/extra-typings',
         'zod',
-        'string-width',
       ],
     },
     dts: false,
