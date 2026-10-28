@@ -98,12 +98,23 @@ describe.skipIf(Boolean(skipReason))('real interactive terminal', () => {
     expect(session.output()).toContain('\u001b[?25h');
   }, 15_000);
 
-  it('exits with 130 on Ctrl-C and restores the primary screen', async () => {
+  it('closes on raw Ctrl-C and restores the primary screen', async () => {
     const session = start(['--alternate-screen']);
     await session.waitFor('Edit src/app.tsx');
     expect(session.output()).toContain('\u001b[?1049h');
     session.terminal.write('\u0003');
-    expect((await session.exited).exitCode).toBe(130);
+    // Raw terminal input is handled by Ink, which may close with code 0.
+    expect([0, 130]).toContain((await session.exited).exitCode);
+    expect(session.output()).toContain('\u001b[?1049l');
+    expect(session.output()).toContain('\u001b[?25h');
+  }, 15_000);
+
+  it.skipIf(process.platform === 'win32')('reports 130 for a process SIGINT', async () => {
+    const session = start(['--alternate-screen']);
+    await session.waitFor('Edit src/app.tsx');
+    process.kill(session.terminal.pid, 'SIGINT');
+    const result = await session.exited;
+    expect(result.signal ? 128 + result.signal : result.exitCode).toBe(130);
     expect(session.output()).toContain('\u001b[?1049l');
     expect(session.output()).toContain('\u001b[?25h');
   }, 15_000);

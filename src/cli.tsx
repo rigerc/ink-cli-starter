@@ -30,7 +30,7 @@ program.action(async () => {
       hint: `Run ${APP_NAME} --help for available commands.`,
     });
   const {runApp} = await import('./lib/render-app');
-  await runApp(program.opts(), controller.signal, interrupt);
+  await runApp(program.opts(), controller.signal);
 });
 try {
   await program.parseAsync(process.argv);

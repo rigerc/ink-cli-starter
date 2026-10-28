@@ -14,7 +14,6 @@ import type {createProgram} from './program';
 export async function runApp(
   flags: ReturnType<ReturnType<typeof createProgram>['opts']>,
   signal: AbortSignal,
-  onInterrupt: () => void,
 ) {
   if (flags.json)
     throw new AppError('--json requires a headless subcommand (e.g. doctor)', {exitCode: 2});
@@ -45,14 +44,7 @@ export async function runApp(
   if (notice) process.stderr.write(`${notice}\n`);
   signal.throwIfAborted();
 
-  // Catch raw Ctrl-C before Ink processes the key. Ink may otherwise exit
-  // the render loop with code 0 without dispatching a useInput handler.
-  const onRawInput = (data: Buffer | string) => {
-    if (typeof data === 'string' ? data.includes('\u0003') : data.includes(3)) onInterrupt();
-  };
-  process.stdin.prependListener('data', onRawInput);
-
-  const instance = render(<App label={label} onInterrupt={onInterrupt} />, {
+  const instance = render(<App label={label} />, {
     interactive: true,
     exitOnCtrlC: false,
     isScreenReaderEnabled: flags.screenReader || process.env.INK_SCREEN_READER === 'true',
@@ -63,7 +55,6 @@ export async function runApp(
   try {
     await instance.waitUntilExit();
   } finally {
-    process.stdin.off('data', onRawInput);
     signal.removeEventListener('abort', abort);
     instance.unmount();
   }
