@@ -18,7 +18,7 @@
     "build": "vp pack",
     "typecheck": "node node_modules/typescript/bin/tsc --noEmit",
     "lint": "vp lint",
-    "check": "npm run check:template && vp check",
+    "check": "npm run check:template && npm run contracts:check && vp check",
     "check:template": "node scripts/check-template.mjs",
     "test": "vp test run",
     "test:coverage": "vp test run --coverage",
