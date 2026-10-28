@@ -23,6 +23,12 @@ Edit `src/app.tsx` to implement your own presentation, using native Ink
 and React components. No local design system, screen router or theme provider
 needs to be removed.
 
+Optional: add ready-made UI components from
+[`@rigerc/ink-ui`](https://github.com/rigerc/ink-ui) to your own application.
+The base template deliberately has no dependency on it. See the
+[opt-in integration guide](../integrations/ink-ui.md) for installation and
+an example compatible with the native Ink entry point.
+
 Next see [architecture](../architecture.md),
 [adding a feature](../adding-a-feature.md),
 [configuration](../configuration.md),
