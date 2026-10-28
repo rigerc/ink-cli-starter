@@ -1,94 +1,149 @@
 ---
 name: ink-cli-starter
 description: >-
-  Customize, build, and maintain CLIs based on the ink-cli-starter GitHub
-  template (Ink 8, React 19, TypeScript, Commander, and Vite+). Use when
-  initializing a template copy, adding a screen or headless command,
-  extending settings or terminal UI, testing CLI behavior, or syncing
-  upstream changes.
+  Build, customize, and maintain applications copied from the ink-cli-starter
+  GitHub template (Ink 8, React 19, TypeScript, Commander, and Vite+). Use for
+  project initialization, screens, headless commands, settings, terminal input
+  and output, regression testing, or safe upstream template sync.
 ---
 
 # Work with Ink CLI Starter
 
-This is a GitHub template that contains the application itself, not a
-scaffolding generator. Adapt the copied source rather than looking for a
-separate generated app. Follow the repository's `AGENTS.md` and relevant
-focused rules; this skill is a task workflow, not an override.
+This GitHub template contains the application itself, not a generator. Modify
+the copied source; do not look for a separate scaffold. Follow the project's
+`AGENTS.md` and relevant focused rules. This skill describes workflows and
+does not override those instructions.
 
-## Orient before editing
+## Orient and choose the right layer
 
 - Read `README.md`, `docs/architecture.md`, and
-  `docs/adding-a-feature.md`. For UI work, read `docs/ui-framework.md`.
-- Check existing entry points and registries before introducing new abstractions:
-  `src/cli.tsx`, `src/app.tsx`, `src/screens/index.ts`, and
-  `src/commands/index.ts`.
-- Reuse local `src/components/`, `src/hooks/`, and `src/theme/` where
-  appropriate. They are optional defaults, not a required design system.
+  `docs/adding-a-feature.md`. Read `docs/ui-framework.md` before changing
+  layout, keyboard behavior, or focus; read `docs/configuration.md` before
+  changing settings.
+- `src/cli.tsx` owns process lifetime and cancellation.
+  `src/lib/program.ts` owns Commander flags and command registration;
+  `src/lib/render-app.tsx` lazily starts Ink rendering.
+- `src/app.tsx` supplies the default app. `src/screens/index.ts` is the
+  screen registry; `src/commands/index.ts` is the headless command registry.
+  Inspect `src/ui/core/` and `src/ui/layout/` before replacing the app
+  runtime, shell, or navigation model.
+- Use local `src/components/`, `src/hooks/`, and `src/theme/` where
+  helpful. These are optional primitives, not a mandatory design system.
+  Prefer an existing extension point over new framework infrastructure.
 
-## Start a project from this template
+## Initialize a fresh template copy
 
-1. In a **new copy** of the GitHub template, use Node.js 22.12+ and run
-   `npm ci`.
-2. Preview identity changes with
-   `npm run init:project -- --name my-cli --description "My CLI" --dry-run`.
-   Then run the command without `--dry-run` when the identity is correct.
-   Do not reinitialize an already customized project without checking its
+1. Use Node.js 22.12+ and run `npm ci` in a **new copy** of the template.
+2. Preview project identity changes:
+
+   ~~~bash
+   npm run init:project -- --name my-cli --description "My CLI" --dry-run
+   ~~~
+
+   Apply them only after reviewing the preview (remove `--dry-run`).
+   Do not reinitialize an already-customized project without inspecting
    package and config identity. See `docs/template/customization.md`.
-3. Run `npm run dev` in a terminal. For deterministic noninteractive output,
-   run `npm run dev -- --plain`; for headless diagnostics, run
-   `npm run dev -- doctor --json`.
+   Renaming the CLI does not migrate an existing config file.
+3. Run `npm run dev` in a real terminal. For a static, scriptable frame use
+   `npm run dev -- --plain`; for headless diagnostics use
+   `npm run dev -- doctor --json`. `--plain` cannot be combined with a
+   subcommand, and `--setup` requires an interactive terminal.
 
-## Add or modify functionality
+## Add a feature
 
-1. Put domain models and operations in `src/features/<feature>/` when
-   needed. Keep them independent of Ink and React so screens and headless
-   commands can share them.
-2. Add interactive screens under `src/screens/` and register them in
-   `src/screens/index.ts`. Registration controls screen IDs, navigation,
-   `--screen`, and capture targets. For a custom UI, consider
-   `layout: 'bare'`; `globalKeys: false` separately disables global keys.
-3. For noninteractive operations, define a command with `defineCommand` and add
-   it to `src/commands/index.ts`. Commander wiring and completions derive from
-   the registry; no CLI entry-point edit is needed. Headless commands must not
-   depend on a TTY, import Ink, or require React rendering.
-4. Use scoped `useKeymap` or `useAction` for keyboard actions. Ensure a
-   single input owner for text editing, and release input capture on exit.
-   Use `useAsync` / `ScreenState` for loading, empty, error, and success
-   states. Read `docs/ui-framework.md` before changing focus or layouts.
-5. For settings changes, read `docs/configuration.md`. Keep
-   `src/config/schema.ts`, registered fields, CLI options, validation, and
-   persistence consistent; preserve precedence (defaults < saved file <
-   environment < CLI) and leave invalid saved files intact.
-6. Preserve `--plain` output, `NO_COLOR`, ASCII/mono fallbacks, and narrow
-   terminal behavior. Keep Ink-rendered output separate from headless stdout.
-   Add or update tests under `tests/` for changed behavior.
+1. Put shared domain models and operations under `src/features/<feature>/`
+   when useful. Keep them independent of React and Ink so screens and
+   commands can call the same operation.
+2. For a screen, add `src/screens/<Name>.tsx` and register it in
+   `src/screens/index.ts`. Registry IDs drive `--screen`, navigation, and
+   capture targets. Visible registry order controls tabs and the first nine
+   numeric shortcuts. Use `showInNav: false` for a hidden detail screen.
+   `layout: 'bare'` removes shell chrome; `globalKeys: false` independently
+   disables built-in shortcuts. If global keys are disabled, supply an
+   accessible exit or navigation path.
+3. For a headless operation, define a typed `defineCommand` (or
+   `defineCommandGroup`) with its arguments, options, Zod schema, and
+   handler in `src/commands/`, then register it in `src/commands/index.ts`.
+   Commander wiring, help, and completions follow the registry. Do not edit
+   the CLI entry point just to add a subcommand. Headless code must work
+   without a TTY and must not import Ink or require React rendering.
+4. In a command handler, use `context.output()` for result data on stdout,
+   `context.notice()` for suppressible stderr notices, `context.flags` for
+   common options, and `context.signal` for cancellation. Keep JSON stdout
+   parseable and do not send diagnostics to it. Read piped stdin only when the
+   command explicitly accepts `-`, as the shipped `example` command does.
+5. For UI interactions, use scoped `useKeymap` or `useAction` and activate
+   only the control that owns input. Use `useInputCapture` for custom
+   free-form text editing, then release capture on finish/cancel. Managed
+   controls already coordinate input; avoid competing native `useInput`
+   handlers. Start async work in events or effects, not during render, and
+   handle loading, empty, error, and success with `useAsync`/`ScreenState`.
+6. For a new global flag, update the option in `src/lib/program.ts` and
+   the parsed `globalOptions` schema in `src/commands/definition.ts`.
+   For settings, align `src/config/schema.ts` (`appConfig.fields` and
+   validation), runtime overrides, editor behavior, and persistence.
+   Registering a config environment variable does not automatically add a
+   Commander option. Follow `docs/configuration.md` for versioned migrations,
+   explicit save/discard, and invalid-file preservation.
 
-## Validate changes
+## Preserve terminal and configuration contracts
 
-Run the project's scripts rather than substituting plain Vite commands:
+- Configuration precedence is **defaults < saved file < environment < CLI**.
+  Do not persist environment or CLI overrides as user settings. Preserve
+  unknown application-specific config keys and leave invalid saved JSON
+  untouched rather than silently resetting it.
+- `--plain` must produce one meaningful deterministic frame without waiting
+  for effects. It is also the default for piped or CI output. Use a headless
+  command when results must complete asynchronously before printing.
+- Keep result stdout separate from Ink rendering and diagnostics. Preserve
+  `--quiet`, `--json`, `--help`, and shell completion behavior.
+- Preserve `NO_COLOR` (forces mono, **not** ASCII), `--ascii`, theme
+  fallbacks, accessible status text, and usable layouts at approximately 40,
+  80, and 120 columns. Test keyboard focus and restoring shortcuts after an
+  editor closes.
 
-```bash
+## Validate the affected behavior
+
+Use this repository's **Vite+** scripts, not ad hoc Vite commands:
+
+~~~bash
 npm run check
 npm run typecheck
 npm test
 npm run build
-```
+~~~
 
-For CLI behavior changes, also smoke-test `--help`, `--plain`, and
-`doctor --json`. For layout and keyboard changes, test interactive input,
-mono/ASCII output, and terminal widths around 40, 80, and 120 columns.
-For instruction-only edits, application tests are optional; validate the
-instruction format and related tool configuration.
+Add or update focused regression tests under `tests/` when behavior changes.
+For CLI, screen, or command changes, smoke-test the real entry points:
 
-## Respect agent configuration and downstream ownership
+~~~bash
+npm run dev -- --help
+npm run dev -- --plain
+npm run dev -- doctor --json
+npm run dev -- completion bash
+~~~
 
-- AgentsMesh canonical instructions live in `.agentsmesh/`. Do not edit
-  generated `AGENTS.md`, `CLAUDE.md`, or tool-specific rule projections;
-  use `agentsmesh lint`, `agentsmesh diff`, `agentsmesh generate`, and
-  `agentsmesh check` when changing their sources. This skill is maintained
-  directly under `.agents/skills/`, outside AgentsMesh generation.
-- Read `docs/template/syncing.md` and `.templatesyncignore` before
-  syncing upstream. Syncing is opt-in; preserve downstream-owned app code,
-  package identity, `.gitignore`, and agent instructions and skills.
-  Add customized or intentionally removed shared files to
-  `.templatesyncignore` before a sync. Review every sync PR.
+For input/layout changes, verify an interactive TTY, mono/ASCII modes, and
+40/80/120-column rendering; run `npm run test:pty` when native PTY support is
+available. Relevant tests include `tests/cli.behavior.test.ts`,
+`tests/headless-commands.test.ts`, `tests/keyboard-and-controls.test.tsx`,
+and `tests/app-runtime.test.tsx`. For instruction-only edits, application
+tests are optional: validate skill frontmatter, paths, example commands, and
+the mirrored skill content instead.
+
+## Respect generated instructions and downstream ownership
+
+- AgentsMesh sources live under `.agentsmesh/`. Do not hand-edit generated
+  `AGENTS.md`, `CLAUDE.md`, or tool projections. For canonical instruction
+  changes, use `agentsmesh lint`, inspect `agentsmesh diff`, then
+  `agentsmesh generate` and `agentsmesh check`.
+- This skill is maintained directly at
+  `.agents/skills/ink-cli-starter/SKILL.md`, **not** by AgentsMesh. Keep its
+  Claude discovery mirror at
+  `.claude/skills/ink-cli-starter/SKILL.md` identical when editing it.
+- Before syncing upstream, read `docs/template/syncing.md` and
+  `.templatesyncignore`. Sync is opt-in. Preserve downstream-owned package
+  identity, `.gitignore`, application code, agent configuration, and skills.
+  Exclude customized or intentionally removed shared paths **before** a
+  sync, review added/deleted/renamed files, and inspect every sync PR. Static
+  exclusions cannot automatically detect every downstream customization.
