@@ -1,94 +1,69 @@
 ---
 name: ink-cli-starter
 description: >-
-  Customize, build, and maintain CLIs based on the ink-cli-starter GitHub
-  template (Ink 8, React 19, TypeScript, Commander, and Vite+). Use when
-  initializing a template copy, adding a screen or headless command,
-  extending settings or terminal UI, testing CLI behavior, or syncing
-  upstream changes.
+  Work in a GitHub repository derived from rigerc/ink-cli-starter. Help
+  customize its native Ink app, headless CLI, configuration and tests.
 ---
 
-# Work with Ink CLI Starter
+# Ink CLI starter workflow
 
-This is a GitHub template that contains the application itself, not a
-scaffolding generator. Adapt the copied source rather than looking for a
-separate generated app. Follow the repository's `AGENTS.md` and relevant
-focused rules; this skill is a task workflow, not an override.
+This template is an application, not a package or generator. Verify the
+repository and current branch before changing code. Read `README.md`,
+`docs/architecture.md` and `docs/adding-a-feature.md`.
 
-## Orient before editing
+## Initialize a new copy
 
-- Read `README.md`, `docs/architecture.md`, and
-  `docs/adding-a-feature.md`. For UI work, read `docs/ui-framework.md`.
-- Check existing entry points and registries before introducing new abstractions:
-  `src/cli.tsx`, `src/app.tsx`, `src/screens/index.ts`, and
-  `src/commands/index.ts`.
-- Reuse local `src/components/`, `src/hooks/`, and `src/theme/` where
-  appropriate. They are optional defaults, not a required design system.
+Use `npm run init:project -- --name my-cli --dry-run` to preview changes,
+then run without `--dry-run`. Do this only in an uncustomized copy.
 
-## Start a project from this template
+## Develop the app
 
-1. In a **new copy** of the GitHub template, use Node.js 22.12+ and run
-   `npm ci`.
-2. Preview identity changes with
-   `npm run init:project -- --name my-cli --description "My CLI" --dry-run`.
-   Then run the command without `--dry-run` when the identity is correct.
-   Do not reinitialize an already customized project without checking its
-   package and config identity. See `docs/template/customization.md`.
-3. Run `npm run dev` in a terminal. For deterministic noninteractive output,
-   run `npm run dev -- --plain`; for headless diagnostics, run
-   `npm run dev -- doctor --json`.
+- Edit `src/app.tsx` using native Ink and React. There is intentionally
+  no local component library, screen registry, router or theme system.
+- Keep noninteractive operations in `src/features/` when they need to be
+  shared between an Ink view and a command.
+- Define headless commands using `defineCommand` from
+  `src/commands/definition.ts`, register them in
+  `src/commands/index.ts`, and preserve their TTY independence.
+- Add optional configuration fields in `src/config/schema.ts`; do not
+  add interactive settings UI unless the application requires it.
+- Preserve `--plain` output for scripts and CI.
 
-## Add or modify functionality
+## Optional `@rigerc/ink-ui` components
 
-1. Put domain models and operations in `src/features/<feature>/` when
-   needed. Keep them independent of Ink and React so screens and headless
-   commands can share them.
-2. Add interactive screens under `src/screens/` and register them in
-   `src/screens/index.ts`. Registration controls screen IDs, navigation,
-   `--screen`, and capture targets. For a custom UI, consider
-   `layout: 'bare'`; `globalKeys: false` separately disables global keys.
-3. For noninteractive operations, define a command with `defineCommand` and add
-   it to `src/commands/index.ts`. Commander wiring and completions derive from
-   the registry; no CLI entry-point edit is needed. Headless commands must not
-   depend on a TTY, import Ink, or require React rendering.
-4. Use scoped `useKeymap` or `useAction` for keyboard actions. Ensure a
-   single input owner for text editing, and release input capture on exit.
-   Use `useAsync` / `ScreenState` for loading, empty, error, and success
-   states. Read `docs/ui-framework.md` before changing focus or layouts.
-5. For settings changes, read `docs/configuration.md`. Keep
-   `src/config/schema.ts`, registered fields, CLI options, validation, and
-   persistence consistent; preserve precedence (defaults < saved file <
-   environment < CLI) and leave invalid saved files intact.
-6. Preserve `--plain` output, `NO_COLOR`, ASCII/mono fallbacks, and narrow
-   terminal behavior. Keep Ink-rendered output separate from headless stdout.
-   Add or update tests under `tests/` for changed behavior.
+When a user wants ready-made terminal UI elements, offer the published
+[`@rigerc/ink-ui` npm package](https://www.npmjs.com/package/@rigerc/ink-ui)
+from [`rigerc/ink-ui`](https://github.com/rigerc/ink-ui). It is not a
+template dependency or a replacement for native Ink, React or `src/app.tsx`.
+Do **not** add it to `package.json` unless the downstream application opts in.
 
-## Validate changes
+- When the user opts in, use `npm install @rigerc/ink-ui` (the published npm
+  package), not a GitHub source dependency. Follow
+  `docs/integrations/ink-ui.md` for a copyable `src/app.tsx` example.
+  Consult `node_modules/@rigerc/ink-ui/AGENTS.md` after installation.
+- Import selected components from `@rigerc/ink-ui` and compose them inside
+  the existing Ink tree. Do not start another `render()` or reintroduce the
+  removed starter UI framework.
+- Some inputs and hooks register native Ink `useInput` handlers. Gate the
+  application's root keyboard handler while those controls are active and
+  disable inactive library controls. Keep quit/back keys unambiguous.
+- Preserve the interactive and `--plain` exports, readable static output,
+  narrow terminal layouts and no-color handling. The library has independent
+  visual tokens; check glyph and palette fallbacks for your application.
 
-Run the project's scripts rather than substituting plain Vite commands:
 
-```bash
+## Verify
+
+```sh
+npm ci
 npm run check
 npm run typecheck
 npm test
 npm run build
+npm run dev -- --plain
+npm run dev -- doctor --json
 ```
 
-For CLI behavior changes, also smoke-test `--help`, `--plain`, and
-`doctor --json`. For layout and keyboard changes, test interactive input,
-mono/ASCII output, and terminal widths around 40, 80, and 120 columns.
-For instruction-only edits, application tests are optional; validate the
-instruction format and related tool configuration.
-
-## Respect agent configuration and downstream ownership
-
-- AgentsMesh canonical instructions live in `.agentsmesh/`. Do not edit
-  generated `AGENTS.md`, `CLAUDE.md`, or tool-specific rule projections;
-  use `agentsmesh lint`, `agentsmesh diff`, `agentsmesh generate`, and
-  `agentsmesh check` when changing their sources. This skill is maintained
-  directly under `.agents/skills/`, outside AgentsMesh generation.
-- Read `docs/template/syncing.md` and `.templatesyncignore` before
-  syncing upstream. Syncing is opt-in; preserve downstream-owned app code,
-  package identity, `.gitignore`, and agent instructions and skills.
-  Add customized or intentionally removed shared files to
-  `.templatesyncignore` before a sync. Review every sync PR.
+For an upstream template sync, review every incoming change before merging.
+The downstream repository owns its application code and intentionally
+deleted files; use `.templatesyncignore` where appropriate.

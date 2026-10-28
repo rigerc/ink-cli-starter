@@ -1,22 +1,37 @@
 # Use this template
 
-This repository is a GitHub template that directly contains the application.
-There is no scaffold generator: GitHub copies the application source, and the
-optional `init:project` script renames its package, executable and configuration
-identity.
+GitHub copies this application directly; there is no generator and no
+opinionated UI framework.
 
-1. Select **Use this template → Create a new repository** on GitHub.
-2. Clone your new repository and install dependencies (Node.js 22.12+ required).
-3. Start the application:
+1. Select **Use this template → Create a new repository**.
+2. Clone your new repository and install dependencies (Node.js 22.12+).
+3. Initialize the package identity and run the native Ink app:
 
-```bash
+```sh
 npm ci
 npm run init:project -- --name my-cli --description "My terminal application"
 npm run dev
+npm run dev -- --plain
 ```
 
-The initializer updates the package name, binary, lockfile, config identity and the package key in pending `.changeset/*.md` files. Use `--dry-run` to preview changes. Running it again with the same identity is safe; a conflicting customized identity causes an error.
+The initializer updates package name, binary name, lockfile, and pending
+Changesets references. Use `--dry-run` to preview changes. The default
+configuration directory follows the executable name, but existing user config
+files are not moved.
 
-Dependabot runs weekly for npm dependencies and GitHub Actions. Review its PRs before merging; Dependabot settings are downstream-owned and excluded from upstream template sync.
+Edit `src/app.tsx` to implement your own presentation, using native Ink
+and React components. No local design system, screen router or theme provider
+needs to be removed.
 
-Next, [customize the application](customization.md). Consult [configuration](../configuration.md) for user settings, [UI](../ui-framework.md) for screens, and [recording](../recording.md) for screenshots. Optionally [run upstream template sync](syncing.md) or [configure releases](releasing.md); neither runs automatically by default.
+Optional: install the published
+[`@rigerc/ink-ui` npm package](https://www.npmjs.com/package/@rigerc/ink-ui)
+with `npm install @rigerc/ink-ui` to add ready-made UI components to your
+application. The base template deliberately has no dependency on it. See the
+[opt-in integration guide](../integrations/ink-ui.md) for an example
+compatible with the native Ink entry point.
+
+Next see [architecture](../architecture.md),
+[adding a feature](../adding-a-feature.md),
+[configuration](../configuration.md),
+[customization](customization.md),
+[syncing](syncing.md) or [releasing](releasing.md).

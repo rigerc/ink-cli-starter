@@ -23,14 +23,8 @@
     "test": "vp test run",
     "test:coverage": "vp test run --coverage",
     "test:pty": "vp test run tests/terminal-pty.test.ts",
-    "screenshot": "node --import tsx scripts/screenshot.tsx",
     "start": "node dist/cli.js",
     "prepare": "vp config",
-    "theme": "node scripts/theme.mjs",
-    "theme:list": "node scripts/theme.mjs list",
-    "theme:token": "node scripts/theme.mjs token",
-    "theme:default": "node scripts/theme.mjs default",
-    "record": "node --import tsx scripts/screenshot.tsx --video",
     "changeset": "changeset",
     "version-packages": "changeset version && npm install --package-lock-only",
     "release": "npm run build && changeset publish",
@@ -42,7 +36,6 @@
     "conf": "^16.0.0",
     "ink": "^8.0.0",
     "react": "^19.3.1",
-    "string-width": "^8.3.0",
     "zod": "^4.6.7"
   },
   "devDependencies": {

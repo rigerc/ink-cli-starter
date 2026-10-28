@@ -26,6 +26,11 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
+      - name: Verify starter agent skill accuracy
+        if: github.repository == 'rigerc/ink-cli-starter'
+        run: |
+          node --test tests/skill-accuracy.test.mjs
+          node scripts/check-skill-accuracy.mjs
       - name: List files selected for linting
         run: npm run lint -- --debug=files
       - name: Check formatting, lint (including anti-slop), and template configuration

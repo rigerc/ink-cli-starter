@@ -1,29 +1,27 @@
 ---
-description: Configuration validation, precedence, persistence, editor drafts, and migrations
+description: Headless configuration validation and persistence
 globs:
   - 'src/config/**'
   - 'src/lib/config.ts'
-  - 'src/components/config/**'
-  - 'src/hooks/useConfigDraft.ts'
-  - 'src/screens/Settings.tsx'
-  - 'src/demos/ConfigSetup.tsx'
-  - 'src/cli.tsx'
+  - 'src/commands/config.ts'
   - 'src/commands/doctor.ts'
-  - 'src/theme/resolve.ts'
+  - 'src/lib/render-app.tsx'
   - 'scripts/init-project.mjs'
-  - 'tests/config*.test.*'
-  - 'tests/init-project.test.ts'
+  - 'tests/configuration.test.ts'
+  - 'tests/headless-commands.test.ts'
   - 'docs/configuration.md'
 ---
 
 # Configuration
 
-When changing settings, their persistence, or the editor, follow `docs/configuration.md` (relative to the repository root).
-
-- Keep Zod validation in `src/config/schema.ts` aligned with `appConfig.fields`, including field paths, types, defaults, and editor choices. The resolver handles registered fields; registering an environment variable does not create a Commander flag. Wire new CLI options explicitly in `src/cli.tsx` and pass their values into resolution.
-- Preserve precedence: project defaults < saved file < environment < CLI flags. Any nonempty `NO_COLOR` forces the mono theme even when a theme flag is present; it does not enable ASCII by itself.
-- Keep runtime overrides separate from stored values. Saving a draft must not silently persist environment or CLI overrides. Preserve explicit save/discard in Settings and leave canceled wizard changes unwritten.
-- Preserve atomic, validated persistence through the existing store. A missing file uses defaults until a save; malformed JSON, schema-invalid values, and unsupported future versions must remain intact rather than being reset or overwritten automatically.
-- Retain valid application-specific JSON keys during edits. Preserve `--config` file overrides and XDG path handling. Renaming project identity must not silently move an existing settings file.
-- For breaking stored changes, increment `appConfig.version` and supply migrations indexed by the old numeric version. Reading validates migrations in memory; saving writes the current version. Keep reads free of persistence side effects.
-- When changing resolution or storage, cover precedence, invalid-file preservation, extension-key retention, and migration compatibility in `tests/config.test.ts` as relevant. For editor behavior, update `tests/config-ui.test.tsx`; use temporary config paths so verification cannot modify personal settings.
+- Keep the Zod schema and `appConfig.fields` in sync.
+- The starter has one sample `label` field. There is no interactive settings
+  screen or custom configuration UI.
+- Preserve precedence: defaults < stored JSON < environment overrides.
+  An application may explicitly add CLI flags if it needs them.
+- Retain atomic writes, safe XDG config paths, extension keys, and validation.
+  Do not reset malformed or unsupported future-version files automatically.
+- `--config` selects the path. Package identity changes must not silently
+  move existing user data.
+- Add versioned migrations for breaking settings changes and cover invalid
+  files, precedence, persistence and migrations with isolated tests.

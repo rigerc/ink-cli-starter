@@ -7,13 +7,16 @@ import {AppError, toAppError} from './lib/errors';
 import {logger} from './lib/logger';
 
 const controller = new AbortController();
+let signalExitCode: 130 | 143 | undefined;
 const interrupt = () => {
   logger.debug('Received SIGINT');
+  signalExitCode = 130;
   process.exitCode = 130;
   controller.abort();
 };
 const terminate = () => {
   logger.debug('Received SIGTERM');
+  signalExitCode = 143;
   process.exitCode = 143;
   controller.abort();
 };
@@ -27,13 +30,14 @@ program.action(async () => {
       hint: `Run ${APP_NAME} --help for available commands.`,
     });
   const {runApp} = await import('./lib/render-app');
-  await runApp(program.opts(), controller.signal, interrupt);
+  await runApp(program.opts(), controller.signal);
 });
 try {
   await program.parseAsync(process.argv);
 } catch (cause: unknown) {
   if (cause instanceof CommanderError) {
-    process.exitCode = cause.exitCode === 0 ? 0 : 2;
+    // A Commander exit must not overwrite SIGINT/SIGTERM's conventional exit status.
+    if (!controller.signal.aborted) process.exitCode = cause.exitCode === 0 ? 0 : 2;
   } else if (!controller.signal.aborted) {
     const error =
       cause instanceof z.ZodError
@@ -53,6 +57,9 @@ try {
 } finally {
   process.off('SIGINT', interrupt);
   process.off('SIGTERM', terminate);
+  // Ink or Commander may finish with exit code zero during signal cleanup.
+  // A delivered process interrupt must retain its conventional shell status.
+  if (signalExitCode !== undefined) process.exitCode = signalExitCode;
   logger.debug('Exit', process.exitCode);
   logger.close();
 }

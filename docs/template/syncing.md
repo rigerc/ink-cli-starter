@@ -31,7 +31,7 @@ To adopt this in an existing repository, copy `scripts/template-sync-changelog.m
 
 ## Files owned by your application
 
-[`.templatesyncignore`](../../.templatesyncignore) protects package metadata, the README, `.gitignore`, application composition and screens, configuration and branding, related integration tests, and release setup. Downstream ignore rules are preserved even when upstream changes conflict. Reusable components, hooks, utilities, and tooling remain eligible for sync. Review upstream dependency and npm script changes manually because package files are excluded as a whole.
+[`.templatesyncignore`](../../.templatesyncignore) protects package metadata, the README, `.gitignore`, the native Ink entry point, configuration and branding, related integration tests, and release setup. Downstream ignore rules are preserved even when upstream changes conflict. CLI utilities and tooling remain eligible for sync; the template does not bundle a UI framework. Review upstream dependency and npm script changes manually because package files are excluded as a whole.
 
 Agent configuration exclusions include the generated `opencode.json` instruction loader and nested `AGENTS.md` files. The latter use the Git pathspec `:(glob)**/AGENTS.md` so instructions under shared directories remain downstream-owned too.
 

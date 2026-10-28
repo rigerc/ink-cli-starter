@@ -1,32 +1,32 @@
 # Auto-generated. DO NOT EDIT MANUALLY.
 # Tracks the state of all config files for team conflict resolution.
 
-generated_at: 2026-10-27T20:53:06.843Z
-generated_by: bond
+generated_at: 2026-10-28T18:55:00.000Z
+generated_by: manual
 lib_version: 0.42.0
 checksums:
   hooks.yaml: sha256:6bca4972891bd72caf7a0e246256eafc5be86145caae528d2584e870a24310a9
-  rules/_root.md: sha256:3aa64b455b9daad3628e988458410e3c79679c0cecab3d750627cb0b886f4a24
-  rules/cli-architecture.md: sha256:bc279f0ce557d3b6d0890722c7c79cbb59fecd488e9191fef1ff8669ecb72bd9
-  rules/configuration.md: sha256:593d36cff92ba446d7b05a475102dc5da8fcfe383bf6b44f3793ce19de4017e0
-  rules/template-sync.md: sha256:439b89bfb5540a3465c3d9672d418aabf1787699738d66a5e31efb639d4d4633
-  rules/terminal-ui.md: sha256:e2ebd622b525ade41cf6018b873f622b2b77e4581ddbf8f498e1cb669dc44830
+  rules/_root.md: sha256:0bf25992c975c71034c92f1944b481143975342e0659578eb70637755a5221ad
+  rules/cli-architecture.md: sha256:b0066e35fc069aa114709523a3ac805595b1f562d54da3808468527c69f69c5d
+  rules/configuration.md: sha256:3ea3cd56fd2a657721ec44f9b0484344fa6c80af7757d50bf4bf92e62d8a2d4c
+  rules/template-sync.md: sha256:d8ff42b497022a8aaa730a8c336f606359f95496370c189955a5d8e5e23153c5
+  rules/terminal-ui.md: sha256:d47120be2708fe38bcc7db045467d66b450ec15134cb23d2032e4c5c28c5e453
 extends: {}
 packs: {}
 outputs:
-  CLAUDE.md: sha256:c4bf7512cf79a7f5e4e815280dbac8abb33d0fdc863a0d7e4e4f76170aa98a08
-  .claude/rules/cli-architecture.md: sha256:c2d2c85346682399c1d08025b0de91d299393e6ccc7861b7db9eabffd0826f09
-  .claude/rules/configuration.md: sha256:920dbaec1ff6a2070c156c56641dda5a90f253963fea7e08d25dc5fa56820701
-  .claude/rules/template-sync.md: sha256:fdc238b88dc11fa6a8578e39a73f02658fcf9c9cf3c918939d18c5876d187c3a
-  .claude/rules/terminal-ui.md: sha256:a57c7e58f625bd806c6f6926d723aeb3ad7a80639f28a3eeb2fc90d6146481cc
-  AGENTS.md: sha256:57b13e03f891354c9b0afce3fa4d2e678049ac5b3d7a3541ada9f0d2c8f17dbe
-  src/AGENTS.md: sha256:e605746ce3c877dc40c0f16d25e6e34ce22cc2ad84293a763795b2cec53633b9
-  src/config/AGENTS.md: sha256:0f3299c09e984cc2a2b9848815575d7b99319823d4c7d431ca2ff22d2d94a439
+  CLAUDE.md: sha256:dbb1feb9b4e2056639dd37e251e90784a3d8e950c862ea83103106f5e72633a2
+  .claude/rules/cli-architecture.md: sha256:b0066e35fc069aa114709523a3ac805595b1f562d54da3808468527c69f69c5d
+  .claude/rules/configuration.md: sha256:3ea3cd56fd2a657721ec44f9b0484344fa6c80af7757d50bf4bf92e62d8a2d4c
+  .claude/rules/template-sync.md: sha256:d8ff42b497022a8aaa730a8c336f606359f95496370c189955a5d8e5e23153c5
+  .claude/rules/terminal-ui.md: sha256:d47120be2708fe38bcc7db045467d66b450ec15134cb23d2032e4c5c28c5e453
+  AGENTS.md: sha256:dbb1feb9b4e2056639dd37e251e90784a3d8e950c862ea83103106f5e72633a2
+  src/AGENTS.md: sha256:74236c986f31d3e77e22abf995fe3ab63b50de9c70102e878a7e652561aa4c32
+  src/config/AGENTS.md: sha256:b3a9fb811f1aa34c1d699376b9654e3f6f69a230432261283ff78ac7a8e5d2fb
   .github/workflows/AGENTS.md: sha256:de167a4c3de3d90d63d17bf3e0f398e2d60c01ca0980e7e47c9172934c796f34
-  .opencode/rules/cli-architecture.md: sha256:ac65d8f064745a9fbaa052942ad4c9806639d4c2a64488390194025529655805
-  .opencode/rules/configuration.md: sha256:cfabcceef5ee7945f6d912b87a9a3003ec0ccd5666d1d19bece5867c50ecb463
-  .opencode/rules/template-sync.md: sha256:d242565cbe93420105fd00ec8c9a5e6dc2e9cee8a2ac8dff03b582c4157c6a3f
-  .opencode/rules/terminal-ui.md: sha256:45b030656035bbc4175eda7d9de6333c8b319663fd66bd337c86a29f77bf3f38
+  .opencode/rules/cli-architecture.md: sha256:b0066e35fc069aa114709523a3ac805595b1f562d54da3808468527c69f69c5d
+  .opencode/rules/configuration.md: sha256:3ea3cd56fd2a657721ec44f9b0484344fa6c80af7757d50bf4bf92e62d8a2d4c
+  .opencode/rules/template-sync.md: sha256:d8ff42b497022a8aaa730a8c336f606359f95496370c189955a5d8e5e23153c5
+  .opencode/rules/terminal-ui.md: sha256:d47120be2708fe38bcc7db045467d66b450ec15134cb23d2032e4c5c28c5e453
   .claude/settings.json: sha256:13fcf13fa18e64e9db35d1eb5c3945bdb3924d28727d1367e1efe7ceecf7d9dd
   .codex/hooks.json: sha256:13fcf13fa18e64e9db35d1eb5c3945bdb3924d28727d1367e1efe7ceecf7d9dd
   opencode.json: sha256:fe0a62de803f03414512868a1104fc8dd6c4878c8535362cd2b54b7b7aa1cc6d

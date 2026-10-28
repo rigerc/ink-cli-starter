@@ -9,9 +9,6 @@ export const globalOptions = z.object({
   quiet: z.boolean().optional(),
   verbose: z.boolean().optional(),
   color: z.boolean().optional(),
-  theme: z.enum(['auto', 'dark', 'light', 'contrast', 'mono']).optional(),
-  ascii: z.boolean().optional(),
-  setup: z.boolean().optional(),
   plain: z.boolean().optional(),
 });
 export type GlobalOptions = z.infer<typeof globalOptions>;
