@@ -7,13 +7,16 @@ import {AppError, toAppError} from './lib/errors';
 import {logger} from './lib/logger';
 
 const controller = new AbortController();
+let signalExitCode: 130 | 143 | undefined;
 const interrupt = () => {
   logger.debug('Received SIGINT');
+  signalExitCode = 130;
   process.exitCode = 130;
   controller.abort();
 };
 const terminate = () => {
   logger.debug('Received SIGTERM');
+  signalExitCode = 143;
   process.exitCode = 143;
   controller.abort();
 };
@@ -54,6 +57,9 @@ try {
 } finally {
   process.off('SIGINT', interrupt);
   process.off('SIGTERM', terminate);
+  // Ink or Commander may finish with exit code zero during signal cleanup.
+  // A delivered process interrupt must retain its conventional shell status.
+  if (signalExitCode !== undefined) process.exitCode = signalExitCode;
   logger.debug('Exit', process.exitCode);
   logger.close();
 }
