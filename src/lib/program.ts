@@ -1,21 +1,16 @@
-import {Command, Option} from '@commander-js/extra-typings';
+import {Command} from '@commander-js/extra-typings';
 import pkg from '../../package.json' with {type: 'json'};
 import {commands} from '../commands';
 import {globalOptions, type CommandContext} from '../commands/definition';
-import {APP_ENV_PREFIX, APP_NAME, APP_THEME_ENV, APP_ASCII_ENV} from './identity';
+import {APP_ENV_PREFIX, APP_NAME} from './identity';
 import {AppError} from './errors';
 import {logger} from './logger';
 
-/** Environment help with columns padded from the longest variable name. */
 function environmentHelp(entries: readonly [string, string][]) {
   const width = Math.max(...entries.map(([name]) => name.length));
-  const rows = entries
-    .map(([name, description]) => `  ${name.padEnd(width)}  ${description}`)
-    .join('\n');
-  return `\nEnvironment:\n${rows}\n`;
+  return `\nEnvironment:\n${entries.map(([name, description]) => `  ${name.padEnd(width)}  ${description}`).join('\n')}\n`;
 }
 
-/** A headless Commander tree, also used as the sole source of shell completions. */
 export function createProgram(signal: AbortSignal) {
   const program = new Command()
     .exitOverride()
@@ -23,20 +18,8 @@ export function createProgram(signal: AbortSignal) {
     .description(pkg.description)
     .version(pkg.version)
     .allowExcessArguments()
-    .addOption(
-      new Option('--theme <name>', 'Terminal theme').choices([
-        'dark',
-        'light',
-        'contrast',
-        'mono',
-        'auto',
-      ]),
-    )
-    .option('--screen <id>', 'Initial registered screen (default: home)')
-    .option('--ascii', 'Use ASCII symbols and borders')
-    .option('--config <path>', 'Read/write a specific JSON configuration file')
-    .option('--setup', 'Open the interactive configuration wizard')
-    .option('--plain', 'Print once and exit (default when piped or in CI)')
+    .option('--config <path>', 'Use a specific JSON configuration file')
+    .option('--plain', 'Print one Ink frame and exit (automatic when piped or in CI)')
     .option('--json', 'JSON output for headless commands')
     .option('--debug', 'Write debug logs and show stack traces')
     .option('--quiet', 'Suppress progress and success notices; retain results and errors')
@@ -47,11 +30,10 @@ export function createProgram(signal: AbortSignal) {
     .addHelpText(
       'after',
       environmentHelp([
-        ['NO_COLOR', 'Force the mono theme'],
-        [APP_THEME_ENV, 'Default theme'],
-        [APP_ASCII_ENV, 'ASCII symbols (CLI_ASCII is a legacy alias)'],
+        ['NO_COLOR', 'Disable terminal colors'],
+        [`${APP_ENV_PREFIX}_LABEL`, 'Default display label'],
         ['INK_SCREEN_READER', 'Set to true for screen-reader output'],
-        [`${APP_ENV_PREFIX}_UPDATE_NOTIFIER`, 'Set to 1 to opt in to update checks'],
+        [`${APP_ENV_PREFIX}_UPDATE_NOTIFIER`, 'Opt in to update checks'],
         ['NO_UPDATE_NOTIFIER', 'Opt out of update checks'],
       ]),
     );
@@ -61,9 +43,7 @@ export function createProgram(signal: AbortSignal) {
     return {
       flags,
       signal,
-      output: (value) => {
-        process.stdout.write(`${value}\n`);
-      },
+      output: (value) => process.stdout.write(`${value}\n`),
       notice: (value) => {
         if (!flags.quiet && !flags.json) process.stderr.write(`${value}\n`);
       },
@@ -76,8 +56,8 @@ export function createProgram(signal: AbortSignal) {
     if (flags.quiet && flags.verbose)
       throw new AppError('--quiet and --verbose cannot be combined', {exitCode: 2});
     if (flags.color === false) process.env.NO_COLOR = '1';
-    if (action !== program && (flags.setup || flags.plain))
-      throw new AppError('Subcommands cannot be combined with --setup or --plain', {exitCode: 2});
+    if (action !== program && flags.plain)
+      throw new AppError('Subcommands cannot be combined with --plain', {exitCode: 2});
     if (flags.verbose) context().notice(`Using ${APP_NAME} ${pkg.version}`);
   });
   for (const command of commands) command.register(program, context);

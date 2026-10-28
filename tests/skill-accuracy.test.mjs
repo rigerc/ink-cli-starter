@@ -79,12 +79,12 @@ test('rejects broken frontmatter and unclosed code fences', () => {
 
 test('detects stale documented APIs when exports disappear', () => {
   const root = fixture();
-  const withApi = skill.replace('# Guide', '# Guide\nUse `useKeymap` for input.');
+  const withApi = skill.replace('# Guide', '# Guide\nUse `defineCommand` for input.');
   put(root, canonical, withApi);
   put(root, mirror, withApi);
-  put(root, 'src/hooks/useKeymap.ts', 'export function useKeymap() {}');
+  put(root, 'src/commands/definition.ts', 'export function defineCommand() {}');
   assert.deepEqual(checkSkillAccuracy(root).issues, []);
-  put(root, 'src/hooks/useKeymap.ts', 'export function renamed() {}');
+  put(root, 'src/commands/definition.ts', 'export function renamed() {}');
   assert.match(checkSkillAccuracy(root).issues.join('\n'), /no longer exported/);
 });
 

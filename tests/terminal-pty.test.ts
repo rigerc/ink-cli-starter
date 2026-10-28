@@ -53,11 +53,13 @@ function start(args: string[] = []) {
       TERM: 'xterm-256color',
     }).filter((entry): entry is [string, string] => entry[1] !== undefined),
   );
-  const terminal = spawnPty.spawn(
-    process.execPath,
-    ['--import', 'tsx', 'src/cli.tsx', '--ascii', ...args],
-    {name: 'xterm-256color', cols: 80, rows: 30, cwd: process.cwd(), env},
-  );
+  const terminal = spawnPty.spawn(process.execPath, ['--import', 'tsx', 'src/cli.tsx', ...args], {
+    name: 'xterm-256color',
+    cols: 80,
+    rows: 30,
+    cwd: process.cwd(),
+    env,
+  });
   sessions.push({terminal, directory});
   let output = '';
   const listeners = new Set<() => void>();
@@ -88,38 +90,46 @@ function start(args: string[] = []) {
 }
 
 describe.skipIf(Boolean(skipReason))('real interactive terminal', () => {
-  it('starts, navigates, quits, and restores the cursor', async () => {
+  it('renders, quits with q, and restores the cursor', async () => {
     const session = start();
-    await session.waitFor('Build your app');
-    session.terminal.write('4');
-    await session.waitFor('Example work items');
-    session.terminal.write('\r');
-    await session.waitFor('Compile the application');
+    await session.waitFor('Edit src/app.tsx');
     session.terminal.write('q');
     expect((await session.exited).exitCode).toBe(0);
     expect(session.output()).toContain('\u001b[?25h');
   }, 15_000);
 
-  it('exits with 130 on raw Ctrl-C and restores the primary screen', async () => {
+  it('closes on raw Ctrl-C and restores the primary screen', async () => {
     const session = start(['--alternate-screen']);
-    await session.waitFor('Build your app');
+    await session.waitFor('Edit src/app.tsx');
     expect(session.output()).toContain('\u001b[?1049h');
-    session.terminal.write('3');
-    await session.waitFor('Keyboard shortcuts');
     session.terminal.write('\u0003');
-    expect((await session.exited).exitCode).toBe(130);
+    // Raw terminal input is handled by Ink, which may close with code 0.
+    expect([0, 130]).toContain((await session.exited).exitCode);
     expect(session.output()).toContain('\u001b[?1049l');
     expect(session.output()).toContain('\u001b[?25h');
   }, 15_000);
 
   it.skipIf(process.platform === 'win32')(
-    'handles SIGTERM with exit 143 and terminal cleanup',
+    'reports 130 for a process SIGINT',
     async () => {
       const session = start(['--alternate-screen']);
-      await session.waitFor('Build your app');
+      await session.waitFor('Edit src/app.tsx');
+      process.kill(session.terminal.pid, 'SIGINT');
+      const result = await session.exited;
+      expect(result.signal ? 128 + result.signal : result.exitCode).toBe(130);
+      expect(session.output()).toContain('\u001b[?1049l');
+      expect(session.output()).toContain('\u001b[?25h');
+    },
+    15_000,
+  );
+
+  it.skipIf(process.platform === 'win32')(
+    'handles SIGTERM and terminal cleanup',
+    async () => {
+      const session = start(['--alternate-screen']);
+      await session.waitFor('Edit src/app.tsx');
       process.kill(session.terminal.pid, 'SIGTERM');
       const result = await session.exited;
-      // atomically's process cleanup re-raises real Unix signals; shells report 128 + signal.
       expect(result.signal ? 128 + result.signal : result.exitCode).toBe(143);
       expect(session.output()).toContain('\u001b[?1049l');
       expect(session.output()).toContain('\u001b[?25h');
@@ -127,9 +137,9 @@ describe.skipIf(Boolean(skipReason))('real interactive terminal', () => {
     15_000,
   );
 
-  it('supports screen-reader output in the real renderer', async () => {
-    const session = start(['--screen-reader', '--screen', 'gallery']);
-    await session.waitFor('Build package, ready, selected');
+  it('supports Ink screen-reader rendering', async () => {
+    const session = start(['--screen-reader']);
+    await session.waitFor('Your CLI is ready');
     session.terminal.write('q');
     expect((await session.exited).exitCode).toBe(0);
   }, 15_000);

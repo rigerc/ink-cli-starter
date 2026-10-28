@@ -5,7 +5,6 @@ import {copyFromRepo, readJson, runNode, withWorkspace, writeFixture} from './he
 
 const checker = fileURLToPath(new URL('../scripts/check-template.mjs', import.meta.url));
 const preflight = fileURLToPath(new URL('../scripts/release-preflight.mjs', import.meta.url));
-const themeScript = fileURLToPath(new URL('../scripts/theme.mjs', import.meta.url));
 
 describe('template and publishing checks', () => {
   it('warns on uncustomized identity without failing a template checkout', () =>
@@ -51,19 +50,6 @@ describe('template and publishing checks', () => {
     expect(result.status).toBe(1);
     expect(result.stderr).toContain('private');
     expect(result.stderr).toContain('repository');
-  });
-
-  it('lists project themes without editing the palette files', () => {
-    const result = runNode(themeScript, ['list']);
-    expect(result.status, result.stderr).toBe(0);
-    expect(result.stdout).toContain('Project default:');
-    expect(result.stdout).toContain('mono: no colors');
-  });
-
-  it('rejects invalid theme token edits before writing', () => {
-    const result = runNode(themeScript, ['token', 'mono', 'primary', '#abcdef']);
-    expect(result.status).toBe(1);
-    expect(result.stderr).toContain('mono theme has no colors');
   });
 });
 

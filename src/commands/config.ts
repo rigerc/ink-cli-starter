@@ -10,9 +10,6 @@ import {
 } from '../config';
 import {configStore} from '../lib/config';
 import {AppError} from '../lib/errors';
-import {noColor} from '../lib/terminal';
-import {APP_THEME_ENV} from '../lib/identity';
-import {resolveThemeName} from '../theme/resolve';
 import {readInput} from '../lib/input';
 import {defineCommand, defineCommandGroup, type CommandContext} from './definition';
 
@@ -35,18 +32,7 @@ function readValues(context: CommandContext, stored: boolean) {
       values: config,
       sources: Object.fromEntries(appConfig.fields.map((field) => [field.path, 'file'])),
     };
-  const resolved = resolveConfig(appConfig.fields, config, {
-    flags: {theme: context.flags.theme, ascii: context.flags.ascii},
-  });
-  resolved.values.theme = resolveThemeName({
-    flag: context.flags.theme,
-    env: process.env[APP_THEME_ENV],
-    config: config.theme,
-    noColor: noColor() || context.flags.color === false,
-  });
-  if (noColor() || context.flags.color === false)
-    resolved.sources.theme = context.flags.color === false ? 'flag' : 'environment';
-  return resolved;
+  return resolveConfig(appConfig.fields, config);
 }
 function parseValue(field: ConfigField, raw: string): ConfigValue {
   if (field.kind === 'text' || field.kind === 'select') return raw;

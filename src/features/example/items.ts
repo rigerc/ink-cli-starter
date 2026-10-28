@@ -45,7 +45,7 @@ export const exampleItems: readonly ExampleItem[] = [
   },
 ];
 
-/** The screen and headless example share this operation. */
+/** This pure operation is reusable from headless commands or Ink components. */
 export function listItems(
   items: readonly ExampleItem[] = exampleItems,
   statuses: readonly string[] = itemStatus.options,

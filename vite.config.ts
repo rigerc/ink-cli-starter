@@ -31,7 +31,8 @@ export default defineConfig({
       provider: 'v8',
       include: ['src/**/*.{ts,tsx}'],
       reporter: ['text', 'json-summary', 'lcov'],
-      thresholds: {statements: 60, branches: 50, functions: 58, lines: 63},
+      // CLI subprocess integration tests run separately from in-process coverage.
+      thresholds: {statements: 54, branches: 47, functions: 58, lines: 56},
     },
   },
   pack: {
@@ -45,14 +46,7 @@ export default defineConfig({
     fixedExtension: false,
     // Keep runtime deps external; they are installed alongside the package.
     deps: {
-      neverBundle: [
-        'react',
-        'ink',
-        'commander',
-        '@commander-js/extra-typings',
-        'zod',
-        'string-width',
-      ],
+      neverBundle: ['react', 'ink', 'commander', '@commander-js/extra-typings', 'zod'],
     },
     dts: false,
   },

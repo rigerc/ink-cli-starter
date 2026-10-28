@@ -37,7 +37,7 @@ agentsmesh.local.yaml
 # Repository ignore rules are customized by the downstream application.
 .gitignore
 
-# Application composition, navigation, commands and screens are customization points.
+# Application entry points and headless commands are downstream-owned.
 src/app.tsx
 src/cli.tsx
 src/keys.ts
@@ -45,14 +45,13 @@ src/commands/
 src/screens/
 src/features/
 
-# Keep application settings and branding; shared config/theme utilities still sync.
+# Keep application settings and identity; obsolete UI paths stay excluded to avoid reintroduction.
 src/config/schema.ts
 src/lib/config.ts
 src/theme/defaults.json
 src/theme/palettes.json
 
-# These integration tests encode the downstream app's screens, settings and shortcuts.
-# Keep reusable component, hook and tooling tests eligible for updates.
+# Application-facing tests belong to the downstream app.
 tests/capture.test.ts
 tests/cli.test.ts
 tests/commands.test.ts
@@ -61,10 +60,10 @@ tests/consistent-ui.test.tsx
 tests/screens.test.tsx
 tests/theme.test.ts
 tests/features/
-# Replacement application-facing regression suites.
+# Application-facing regression suites.
 tests/cli.behavior.test.ts
 tests/configuration.test.ts
-tests/app-runtime.test.tsx
+tests/app.test.tsx
 tests/keyboard-and-controls.test.tsx
 tests/themes-and-keys.test.ts
 # Add downstream feature tests stored outside tests/features/ explicitly.

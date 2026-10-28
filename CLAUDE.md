@@ -1,26 +1,55 @@
-<!-- agentsmesh:root-generation-contract:start -->
-## AgentsMesh Generation Contract
-
-**NEVER edit generated files** (`CLAUDE.md`, `AGENTS.md`, `.claude/`, `.cursor/`, `.github/copilot-instructions.md`, and other tool outputs) — `agentsmesh generate` overwrites them. Edit the canonical source in `.agentsmesh` instead, or `agentsmesh.yaml` to change targets and features, then run `agentsmesh generate`.
-<!-- agentsmesh:root-generation-contract:end -->
-
 # Instructions for this Ink CLI application
 
-This repository is a **GitHub template that directly contains the application**. There is no scaffold generator. Read `README.md`, [architecture](docs/architecture.md), [adding a feature](docs/adding-a-feature.md), and [the UI framework guide](docs/ui-framework.md) before making architectural changes.
+This repository uses a **native Ink application**, not a custom UI framework.
+Edit `src/app.tsx` directly. Preserve independent headless commands and
+`--plain` output. For details, read `README.md`,
+`docs/architecture.md`, and `docs/adding-a-feature.md`.
 
-## Agent configuration
+Use `npm run check`, `npm run typecheck`, `npm test`, and `npm run build`
+to validate source changes. Canonical agent rules live in `.agentsmesh/rules/`;
+regenerate projected instructions with `agentsmesh generate`.
 
-- `agentsmesh.yaml` enables only rules and hooks for Claude Code, Codex CLI, Pi, and OpenCode. Edit canonical files under `.agentsmesh/` or `agentsmesh.yaml`; regenerate tool instructions with `agentsmesh generate` instead of editing generated files.
-- For configuration changes, run `agentsmesh lint`, inspect `agentsmesh diff`, then run `agentsmesh generate` and `agentsmesh check`. Review canonical files, generated outputs, and `.agentsmesh/.lock` together.
-- Consult the focused rules for the task: [CLI architecture](.claude/rules/cli-architecture.md), [terminal UI](.claude/rules/terminal-ui.md), [configuration](.claude/rules/configuration.md), and [template sync](.claude/rules/template-sync.md). File globs guide activation; targets that embed rules in shared instructions may expose them more broadly. Apply each rule only to the work it describes.
+## CLI architecture
 
-## Development and validation
+- `src/cli.tsx` handles signals, logging and process errors.
+- `src/lib/program.ts` registers Commander options and headless commands.
+- `src/lib/render-app.tsx` selects a native Ink session or one plain frame.
+- `src/app.tsx` is a single native Ink component, without UI framework wrappers.
+- Put reusable domain operations in `src/features/`, not under Ink.
+- Declare headless commands with `defineCommand` and register them in
+  `src/commands/index.ts`; their output must remain usable without a TTY.
+- Keep `--plain` deterministic, with no keyboard or asynchronous dependency.
+- Do not write directly to stdout while Ink owns the terminal.
+- Cover flag changes, plain rendering and interactive exit behavior in tests.
 
-- This project uses **Vite+**, not plain Vite. Use the declared npm scripts. Run `npm ci` after pulling dependency changes.
-- For code changes, run `npm run check`, `npm run typecheck`, `npm test`, and `npm run build`. For instruction-only changes, validate AgentsMesh and formatting; application tests are needed only if application behavior changes.
-- `npm run lint` runs Vite+ and high-confidence anti-slop rules; set `INK_STRICT_LINT=1` to enable the other opinionated anti-slop rules. `npm run check` also checks formatting and types. The vendored plugin is under `tools/oxlint/anti-slop/`, excluded from application lint/format checks, and should be updated with its `UPSTREAM.md` provenance in mind.
-- Update documentation and interaction/width regression tests when changing shared framework conventions.
+## Native Ink
 
-## Downstream ownership
+- Use Ink's `Box`, `Text`, `useInput`, `useApp` and other native APIs.
+  The starter does not supply a shell, component kit, router or themes.
+- Add application-specific components and input arbitration only when needed.
+- Ensure pressing `q` or Escape exits the sample app and Ctrl-C still cleans
+  up the terminal. Respect the alternate-screen and screen-reader options.
+- Interactive behavior belongs in the Ink app; `--plain` must produce one
+  meaningful static frame without effects or keyboard input.
+- Keep wide or unbounded text readable in small terminals; use text as well
+  as color for state. Test narrow widths and PTY cleanup when changing input.
 
-Reuse framework components and demos when helpful. Downstream applications may remove unused screens, components, hooks, themes, and providers. Before any upstream sync, read [the full sync ownership policy](.claude/rules/template-sync.md), preserve application-owned files, and add customized or intentionally deleted shared paths to `.templatesyncignore`.
+## Configuration
+
+- Keep the Zod schema and `appConfig.fields` in sync.
+- The starter has one sample `label` field. There is no interactive settings
+  screen or custom configuration UI.
+- Preserve precedence: defaults < stored JSON < environment overrides.
+  An application may explicitly add CLI flags if it needs them.
+- Retain atomic writes, safe XDG config paths, extension keys, and validation.
+  Do not reset malformed or unsupported future-version files automatically.
+- `--config` selects the path. Package identity changes must not silently
+  move existing user data.
+- Add versioned migrations for breaking settings changes and cover invalid
+  files, precedence, persistence and migrations with isolated tests.
+
+## Template sync
+
+Retain downstream ownership of `.templatesyncignore`, package metadata,
+application entry points, commands, settings, tests and release state.
+Review all incoming changes before merging a template-sync PR.

@@ -10,11 +10,6 @@ const mirrorPath = '.claude/skills/ink-cli-starter/SKILL.md';
 const apiSources = {
   defineCommand: 'src/commands/definition.ts',
   defineCommandGroup: 'src/commands/definition.ts',
-  useKeymap: 'src/hooks/useKeymap.ts',
-  useAction: 'src/hooks/useActions.tsx',
-  useInputCapture: 'src/hooks/useInputCapture.tsx',
-  useAsync: 'src/hooks/useAsync.ts',
-  ScreenState: 'src/components/ScreenState.tsx',
 };
 
 function referencedPaths(markdown) {
