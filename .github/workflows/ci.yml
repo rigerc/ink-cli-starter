@@ -26,8 +26,12 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
-      - run: npm run check
-      - run: npm run typecheck
+      - name: List files selected for linting
+        run: npm run lint -- --debug=files
+      - name: Check formatting, lint (including anti-slop), and template configuration
+        run: npm run check
+      - name: Check TypeScript types
+        run: npm run typecheck -- --diagnostics
 
   tests:
     name: ${{ matrix.os }} / Node 24
