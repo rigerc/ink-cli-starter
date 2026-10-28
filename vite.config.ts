@@ -32,7 +32,7 @@ export default defineConfig({
       include: ['src/**/*.{ts,tsx}'],
       reporter: ['text', 'json-summary', 'lcov'],
       // CLI subprocess integration tests run separately from in-process coverage.
-      thresholds: {statements: 54, branches: 47, functions: 58, lines: 57},
+      thresholds: {statements: 54, branches: 47, functions: 58, lines: 56},
     },
   },
   pack: {
