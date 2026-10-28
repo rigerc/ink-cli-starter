@@ -53,3 +53,43 @@ regenerate projected instructions with `agentsmesh generate`.
 Retain downstream ownership of `.templatesyncignore`, package metadata,
 application entry points, commands, settings, tests and release state.
 Review all incoming changes before merging a template-sync PR.
+
+<!-- BEGIN GENERATED REPOSITORY CONTEXT -->
+
+## Live repository reference (generated)
+
+This section is generated from the current codebase with `npm run update:agents`.
+Keep the guidance above human-authored. Regenerate this section after projecting agent rules.
+
+- **Package:** `ink-kit` v`0.1.0`
+- **Runtime:** Node `>=22.12.0`, ES modules
+- **CLI binary:** `ink-kit`
+- **Command modules:** 6 files in `src/commands/`.
+- **Entry points:** `src/cli.tsx`, `src/app.tsx`, `src/lib/program.ts`
+
+### Available npm scripts
+
+| Command | package.json definition |
+| --- | --- |
+| `npm run build` | `vp pack` |
+| `npm run changeset` | `changeset` |
+| `npm run check` | `npm run check:template && vp check` |
+| `npm run check:agents` | `node scripts/update-agents-md.mjs --check` |
+| `npm run check:skill` | `node scripts/sync-skill.mjs --check` |
+| `npm run check:template` | `node scripts/check-template.mjs` |
+| `npm run dev` | `tsx src/cli.tsx` |
+| `npm run init:project` | `node scripts/init-project.mjs` |
+| `npm run lint` | `vp lint` |
+| `npm run prepare` | `vp config` |
+| `npm run release` | `npm run build && changeset publish` |
+| `npm run release:tag` | `changeset git-tag` |
+| `npm run start` | `node dist/cli.js` |
+| `npm run test` | `vp test run` |
+| `npm run test:coverage` | `vp test run --coverage` |
+| `npm run test:pty` | `vp test run tests/terminal-pty.test.ts` |
+| `npm run typecheck` | `node node_modules/typescript/bin/tsc --noEmit` |
+| `npm run update:agents` | `node scripts/update-agents-md.mjs --write` |
+| `npm run update:skill` | `node scripts/sync-skill.mjs --write` |
+| `npm run version-packages` | `changeset version && npm install --package-lock-only` |
+
+<!-- END GENERATED REPOSITORY CONTEXT -->

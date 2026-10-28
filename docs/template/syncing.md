@@ -11,6 +11,36 @@ To opt into automatic monthly checks, add a `schedule` trigger alongside `workfl
 
 The workflow automatically uses `TEMPLATE_SYNC_TARGET_TOKEN` when provided and falls back to `GITHUB_TOKEN` otherwise. Go to **Actions → Sync upstream template → Run workflow** to trigger a sync manually. Review any created PR before merging: upstream updates may touch files you have customized. See [actions-template-sync documentation](https://github.com/marketplace/actions/actions-template-sync) for additional authentication or file-exclusion options.
 
+## Automatic agent documentation maintenance
+
+The template includes two source-derived documentation workflows adapted from
+[rigerc/ink-ui](https://github.com/rigerc/ink-ui):
+
+- [Update AGENTS.md context](../../.github/workflows/update-agents.yml) appends or
+  refreshes a clearly marked factual section in both `AGENTS.md` and
+  `CLAUDE.md` on main-branch changes, and commits only those files.
+  It does not edit authored guidance. Run `npm run update:agents` locally
+  after `agentsmesh generate` to restore the generated section if the
+  agent-rule projection rewrites either file.
+- [Update starter agent skill reference](../../.github/workflows/update-skill.yml)
+  refreshes generated source facts in both canonical and Claude skill locations,
+  then proposes a PR for review. It runs only in the upstream starter repository;
+  downstream applications must opt in explicitly if they want similar skill PRs.
+  Authored `SKILL.md` guidance is never regenerated.
+
+Both scripts support read-only checks via `npm run check:agents` and
+`npm run check:skill`. The skill workflow uses
+`SKILL_AUTOMATION_TOKEN` when configured, or the built-in GitHub token.
+To open pull requests using the built-in token, enable **Allow GitHub Actions to
+create and approve pull requests** in repository Actions settings; workflows
+triggered by PRs created with the built-in token may not automatically run.
+The direct-commit agent context workflow also requires write access to main
+(compatible branch protection or an appropriate workflow exception).
+
+Agent instructions, workflow files, and package scripts remain downstream-owned
+under `.templatesyncignore`, so existing downstream copies must adopt
+these automation changes manually. Review any generated diff before merging.
+
 ## Changelogs in sync pull requests
 
 After the action creates a PR, [the changelog helper](../../scripts/template-sync-changelog.mjs) updates its description with:

@@ -28,6 +28,11 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
+      - name: Verify generated agent documentation
+        if: github.repository == 'rigerc/ink-cli-starter'
+        run: |
+          npm run check:agents
+          npm run check:skill
       - name: Verify starter agent skill accuracy
         if: github.repository == 'rigerc/ink-cli-starter'
         run: |
