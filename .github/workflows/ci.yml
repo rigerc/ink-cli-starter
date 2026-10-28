@@ -33,7 +33,7 @@ jobs:
           node scripts/check-skill-accuracy.mjs
       - name: Temporary formatting diagnostics
         run: |
-          vp check --fix || true
+          npm exec -- vp check --fix || true
           node <<'NODE'
           const {execFileSync} = require('node:child_process');
           const {readFileSync} = require('node:fs');
