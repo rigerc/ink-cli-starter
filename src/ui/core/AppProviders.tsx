@@ -2,12 +2,7 @@ import type {ReactNode} from 'react';
 import type {Config} from '../../config';
 import {ConfigRuntimeProvider} from '../../config/context';
 import {ErrorBoundary} from '../../components/ErrorPanel';
-import {
-  InputCaptureProvider,
-  KeymapProvider,
-  RouterProvider,
-  ToastProvider,
-} from '../../hooks';
+import {InputCaptureProvider, KeymapProvider, RouterProvider, ToastProvider} from '../../hooks';
 import {ThemeProvider} from '../../theme/context';
 import type {Theme} from '../../theme/tokens';
 
