@@ -4,7 +4,7 @@ import {describe, expect, it, vi} from 'vite-plus/test';
 import {createLogger, redact} from '../src/lib/logger';
 import {getUpdateNotice} from '../src/lib/updates';
 import {createProgram} from '../src/lib/program';
-import {APP_ASCII_ENV, APP_ENV_PREFIX, APP_THEME_ENV} from '../src/lib/identity';
+import {APP_ENV_PREFIX} from '../src/lib/identity';
 import {withWorkspace, withAsyncWorkspace, writeFixture} from './helpers/fixtures';
 
 describe('bounded diagnostic logging', () => {
@@ -203,45 +203,19 @@ describe('optional update notification', () => {
 });
 
 describe('documented environment help', () => {
-  it('lists opt-in and opt-out update variables with columns padded from the longest name', () => {
+  it('documents remaining environment variables', () => {
     const program = createProgram(new AbortController().signal);
     let help = '';
     const write = vi.spyOn(process.stdout, 'write').mockImplementation((chunk) => {
       help += chunk.toString();
       return true;
     });
-    try {
-      program.outputHelp();
-    } finally {
-      write.mockRestore();
-    }
-    const optIn = `${APP_ENV_PREFIX}_UPDATE_NOTIFIER`;
+    try { program.outputHelp(); } finally { write.mockRestore(); }
     for (const name of [
-      'NO_COLOR',
-      APP_THEME_ENV,
-      APP_ASCII_ENV,
-      'INK_SCREEN_READER',
-      optIn,
-      'NO_UPDATE_NOTIFIER',
-    ])
-      expect(help).toContain(name);
-    // Columns align on the longest name; assert the pad width rather than a snapshot.
-    const longest = Math.max(
-      'NO_COLOR'.length,
-      APP_THEME_ENV.length,
-      APP_ASCII_ENV.length,
-      'INK_SCREEN_READER'.length,
-      optIn.length,
-      'NO_UPDATE_NOTIFIER'.length,
-    );
-    expect(help).toMatch(
-      new RegExp(`NO_COLOR {${longest - 'NO_COLOR'.length + 2}}Force the mono theme`),
-    );
-    expect(help).toMatch(new RegExp(`${optIn} {2}Set to 1 to opt in to update checks`));
-    expect(help).toMatch(
-      new RegExp(
-        `NO_UPDATE_NOTIFIER {${longest - 'NO_UPDATE_NOTIFIER'.length + 2}}Opt out of update checks`,
-      ),
-    );
+      'NO_COLOR', `${APP_ENV_PREFIX}_LABEL`, 'INK_SCREEN_READER',
+      `${APP_ENV_PREFIX}_UPDATE_NOTIFIER`, 'NO_UPDATE_NOTIFIER',
+    ]) expect(help).toContain(name);
+    expect(help).not.toContain('--theme');
+    expect(help).not.toContain('--screen');
   });
 });

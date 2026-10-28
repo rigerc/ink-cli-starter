@@ -15,8 +15,7 @@ for (const shell of ['bash', 'zsh', 'fish'] as const) {
       expect(script).toContain('doctor');
       expect(script).toContain('config');
       expect(script).toContain('reset');
-      expect(script).toContain('theme');
-      expect(script).toContain('contrast');
+      expect(script).toContain('label');
       expect(script).toContain('status');
     });
     it.skipIf(!available)('passes the shell syntax checker', () => {
