@@ -1,55 +1,84 @@
 ---
 name: ink-cli-starter
 description: >-
-  Build, customize, and maintain applications copied from the ink-cli-starter
-  GitHub template (Ink 8, React 19, TypeScript, Commander, and Vite+). Use for
-  project initialization, screens, headless commands, settings, terminal input
-  and output, regression testing, or safe upstream template sync.
+  Work in GitHub repositories created from the rigerc/ink-cli-starter template,
+  including renamed and customized downstream Ink CLI apps. Use to initialize
+  a new copy, extend screens or headless commands, change terminal input/output
+  or settings, validate behavior, or safely review upstream template sync.
 ---
 
-# Work with Ink CLI Starter
+# Work in a repository based on Ink CLI Starter
 
-This GitHub template contains the application itself, not a generator. Modify
-the copied source; do not look for a separate scaffold. Follow the project's
-`AGENTS.md` and relevant focused rules. This skill describes workflows and
-does not override those instructions.
+Use this skill in the **current project repository**, typically one created
+with GitHub's **Use this template** action from `rigerc/ink-cli-starter`.
+The template copies an application, not a generator or a live dependency.
+After creation, the downstream project owns its Git history, package identity,
+screens, commands, scripts, and agent instructions. Never assume the checkout
+is the upstream `rigerc/ink-cli-starter` repository, or that its original
+files still exist. Follow local `AGENTS.md` and focused rules when present;
+this skill is a workflow, not an override.
 
-## Orient and choose the right layer
+## Identify the repository before making changes
 
-- Read `README.md`, `docs/architecture.md`, and
-  `docs/adding-a-feature.md`. Read `docs/ui-framework.md` before changing
-  layout, keyboard behavior, or focus; read `docs/configuration.md` before
-  changing settings.
-- `src/cli.tsx` owns process lifetime and cancellation.
-  `src/lib/program.ts` owns Commander flags and command registration;
-  `src/lib/render-app.tsx` lazily starts Ink rendering.
-- `src/app.tsx` supplies the default app. `src/screens/index.ts` is the
-  screen registry; `src/commands/index.ts` is the headless command registry.
-  Inspect `src/ui/core/` and `src/ui/layout/` before replacing the app
-  runtime, shell, or navigation model.
-- Use local `src/components/`, `src/hooks/`, and `src/theme/` where
-  helpful. These are optional primitives, not a mandatory design system.
-  Prefer an existing extension point over new framework infrastructure.
+1. Confirm the working repository, current branch, and uncommitted changes:
+   `git remote -v`, `git branch --show-current`, `git status --short`.
+   With GitHub CLI, `gh repo view --json nameWithOwner,defaultBranchRef`
+   can identify the PR target. When working through a GitHub integration
+   without a checkout, inspect the repository metadata and default branch.
+   The downstream repository, **not the template**, is the default target
+   for branches, pushes, issues, and PRs unless explicitly requested.
+   Template-created repositories may have unrelated Git history.
+2. Read the current project's `README.md`, `package.json`, and
+   `AGENTS.md` (if present). Check its package manager, actual npm scripts,
+   CLI identity, and existing architecture before choosing commands or paths.
+   Treat the current project as the source of truth, even when it diverges
+   from the template. Do not reintroduce removed demos, screens, or tooling.
+3. Consult `docs/architecture.md` and `docs/adding-a-feature.md` when
+   present; consult `docs/ui-framework.md` for terminal UI work and
+   `docs/configuration.md` for settings work. Check their advice against
+   the current source, as downstream documentation may have changed.
+4. **If the starter layout still exists:** `src/cli.tsx` handles process
+   lifetime; `src/lib/program.ts` owns Commander wiring;
+   `src/lib/render-app.tsx` lazily loads Ink; `src/app.tsx` supplies the
+   default app; `src/screens/index.ts` and `src/commands/index.ts` are
+   registries. Inspect `src/ui/core/` and `src/ui/layout/` before replacing
+   runtime or shell behavior. Reuse `src/components/`, `src/hooks/`, and
+   `src/theme/` if useful. If any of these are absent, locate the local
+   equivalent rather than recreating template structure.
 
-## Initialize a fresh template copy
+## Initialize a newly created GitHub template repository
 
-1. Use Node.js 22.12+ and run `npm ci` in a **new copy** of the template.
-2. Preview project identity changes:
+Only use this workflow when the user is setting up a **fresh** repository
+created with **Use this template → Create a new repository**. A repo that
+already has its own package name, features, settings, or releases is not a
+fresh template copy.
+
+1. Clone or check out the **new downstream repository**, not the original
+   template. Check `package.json` for the required Node version and package
+   manager. The unmodified starter requires Node.js 22.12+ and uses `npm ci`.
+2. If the copy still offers `init:project`, preview identity changes:
 
    ~~~bash
    npm run init:project -- --name my-cli --description "My CLI" --dry-run
    ~~~
 
-   Apply them only after reviewing the preview (remove `--dry-run`).
-   Do not reinitialize an already-customized project without inspecting
-   package and config identity. See `docs/template/customization.md`.
-   Renaming the CLI does not migrate an existing config file.
-3. Run `npm run dev` in a real terminal. For a static, scriptable frame use
-   `npm run dev -- --plain`; for headless diagnostics use
-   `npm run dev -- doctor --json`. `--plain` cannot be combined with a
-   subcommand, and `--setup` requires an interactive terminal.
+   Review the preview, then remove `--dry-run` to apply. Do not run this
+   initializer in an already-customized project. It changes package/binary
+   and configuration identity, but does not move existing user config files.
+   See `docs/template/customization.md` if available.
+3. If the starter scripts and commands are still present, run `npm run dev`
+   in a terminal, `npm run dev -- --plain` for a static frame, or
+   `npm run dev -- doctor --json` for headless diagnostics. The original
+   `--plain` and `--setup` modes are incompatible with subcommands; setup
+   needs an interactive TTY. In customized repos, use the documented local
+   commands instead.
 
-## Add a feature
+## Add or modify a feature in the current application
+
+Use the paths and APIs below **only if the downstream repository still uses
+the starter architecture**. If it has replaced registries, renamed commands,
+or removed optional features, follow its actual implementation instead of
+copying template examples or restoring removed code.
 
 1. Put shared domain models and operations under `src/features/<feature>/`
    when useful. Keep them independent of React and Ink so screens and
@@ -71,7 +100,8 @@ does not override those instructions.
    `context.notice()` for suppressible stderr notices, `context.flags` for
    common options, and `context.signal` for cancellation. Keep JSON stdout
    parseable and do not send diagnostics to it. Read piped stdin only when the
-   command explicitly accepts `-`, as the shipped `example` command does.
+   command explicitly accepts `-`. The original starter's `example`
+   command illustrates this if the downstream app still includes it.
 5. For UI interactions, use scoped `useKeymap` or `useAction` and activate
    only the control that owns input. Use `useInputCapture` for custom
    free-form text editing, then release capture on finish/cancel. Managed
@@ -86,9 +116,13 @@ does not override those instructions.
    Commander option. Follow `docs/configuration.md` for versioned migrations,
    explicit save/discard, and invalid-file preservation.
 
-## Preserve terminal and configuration contracts
+## Preserve the application's contracts
 
-- Configuration precedence is **defaults < saved file < environment < CLI**.
+These are the **unmodified starter's** behavior contracts. In a derived app,
+verify its actual flags, configuration, and output guarantees before changing
+them; preserve its documented public behavior.
+
+- Starter configuration precedence is **defaults < saved file < environment < CLI**.
   Do not persist environment or CLI overrides as user settings. Preserve
   unknown application-specific config keys and leave invalid saved JSON
   untouched rather than silently resetting it.
@@ -102,9 +136,10 @@ does not override those instructions.
   80, and 120 columns. Test keyboard focus and restoring shortcuts after an
   editor closes.
 
-## Validate the affected behavior
+## Validate against the downstream repository
 
-Use this repository's **Vite+** scripts, not ad hoc Vite commands:
+Inspect the current `package.json` and CI workflow. When the original
+Vite+ scripts are still present, run:
 
 ~~~bash
 npm run check
@@ -113,8 +148,12 @@ npm test
 npm run build
 ~~~
 
-Add or update focused regression tests under `tests/` when behavior changes.
-For CLI, screen, or command changes, smoke-test the real entry points:
+Use the **downstream project's** corresponding checks if scripts or tooling
+have changed. Add or update the tests that actually exist for the affected
+behavior; do not recreate deleted starter tests to satisfy this skill.
+
+For CLI, screen, or command changes in a repo retaining the original
+commands, smoke-test:
 
 ~~~bash
 npm run dev -- --help
@@ -123,27 +162,44 @@ npm run dev -- doctor --json
 npm run dev -- completion bash
 ~~~
 
-For input/layout changes, verify an interactive TTY, mono/ASCII modes, and
-40/80/120-column rendering; run `npm run test:pty` when native PTY support is
-available. Relevant tests include `tests/cli.behavior.test.ts`,
+Otherwise test its current executable, flags, JSON output, and help/completion
+behavior. For input/layout changes, verify an interactive TTY, mono/ASCII
+modes, and approximately 40/80/120 columns where supported. Run
+`npm run test:pty` only when that script and native PTY support are present.
+The original starter has `tests/cli.behavior.test.ts`,
 `tests/headless-commands.test.ts`, `tests/keyboard-and-controls.test.tsx`,
-and `tests/app-runtime.test.tsx`. For instruction-only edits, application
-tests are optional: validate skill frontmatter, paths, example commands, and
-the mirrored skill content instead.
+and `tests/app-runtime.test.tsx`; downstream projects may have renamed or
+removed them. For instruction-only edits, application tests are optional:
+validate frontmatter, local paths, any sample commands, and mirrored copies.
 
-## Respect generated instructions and downstream ownership
+## Maintain agent instructions and upstream updates safely
 
-- AgentsMesh sources live under `.agentsmesh/`. Do not hand-edit generated
-  `AGENTS.md`, `CLAUDE.md`, or tool projections. For canonical instruction
-  changes, use `agentsmesh lint`, inspect `agentsmesh diff`, then
-  `agentsmesh generate` and `agentsmesh check`.
-- This skill is maintained directly at
-  `.agents/skills/ink-cli-starter/SKILL.md`, **not** by AgentsMesh. Keep its
-  Claude discovery mirror at
-  `.claude/skills/ink-cli-starter/SKILL.md` identical when editing it.
-- Before syncing upstream, read `docs/template/syncing.md` and
-  `.templatesyncignore`. Sync is opt-in. Preserve downstream-owned package
-  identity, `.gitignore`, application code, agent configuration, and skills.
-  Exclude customized or intentionally removed shared paths **before** a
-  sync, review added/deleted/renamed files, and inspect every sync PR. Static
-  exclusions cannot automatically detect every downstream customization.
+- If the downstream project still uses AgentsMesh, edit its canonical
+  `.agentsmesh/` sources instead of generated `AGENTS.md`, `CLAUDE.md`,
+  or tool projections. Run `agentsmesh lint`, inspect `agentsmesh diff`,
+  then `agentsmesh generate` and `agentsmesh check` **when available**.
+  If it no longer uses AgentsMesh, follow its own instruction workflow;
+  do not restore AgentsMesh just to use this skill.
+- In the original template, this skill is maintained directly at
+  `.agents/skills/ink-cli-starter/SKILL.md`, outside AgentsMesh. Its
+  `.claude/skills/ink-cli-starter/SKILL.md` mirror is identical for Claude
+  discovery. In a downstream repo, respect any intentional changes to agent
+  discovery and keep both files synchronized **if both are still used**.
+- The original `.templatesyncignore` protects `.agents/`, `.claude/`, and
+  other downstream-owned instructions. **Updating the skill in the upstream
+  template does not update existing GitHub template-created repositories.**
+  New repositories copy the version present when created. To adopt a later
+  skill revision in an existing repo, review and explicitly copy/merge it
+  into that repo's skill paths; do not overwrite its local customizations.
+- If the downstream project retains template sync, read its
+  `docs/template/syncing.md` and `.templatesyncignore` before triggering
+  the opt-in workflow. Preserve the downstream package identity, `.gitignore`,
+  application code, agent configuration, and intentionally deleted paths.
+  Add customized shared files to the downstream ignore list before syncing;
+  review additions, deletions, renames, and every sync PR. Static exclusions
+  cannot identify all customizations, and template-created histories may be
+  unrelated. Do not bypass sync guards to force an update.
+- When opening a GitHub PR for application work, use the current downstream
+  repository's branch and default/base branch. Only target
+  `rigerc/ink-cli-starter` when the user explicitly requests an upstream
+  contribution.
