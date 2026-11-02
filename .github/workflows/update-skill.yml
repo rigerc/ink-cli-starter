@@ -43,7 +43,7 @@ jobs:
         continue-on-error: true
         run: node scripts/check-skill-accuracy.mjs
       - name: Open or update generated-reference PR
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.SKILL_AUTOMATION_TOKEN || github.token }}
           branch: automation/update-ink-cli-starter-skill
