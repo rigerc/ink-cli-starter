@@ -96,7 +96,7 @@ jobs:
           npm install --prefix "$RUNNER_TEMP/cli-smoke" "$RUNNER_TEMP/$PACKAGE_TGZ"
           node "$RUNNER_TEMP/cli-smoke/node_modules/$PACKAGE_NAME/dist/cli.js" --help
           node "$RUNNER_TEMP/cli-smoke/node_modules/$PACKAGE_NAME/dist/cli.js" doctor --json
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         if: runner.os == 'Linux'
         with:
           name: coverage
