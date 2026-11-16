@@ -35,7 +35,7 @@
     "check:skill": "node scripts/sync-skill.mjs --check"
   },
   "dependencies": {
-    "@commander-js/extra-typings": "^15.0.0",
+    "@commander-js/extra-typings": "^15.1.0",
     "commander": "^15.0.0",
     "conf": "^16.0.0",
     "ink": "^8.0.0",
